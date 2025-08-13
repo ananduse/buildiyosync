@@ -1,7 +1,6 @@
 import { useState, useMemo } from 'react';
 import {
   Plus,
-  Filter,
   Search,
   MoreHorizontal,
   Eye,
@@ -12,13 +11,10 @@ import {
   MapPin,
   Calendar,
   Star,
-  Download,
   Upload,
   Grid3X3,
   List,
   Map as MapIcon,
-  ChevronDown,
-  X,
   MessageSquare,
   Activity,
   DollarSign,
@@ -40,12 +36,9 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Checkbox } from '@/components/ui/checkbox';
+import { Card, CardContent } from '@/components/ui/card';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
-import { Separator } from '@/components/ui/separator';
+//
 import { DataGrid } from '@/components/ui/data-grid';
 import { DataGridColumnHeader } from '@/components/ui/data-grid-column-header';
 import { SimpleFilter, SimpleFilterRule } from '@/components/filters/simple-filter';
@@ -77,6 +70,33 @@ interface Lead {
   lastContact: string;
   nextFollowUp: string;
   createdDate: string;
+}
+
+// Generate consistent initials from a name
+function getInitials(fullName: string): string {
+  if (!fullName) {
+    return '';
+  }
+  const parts = fullName
+    .trim()
+    .split(/\s+/)
+    .filter(Boolean);
+  if (parts.length === 1) {
+    return parts[0].slice(0, 2).toUpperCase();
+  }
+  return `${(parts[0][0] || '').toUpperCase()}${(parts[1][0] || '').toUpperCase()}`;
+}
+
+// Convert a string to a visually distinct, stable HSL color
+function stringToHslColor(input: string, saturation = 65, lightness = 55): string {
+  let hash = 0;
+  for (let i = 0; i < input.length; i++) {
+    // eslint-disable-next-line no-bitwise
+    hash = input.charCodeAt(i) + ((hash << 5) - hash);
+  }
+  // eslint-disable-next-line no-bitwise
+  const hue = Math.abs(hash) % 360;
+  return `hsl(${hue} ${saturation}% ${lightness}%)`;
 }
 
 const mockLeads: Lead[] = [
@@ -189,101 +209,6 @@ function LeadScoreStars({ score }: { score: number }) {
   );
 }
 
-interface FilterPanelProps {
-  isOpen: boolean;
-  onClose: () => void;
-}
-
-function FilterPanel({ isOpen, onClose }: FilterPanelProps) {
-  return (
-    <Collapsible open={isOpen}>
-      <CollapsibleContent>
-        <Card className="mb-4">
-          <CardHeader className="flex flex-row items-center justify-between pb-3">
-            <CardTitle className="text-lg">Filters</CardTitle>
-            <Button variant="ghost" size="sm" onClick={onClose}>
-              <X className="h-4 w-4" />
-            </Button>
-          </CardHeader>
-          <CardContent className="pt-0">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-              {/* Lead Status */}
-              <div className="space-y-2">
-                <label className="text-sm font-medium">Lead Status</label>
-                <div className="space-y-2">
-                  {['New', 'Contacted', 'Qualified', 'Proposal', 'Negotiation', 'Won', 'Lost'].map((status) => (
-                    <div key={status} className="flex items-center space-x-2">
-                      <Checkbox id={status.toLowerCase()} />
-                      <label htmlFor={status.toLowerCase()} className="text-sm">{status}</label>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              {/* Date Range */}
-              <div className="space-y-2">
-                <label className="text-sm font-medium">Date Range</label>
-                <Select>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select range" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="today">Today</SelectItem>
-                    <SelectItem value="week">This Week</SelectItem>
-                    <SelectItem value="month">This Month</SelectItem>
-                    <SelectItem value="quarter">This Quarter</SelectItem>
-                    <SelectItem value="custom">Custom Range</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-
-              {/* Lead Source */}
-              <div className="space-y-2">
-                <label className="text-sm font-medium">Lead Source</label>
-                <Select>
-                  <SelectTrigger>
-                    <SelectValue placeholder="All sources" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="website">Website</SelectItem>
-                    <SelectItem value="referral">Referral</SelectItem>
-                    <SelectItem value="social">Social Media</SelectItem>
-                    <SelectItem value="cold-call">Cold Call</SelectItem>
-                    <SelectItem value="event">Event</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-
-              {/* Assigned To */}
-              <div className="space-y-2">
-                <label className="text-sm font-medium">Assigned To</label>
-                <Select>
-                  <SelectTrigger>
-                    <SelectValue placeholder="All team members" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="sarah">Sarah Johnson</SelectItem>
-                    <SelectItem value="mike">Mike Chen</SelectItem>
-                    <SelectItem value="lisa">Lisa Wang</SelectItem>
-                    <SelectItem value="david">David Brown</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-
-            <Separator className="my-4" />
-
-            <div className="flex items-center space-x-2">
-              <Button variant="outline" size="sm">Save Filter</Button>
-              <Button variant="ghost" size="sm">Clear All</Button>
-            </div>
-          </CardContent>
-        </Card>
-      </CollapsibleContent>
-    </Collapsible>
-  );
-}
-
 function ActionsCell({ row }: { row: Row<Lead> }) {
   return (
     <DropdownMenu>
@@ -347,9 +272,7 @@ export function AllLeadsContent() {
   const applyFilters = (lead: any, filterRules: SimpleFilterRule[]) => {
     if (filterRules.length === 0) return true;
     
-    let result = true;
     let currentGroup = true;
-    let currentConnector: 'AND' | 'OR' = 'AND';
     
     for (let i = 0; i < filterRules.length; i++) {
       const rule = filterRules[i];
@@ -459,13 +382,33 @@ export function AllLeadsContent() {
         header: ({ column }) => (
           <DataGridColumnHeader title="Lead Name" column={column} />
         ),
-        cell: ({ row }) => (
-          <div>
-            <p className="font-medium">{row.original.name}</p>
-            <p className="text-sm text-muted-foreground">{row.original.company}</p>
-            <Badge variant="outline" className="text-xs mt-1">{row.original.source}</Badge>
-          </div>
-        ),
+        cell: ({ row }) => {
+          const initials = getInitials(row.original.name);
+          const bg = stringToHslColor(row.original.name);
+          return (
+            <div className="flex items-center gap-3">
+              <Avatar className="h-8 w-8 ring-1 ring-border">
+                {/* No image for lead entity by default. Keep for future extension */}
+                <AvatarImage src="" />
+                <AvatarFallback
+                  className="text-[10px] font-semibold text-white"
+                  style={{ backgroundColor: bg }}
+                >
+                  {initials}
+                </AvatarFallback>
+              </Avatar>
+              <div>
+                <p className="font-medium leading-none">{row.original.name}</p>
+                <div className="flex items-center gap-2 mt-1">
+                  <span className="text-xs text-muted-foreground">{row.original.company}</span>
+                  <Badge variant="outline" className="text-[10px] px-1.5 py-0.5">
+                    {row.original.source}
+                  </Badge>
+                </div>
+              </div>
+            </div>
+          );
+        },
         enableSorting: true,
         size: 250,
       },
@@ -558,17 +501,24 @@ export function AllLeadsContent() {
         header: ({ column }) => (
           <DataGridColumnHeader title="Assigned To" column={column} />
         ),
-        cell: ({ row }) => (
-          <div className="flex items-center space-x-2">
-            <Avatar className="h-6 w-6">
-              <AvatarImage src={row.original.assignedTo.avatar} />
-              <AvatarFallback className="text-xs">
-                {row.original.assignedTo.name.split(' ').map(n => n[0]).join('')}
-              </AvatarFallback>
-            </Avatar>
-            <span className="text-sm">{row.original.assignedTo.name}</span>
-          </div>
-        ),
+        cell: ({ row }) => {
+          const initials = getInitials(row.original.assignedTo.name);
+          const bg = stringToHslColor(row.original.assignedTo.name, 60, 50);
+          return (
+            <div className="flex items-center gap-2">
+              <Avatar className="h-7 w-7 ring-1 ring-border">
+                <AvatarImage src={row.original.assignedTo.avatar} />
+                <AvatarFallback
+                  className="text-[10px] font-semibold text-white"
+                  style={{ backgroundColor: bg }}
+                >
+                  {initials}
+                </AvatarFallback>
+              </Avatar>
+              <span className="text-sm">{row.original.assignedTo.name}</span>
+            </div>
+          );
+        },
         enableSorting: true,
         size: 160,
       },
@@ -648,28 +598,28 @@ export function AllLeadsContent() {
           {/* View Switcher */}
           <div className="flex border rounded-lg p-1">
             <Button
-              variant={view === 'list' ? 'default' : 'ghost'}
+              variant={view === 'list' ? 'primary' : 'ghost'}
               size="sm"
               onClick={() => setView('list')}
             >
               <List className="h-4 w-4" />
             </Button>
             <Button
-              variant={view === 'kanban' ? 'default' : 'ghost'}
+              variant={view === 'kanban' ? 'primary' : 'ghost'}
               size="sm"
               onClick={() => setView('kanban')}
             >
               <Grid3X3 className="h-4 w-4" />
             </Button>
             <Button
-              variant={view === 'calendar' ? 'default' : 'ghost'}
+              variant={view === 'calendar' ? 'primary' : 'ghost'}
               size="sm"
               onClick={() => setView('calendar')}
             >
               <Calendar className="h-4 w-4" />
             </Button>
             <Button
-              variant={view === 'map' ? 'default' : 'ghost'}
+              variant={view === 'map' ? 'primary' : 'ghost'}
               size="sm"
               onClick={() => setView('map')}
             >
