@@ -1,0 +1,15 @@
+<svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Your exact logo design -->
+  <circle cx="16" cy="16" r="16" fill="none"/>
+  
+  <!-- Orange left arcs (matching your design) -->
+  <path d="M0 16C0 7.16 7.16 0 16 0V16C7.16 16 0 16 0 16Z" fill="#FF6B35"/>
+  <path d="M3 16C3 9.37 9.37 3 16 3V16C9.37 16 3 16 3 16Z" fill="#FF8C42"/>
+  
+  <!-- Dark right arcs (matching your design) -->
+  <path d="M32 16C32 24.84 24.84 32 16 32V16C24.84 16 32 16 32 16Z" fill="#2D2D2D"/>
+  <path d="M29 16C29 22.63 22.63 29 16 29V16C22.63 16 29 16 29 16Z" fill="#1A1A1A"/>
+  
+  <!-- Center -->
+  <circle cx="16" cy="16" r="3" fill="#2D2D2D"/>
+</svg>

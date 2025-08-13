@@ -48,6 +48,8 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/component
 import { Separator } from '@/components/ui/separator';
 import { DataGrid } from '@/components/ui/data-grid';
 import { DataGridColumnHeader } from '@/components/ui/data-grid-column-header';
+import { SimpleFilter, SimpleFilterRule } from '@/components/filters/simple-filter';
+import { LEAD_FILTER_FIELDS } from '@/components/filters/filter-fields';
 import { DataGridPagination } from '@/components/ui/data-grid-pagination';
 import {
   DataGridTable,
@@ -330,8 +332,9 @@ function ActionsCell({ row }: { row: Row<Lead> }) {
 
 export function AllLeadsContent() {
   const [view, setView] = useState<'list' | 'kanban' | 'calendar' | 'map'>('list');
-  const [showFilters, setShowFilters] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
+  const [filters, setFilters] = useState<SimpleFilterRule[]>([]);
+  const [savedFilters, setSavedFilters] = useState<{ name: string; filters: SimpleFilterRule[]; }[]>([]);
   const [pagination, setPagination] = useState<PaginationState>({
     pageIndex: 0,
     pageSize: 10,
@@ -340,20 +343,104 @@ export function AllLeadsContent() {
     { id: 'createdDate', desc: true },
   ]);
 
-  // Filter data based on search
+  // Apply filters function
+  const applyFilters = (lead: any, filterRules: SimpleFilterRule[]) => {
+    if (filterRules.length === 0) return true;
+    
+    let result = true;
+    let currentGroup = true;
+    let currentConnector: 'AND' | 'OR' = 'AND';
+    
+    for (let i = 0; i < filterRules.length; i++) {
+      const rule = filterRules[i];
+      const fieldValue = lead[rule.field];
+      let ruleResult = false;
+      
+      // Apply operator logic
+      switch (rule.operator) {
+        case 'equals':
+          ruleResult = fieldValue === rule.value;
+          break;
+        case 'not_equals':
+          ruleResult = fieldValue !== rule.value;
+          break;
+        case 'contains':
+          ruleResult = String(fieldValue).toLowerCase().includes(String(rule.value).toLowerCase());
+          break;
+        case 'not_contains':
+          ruleResult = !String(fieldValue).toLowerCase().includes(String(rule.value).toLowerCase());
+          break;
+        case 'starts_with':
+          ruleResult = String(fieldValue).toLowerCase().startsWith(String(rule.value).toLowerCase());
+          break;
+        case 'ends_with':
+          ruleResult = String(fieldValue).toLowerCase().endsWith(String(rule.value).toLowerCase());
+          break;
+        case 'greater_than':
+          ruleResult = Number(fieldValue) > Number(rule.value);
+          break;
+        case 'less_than':
+          ruleResult = Number(fieldValue) < Number(rule.value);
+          break;
+        case 'is_empty':
+          ruleResult = !fieldValue || fieldValue === '';
+          break;
+        case 'is_not_empty':
+          ruleResult = fieldValue && fieldValue !== '';
+          break;
+        case 'is_true':
+          ruleResult = Boolean(fieldValue) === true;
+          break;
+        case 'is_false':
+          ruleResult = Boolean(fieldValue) === false;
+          break;
+        default:
+          ruleResult = true;
+      }
+      
+      // Apply connector logic
+      if (i === 0) {
+        currentGroup = ruleResult;
+      } else {
+        if (rule.connector === 'OR') {
+          currentGroup = currentGroup || ruleResult;
+        } else {
+          currentGroup = currentGroup && ruleResult;
+        }
+      }
+    }
+    
+    return currentGroup;
+  };
+
+  // Filter data based on search and advanced filters
   const filteredData = useMemo(() => {
     return mockLeads.filter((lead) => {
+      // Search filter
       const searchLower = searchQuery.toLowerCase();
-      return (
-        !searchQuery ||
+      const matchesSearch = !searchQuery ||
         lead.name.toLowerCase().includes(searchLower) ||
         lead.company.toLowerCase().includes(searchLower) ||
         lead.contact.toLowerCase().includes(searchLower) ||
         lead.email.toLowerCase().includes(searchLower) ||
-        lead.location.toLowerCase().includes(searchLower)
-      );
+        lead.location.toLowerCase().includes(searchLower);
+      
+      // Advanced filters
+      const matchesFilters = applyFilters(lead, filters);
+      
+      return matchesSearch && matchesFilters;
     });
-  }, [searchQuery]);
+  }, [searchQuery, filters]);
+
+  // Handle save filter
+  const handleSaveFilter = (name: string, filterRules: SimpleFilterRule[]) => {
+    setSavedFilters(prev => [...prev, { name, filters: filterRules }]);
+  };
+
+  // Handle load filter
+  const handleLoadFilter = (filterRules: SimpleFilterRule[]) => {
+    setFilters(filterRules);
+  };
 
   // Define columns for the data grid
   const columns = useMemo<ColumnDef<Lead>[]>(
@@ -590,6 +677,16 @@ export function AllLeadsContent() {
             </Button>
           </div>
 
+          {/* Filter */}
+          <SimpleFilter
+            fields={LEAD_FILTER_FIELDS}
+            filters={filters}
+            onFiltersChange={setFilters}
+            savedFilters={savedFilters}
+            onSaveFilter={handleSaveFilter}
+            onLoadFilter={handleLoadFilter}
+          />
+
           <Button variant="outline" size="sm">
             <Upload className="h-4 w-4 mr-2" />
             Import
@@ -615,14 +712,6 @@ export function AllLeadsContent() {
             />
           </div>
 
-          <Button 
-            variant="outline" 
-            onClick={() => setShowFilters(!showFilters)}
-            className={showFilters ? 'bg-muted' : ''}
-          >
-            <Filter className="h-4 w-4 mr-2" />
-            Filters
-          </Button>
         </div>
 
         {/* Bulk Actions */}
@@ -640,8 +729,6 @@ export function AllLeadsContent() {
         )}
       </div>
 
-      {/* Filter Panel */}
-      <FilterPanel isOpen={showFilters} onClose={() => setShowFilters(false)} />
 
       {/* Data Grid */}
       <DataGrid

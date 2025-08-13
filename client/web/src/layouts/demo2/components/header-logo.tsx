@@ -28,21 +28,21 @@ export function HeaderLogo() {
       {/* Logo Section */}
       <Link to="/" className="shrink-0">
         <img
-          src={toAbsoluteUrl('/media/app/mini-logo-circle.svg')}
-          className="dark:hidden min-h-[42px]"
-          alt="logo"
+          src={toAbsoluteUrl('/media/app/buildiyo-logo.svg')}
+          className="dark:hidden w-8 h-8"
+          alt="Buildiyo Logo"
         />
         <img
-          src={toAbsoluteUrl('/media/app/mini-logo-circle-dark.svg')}
-          className="hidden dark:inline-block min-h-[42px]"
-          alt="logo"
+          src={toAbsoluteUrl('/media/app/buildiyo-logo-dark.svg')}
+          className="hidden dark:inline-block w-8 h-8"
+          alt="Buildiyo Logo"
         />
       </Link>
 
       {/* Menu Section */}
       <div className="flex items-center gap-3">
         <h3 className="text-accent-foreground text-base hidden md:block">
-          Metronic Team
+          Buildiyo
         </h3>
         <span className="text-sm text-muted-foreground font-medium hidden md:inline">
           /

@@ -1,4 +1,6 @@
 import { useState } from 'react';
+import { AdvancedFilter, FilterRule } from '@/components/filters/advanced-filter';
+import { DASHBOARD_FILTER_FIELDS } from '@/components/filters/filter-fields';
 import { 
   Plus, 
   Upload, 
@@ -130,6 +132,8 @@ function ActivityItem({ type, subject, lead, user, time }: ActivityItemProps) {
 
 export function LeadDashboardContent() {
   const [dateRange, setDateRange] = useState('month');
+  const [filters, setFilters] = useState<FilterRule[]>([]);
+  const [savedFilters, setSavedFilters] = useState<{ name: string; filters: FilterRule[]; }[]>([]);
 
   const kpiData = [
     {
@@ -277,7 +281,14 @@ export function LeadDashboardContent() {
           placeholder="Search leads, companies, or contacts..." 
           className="max-w-sm"
         />
-        <Button variant="outline">Filters</Button>
+        <AdvancedFilter
+          fields={DASHBOARD_FILTER_FIELDS}
+          filters={filters}
+          onFiltersChange={setFilters}
+          savedFilters={savedFilters}
+          onSaveFilter={(name, filterRules) => setSavedFilters(prev => [...prev, { name, filters: filterRules }])}
+          onLoadFilter={setFilters}
+        />
       </div>
 
       {/* KPI Cards */}

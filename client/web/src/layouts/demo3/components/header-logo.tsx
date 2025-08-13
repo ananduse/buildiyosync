@@ -67,14 +67,14 @@ export function HeaderLogo({ sidebarWidth = '240px' }: HeaderLogoProps) {
 
         <Link to="/" className="mx-1">
           <img
-            src={toAbsoluteUrl('/media/app/mini-logo-primary.svg')}
-            className="dark:hidden min-h-[24px]"
-            alt="logo"
+            src={toAbsoluteUrl('/media/app/buildiyo-logo.svg')}
+            className="dark:hidden w-8 h-8"
+            alt="Buildiyo Logo"
           />
           <img
-            src={toAbsoluteUrl('/media/app/mini-logo-primary-dark.svg')}
-            className="hidden dark:inline-block min-h-[24px]"
-            alt="logo"
+            src={toAbsoluteUrl('/media/app/buildiyo-logo-dark.svg')}
+            className="hidden dark:inline-block w-8 h-8"
+            alt="Buildiyo Logo"
           />
         </Link>
       </div>
@@ -82,7 +82,7 @@ export function HeaderLogo({ sidebarWidth = '240px' }: HeaderLogoProps) {
       {/* Menu Section */}
       <div className="flex items-center gap-3">
         <h3 className="text-accent-foreground text-base hidden md:block">
-          Metronic Team
+          Buildiyo
         </h3>
         <span className="text-sm text-muted-foreground font-medium hidden md:inline">
           /

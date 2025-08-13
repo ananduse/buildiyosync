@@ -1,4 +1,6 @@
 import { useState } from 'react';
+import { AdvancedFilter, FilterRule } from '@/components/filters/advanced-filter';
+import { REPORT_FILTER_FIELDS } from '@/components/filters/filter-fields';
 import {
   Download,
   FileText,
@@ -384,6 +386,8 @@ function ConversionAnalysisReport() {
 export function LeadReportsContent() {
   const [dateRange, setDateRange] = useState('month');
   const [reportType, setReportType] = useState('overview');
+  const [filters, setFilters] = useState<FilterRule[]>([]);
+  const [savedFilters, setSavedFilters] = useState<{ name: string; filters: FilterRule[]; }[]>([]);
 
   const summaryCards: ReportCard[] = [
     {
@@ -443,10 +447,14 @@ export function LeadReportsContent() {
             </SelectContent>
           </Select>
 
-          <Button variant="outline" size="sm">
-            <Filter className="h-4 w-4 mr-2" />
-            Filters
-          </Button>
+          <AdvancedFilter
+            fields={REPORT_FILTER_FIELDS}
+            filters={filters}
+            onFiltersChange={setFilters}
+            savedFilters={savedFilters}
+            onSaveFilter={(name, filterRules) => setSavedFilters(prev => [...prev, { name, filters: filterRules }])}
+            onLoadFilter={setFilters}
+          />
 
           <Button variant="outline" size="sm">
             <RefreshCw className="h-4 w-4 mr-2" />

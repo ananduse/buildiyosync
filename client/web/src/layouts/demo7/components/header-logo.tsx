@@ -29,19 +29,19 @@ const HeaderLogo = () => {
       <div className="flex items-center gap-2.5">
         <Link to="/">
           <img
-            src={toAbsoluteUrl('/media/app/mini-logo-circle-primary.svg')}
-            className="dark:hidden min-h-[34px]"
-            alt="logo"
+            src={toAbsoluteUrl('/media/app/buildiyo-logo.svg')}
+            className="dark:hidden w-8 h-8"
+            alt="Buildiyo Logo"
           />
           <img
-            src={toAbsoluteUrl('/media/app/mini-logo-circle-primary-dark.svg')}
-            className="hidden dark:inline-block min-h-[34px]"
-            alt="logo"
+            src={toAbsoluteUrl('/media/app/buildiyo-logo-dark.svg')}
+            className="hidden dark:inline-block w-8 h-8"
+            alt="Buildiyo Logo"
           />
         </Link>
 
         <h3 className="text-mono text-lg font-medium hidden lg:block">
-          Metronic
+          Buildiyo
         </h3>
       </div>
 

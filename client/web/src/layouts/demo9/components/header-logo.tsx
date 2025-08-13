@@ -28,18 +28,18 @@ export function HeaderLogo() {
       <div className="flex items-center gap-2 shrink-0">
         <Link to="/">
           <img
-            src={toAbsoluteUrl('/media/app/mini-logo-circle.svg')}
-            className="shrink-0 dark:hidden min-h-[34px]"
-            alt="logo"
+            src={toAbsoluteUrl('/media/app/buildiyo-logo.svg')}
+            className="shrink-0 dark:hidden w-8 h-8"
+            alt="Buildiyo Logo"
           />
           <img
-            src={toAbsoluteUrl('/media/app/mini-logo-circle-dark.svg')}
-            className="shrink-0 hidden dark:inline-block min-h-[34px]"
-            alt="logo"
+            src={toAbsoluteUrl('/media/app/buildiyo-logo-dark.svg')}
+            className="shrink-0 hidden dark:inline-block w-8 h-8"
+            alt="Buildiyo Logo"
           />
         </Link>
         <h3 className="text-mono text-lg font-medium hidden md:block">
-          Metronic
+          Buildiyo
         </h3>
       </div>
 

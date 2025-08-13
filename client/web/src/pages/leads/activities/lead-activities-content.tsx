@@ -1,4 +1,6 @@
 import { useState } from 'react';
+import { AdvancedFilter, FilterRule } from '@/components/filters/advanced-filter';
+import { ACTIVITY_FILTER_FIELDS } from '@/components/filters/filter-fields';
 import {
   Clock,
   Phone,
