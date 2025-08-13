@@ -1,4 +1,5 @@
 import { Helmet } from 'react-helmet-async';
+import { Container } from '@/components/common/container';
 import { LeadDashboardContent } from './lead-dashboard-content';
 
 export function LeadDashboardPage() {
@@ -7,7 +8,9 @@ export function LeadDashboardPage() {
       <Helmet>
         <title>Lead Management Dashboard</title>
       </Helmet>
-      <LeadDashboardContent />
+      <Container>
+        <LeadDashboardContent />
+      </Container>
     </>
   );
 }

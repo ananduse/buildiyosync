@@ -232,7 +232,7 @@ export function LeadDashboardContent() {
   ];
 
   return (
-    <div className="space-y-3">
+    <div className="grid gap-5 lg:gap-7.5">
       {/* Header Section */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
@@ -281,14 +281,14 @@ export function LeadDashboardContent() {
       </div>
 
       {/* KPI Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-5 lg:gap-7.5">
         {kpiData.map((kpi, index) => (
           <KPICard key={index} {...kpi} />
         ))}
       </div>
 
       {/* Main Content Grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-5 lg:gap-7.5">
         {/* Lead Funnel Chart */}
         <Card className="xl:col-span-2">
           <CardHeader>
@@ -319,7 +319,7 @@ export function LeadDashboardContent() {
       </div>
 
       {/* Bottom Row */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 lg:gap-7.5">
         {/* Lead Sources */}
         <Card>
           <CardHeader>

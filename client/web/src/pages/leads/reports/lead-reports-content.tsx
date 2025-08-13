@@ -323,7 +323,7 @@ function ConversionAnalysisReport() {
         </CardDescription>
       </CardHeader>
       <CardContent>
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 lg:gap-7.5">
           {/* Win Reasons */}
           <div>
             <h3 className="font-medium mb-4 text-green-600">Win Reasons</h3>
@@ -361,7 +361,7 @@ function ConversionAnalysisReport() {
 
         <div className="mt-6 pt-6 border-t">
           <h3 className="font-medium mb-4">Conversion by Project Type</h3>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-5 lg:gap-7.5">
             {[
               { type: 'Commercial', conversion: 28.5, value: '$2.1M' },
               { type: 'Residential', conversion: 35.2, value: '$1.8M' },
@@ -421,7 +421,7 @@ export function LeadReportsContent() {
   ];
 
   return (
-    <div className="space-y-3">
+    <div className="grid gap-5 lg:gap-7.5">
       {/* Header */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
@@ -456,7 +456,7 @@ export function LeadReportsContent() {
       </div>
 
       {/* Summary Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5 lg:gap-7.5">
         {summaryCards.map((card, index) => (
           <ReportSummaryCard key={index} {...card} />
         ))}
