@@ -93,11 +93,37 @@ import {
   StoreClientPage,
   WishlistPage,
 } from '@/pages/store-client';
+import {
+  LeadDashboardPage,
+  AllLeadsPage,
+  LeadKanbanPage,
+  LeadDetailPage,
+  AddLeadPage,
+  ImportLeadsPage,
+  LeadActivitiesPage,
+  LeadCommunicationsPage,
+  ConvertLeadPage,
+  LeadReportsPage,
+} from '@/pages/leads';
 import { Navigate, Route, Routes } from 'react-router';
 
 export function AppRoutingSetup() {
   return (
     <Routes>
+      {/* Lead routes without auth for testing */}
+      <Route element={<Demo3Layout />}>
+        <Route path="/leads/dashboard" element={<LeadDashboardPage />} />
+        <Route path="/leads/list" element={<AllLeadsPage />} />
+        <Route path="/leads/board" element={<LeadKanbanPage />} />
+        <Route path="/leads/:id" element={<LeadDetailPage />} />
+        <Route path="/leads/new" element={<AddLeadPage />} />
+        <Route path="/leads/import" element={<ImportLeadsPage />} />
+        <Route path="/leads/:id/activities" element={<LeadActivitiesPage />} />
+        <Route path="/leads/:id/communications" element={<LeadCommunicationsPage />} />
+        <Route path="/leads/:id/convert" element={<ConvertLeadPage />} />
+        <Route path="/leads/reports" element={<LeadReportsPage />} />
+      </Route>
+      
       <Route element={<RequireAuth />}>
         <Route element={<Demo3Layout />}>
           <Route path="/" element={<DefaultPage />} />

@@ -45,6 +45,7 @@ import {
   ShoppingCart,
   SquareMousePointer,
   Star,
+  Target,
   Theater,
   ThumbsUp,
   TrendingUp,
@@ -63,6 +64,19 @@ export const MENU_SIDEBAR: MenuConfig = [
     children: [
       { title: 'Light Sidebar', path: '/' },
       { title: 'Dark Sidebar', path: '/dark-sidebar' },
+    ],
+  },
+  { heading: 'Lead Management' },
+  {
+    title: 'Leads',
+    icon: Target,
+    children: [
+      { title: 'Dashboard', path: '/leads/dashboard' },
+      { title: 'All Leads', path: '/leads/list' },
+      { title: 'Kanban Board', path: '/leads/board' },
+      { title: 'Add New Lead', path: '/leads/new' },
+      { title: 'Import Leads', path: '/leads/import' },
+      { title: 'Reports & Analytics', path: '/leads/reports' },
     ],
   },
   { heading: 'User' },

@@ -19,21 +19,24 @@ export function NavbarMenu() {
   const { pathname } = useLocation();
   let navbarMenu;
 
-  if (pathname.includes('/public-profile/')) {
-    navbarMenu = MENU_SIDEBAR?.[2];
+  if (pathname.includes('/leads/')) {
+    navbarMenu = MENU_SIDEBAR?.find(item => item.title === 'Leads');
+  } else if (pathname.includes('/public-profile/')) {
+    navbarMenu = MENU_SIDEBAR?.find(item => item.title === 'Public Profile');
   } else if (pathname.includes('/network/')) {
-    navbarMenu = MENU_SIDEBAR?.[4];
+    navbarMenu = MENU_SIDEBAR?.find(item => item.title === 'Network');
   } else if (pathname.includes('/store-client/')) {
     navbarMenu = MENU_SIDEBAR_CUSTOM?.[0];
   } else if (pathname.includes('/authentication/')) {
-    navbarMenu = MENU_SIDEBAR?.[5];
+    navbarMenu = MENU_SIDEBAR?.find(item => item.title === 'Authentication');
   } else {
-    navbarMenu = MENU_SIDEBAR?.[3];
+    navbarMenu = MENU_SIDEBAR?.find(item => item.title === 'Public Profile');
   }
 
   const { isActive, hasActiveChild } = useMenu(pathname);
 
   const buildMenu = (items: MenuConfig) => {
+    if (!items || !Array.isArray(items)) return null;
     return items.map((item, index) => {
       if (item.children) {
         return (
@@ -48,7 +51,7 @@ export function NavbarMenu() {
                 'data-[here=true]:text-mono data-[here=true]:border-mono',
               )}
               data-active={isActive(item.path) || undefined}
-              data-here={hasActiveChild(item.children) || undefined}
+              data-here={false}
             >
               {item.title}
               <ChevronDown className="ms-auto size-3.5!" />
@@ -106,8 +109,8 @@ export function NavbarMenu() {
           <MenubarItem
             key={index}
             asChild
-            data-active={isActive(item.path) || undefined}
-            data-here={hasActiveChild(item.children) || undefined}
+            data-active={pathname === item.path || undefined}
+            data-here={false}
           >
             <Link to={item.path || ''}>{item.title}</Link>
           </MenubarItem>
@@ -120,7 +123,7 @@ export function NavbarMenu() {
     <div className="grid">
       <div className="kt-scrollable-x-auto flex items-stretch">
         <Menubar className="space-x-0 flex items-stretch border-none bg-transparent gap-5 p-0 h-auto">
-          {buildMenu(navbarMenu.children as MenuConfig)}
+          {navbarMenu && navbarMenu.children ? buildMenu(navbarMenu.children as MenuConfig) : null}
         </Menubar>
       </div>
     </div>
