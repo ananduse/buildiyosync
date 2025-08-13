@@ -1,6 +1,5 @@
 import { Helmet } from 'react-helmet-async';
 import { useParams } from 'react-router-dom';
-import { Container } from '@/components/common/container';
 import { LeadCommunicationsContent } from './lead-communications-content';
 
 export function LeadCommunicationsPage() {
@@ -11,9 +10,9 @@ export function LeadCommunicationsPage() {
       <Helmet>
         <title>Lead Communications Hub - Lead Management</title>
       </Helmet>
-      <Container>
+      <div className="w-full px-4 lg:px-6">
         <LeadCommunicationsContent leadId={id || ''} />
-      </Container>
+      </div>
     </>
   );
 }

@@ -1,5 +1,4 @@
 import { Helmet } from 'react-helmet-async';
-import { Container } from '@/components/common/container';
 import { AllLeadsContent } from './all-leads-content';
 
 export function AllLeadsPage() {
@@ -8,9 +7,9 @@ export function AllLeadsPage() {
       <Helmet>
         <title>All Leads - Lead Management</title>
       </Helmet>
-      <Container>
+      <div className="w-full px-4 lg:px-6">
         <AllLeadsContent />
-      </Container>
+      </div>
     </>
   );
 }

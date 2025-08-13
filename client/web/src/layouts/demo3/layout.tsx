@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useLayoutEffect, useState } from 'react';
 import { Download, ChevronLeft, ChevronRight } from 'lucide-react';
 import { Helmet } from 'react-helmet-async';
 import { Link, Outlet, useLocation } from 'react-router-dom';
@@ -21,9 +21,21 @@ export function Demo3Layout() {
   const item = getCurrentItem(MENU_SIDEBAR);
   const { setOption } = useSettings();
   const isMobileMode = useIsMobile();
+  
+  // Initialize collapsed state with immediate CSS variable update
   const [isCollapsed, setIsCollapsed] = useState(() => {
     const saved = localStorage.getItem('sidebarCollapsed');
-    return saved ? JSON.parse(saved) : false;
+    const collapsed = saved ? JSON.parse(saved) : false;
+    const width = collapsed ? '58px' : '240px';
+    
+    // Set CSS variable immediately during state initialization
+    if (typeof window !== 'undefined') {
+      document.documentElement.style.setProperty('--sidebar-width', width);
+      // Force a style recalculation
+      document.documentElement.offsetHeight;
+    }
+    
+    return collapsed;
   });
 
   const sidebarWidth = isCollapsed ? '58px' : '240px';
@@ -37,10 +49,55 @@ export function Demo3Layout() {
   useBodyClass(`
     [--header-height:58px] 
     [--navbar-height:56px] 
-    [--sidebar-width:240px]
+    [--sidebar-width:${sidebarWidth}]
     lg:overflow-hidden 
     bg-muted!
   `);
+
+  // Update CSS variable dynamically - run before first render
+  useLayoutEffect(() => {
+    // Multiple approaches to ensure CSS variable is set immediately
+    document.documentElement.style.setProperty('--sidebar-width', sidebarWidth);
+    
+    // Force style recalculation
+    document.documentElement.offsetHeight;
+    
+    // Add a temporary high-priority style to override any cached styles
+    const tempStyle = document.createElement('style');
+    tempStyle.id = 'sidebar-width-override';
+    tempStyle.textContent = `
+      :root { 
+        --sidebar-width: ${sidebarWidth} !important; 
+      }
+      body {
+        --sidebar-width: ${sidebarWidth} !important;
+      }
+    `;
+    
+    // Remove any existing override
+    const existing = document.getElementById('sidebar-width-override');
+    if (existing) {
+      existing.remove();
+    }
+    
+    document.head.appendChild(tempStyle);
+    
+    // Clean up the temporary style after components have rendered
+    const cleanup = setTimeout(() => {
+      const styleEl = document.getElementById('sidebar-width-override');
+      if (styleEl) {
+        styleEl.remove();
+      }
+    }, 100);
+    
+    return () => {
+      clearTimeout(cleanup);
+      const styleEl = document.getElementById('sidebar-width-override');
+      if (styleEl) {
+        styleEl.remove();
+      }
+    };
+  }, [sidebarWidth]);
 
   useEffect(() => {
     setOption('layout', 'demo3');
@@ -53,7 +110,7 @@ export function Demo3Layout() {
         <title>{item?.title}</title>
       </Helmet>
       <div className="flex grow">
-        <Header />
+        <Header sidebarWidth={sidebarWidth} />
 
         <div className="flex flex-col lg:flex-row grow pt-(--header-height)">
           {!isMobileMode && (
@@ -95,11 +152,14 @@ export function Demo3Layout() {
             </div>
           )}
 
-          <Navbar sidebarWidth={!isMobileMode ? sidebarWidth : undefined} />
+          <Navbar sidebarWidth={sidebarWidth} />
 
           <div 
-            className="flex grow rounded-b-xl bg-background border-x border-b border-border lg:mt-(--navbar-height) mx-5 mb-5 transition-all duration-300"
-            style={{ marginLeft: !isMobileMode ? sidebarWidth : undefined }}
+            className="flex grow rounded-b-xl bg-background border-x border-b border-border lg:mt-(--navbar-height) mr-5 mb-5"
+            style={{ 
+              marginLeft: !isMobileMode ? sidebarWidth : '20px',
+              transition: 'margin-left 300ms cubic-bezier(0.4, 0, 0.2, 1)'
+            }}
           >
             <div className="flex flex-col grow kt-scrollable-y lg:[scrollbar-width:auto] pt-7 lg:[&_[data-slot=container]]:pe-2">
               <main className="grow" role="content">

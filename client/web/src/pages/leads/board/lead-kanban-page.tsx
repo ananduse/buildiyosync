@@ -1,5 +1,4 @@
 import { Helmet } from 'react-helmet-async';
-import { Container } from '@/components/common/container';
 import { LeadKanbanContent } from './lead-kanban-content';
 
 export function LeadKanbanPage() {
@@ -8,9 +7,9 @@ export function LeadKanbanPage() {
       <Helmet>
         <title>Lead Kanban Board - Lead Management</title>
       </Helmet>
-      <Container>
+      <div className="w-full px-4 lg:px-6">
         <LeadKanbanContent />
-      </Container>
+      </div>
     </>
   );
 }

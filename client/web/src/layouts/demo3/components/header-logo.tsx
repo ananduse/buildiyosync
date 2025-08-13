@@ -20,7 +20,11 @@ import {
 } from '@/components/ui/sheet';
 import { SidebarMenu } from './sidebar-menu';
 
-export function HeaderLogo() {
+interface HeaderLogoProps {
+  sidebarWidth?: string;
+}
+
+export function HeaderLogo({ sidebarWidth = '240px' }: HeaderLogoProps) {
   const { pathname } = useLocation();
   const [selectedMenuItem, setSelectedMenuItem] = useState(MENU_ROOT[1]);
 
@@ -35,7 +39,13 @@ export function HeaderLogo() {
   return (
     <div className="flex items-center gap-2.5">
       {/* Logo */}
-      <div className="flex items-center justify-center lg:w-(--sidebar-width) shrink-0">
+      <div 
+        className="flex items-center justify-center shrink-0"
+        style={{ 
+          width: sidebarWidth,
+          transition: 'width 300ms cubic-bezier(0.4, 0, 0.2, 1)'
+        }}
+      >
         <Sheet>
           <SheetTrigger asChild>
             <Button variant="ghost" mode="icon" className="-ms-2 lg:hidden">
@@ -43,7 +53,8 @@ export function HeaderLogo() {
             </Button>
           </SheetTrigger>
           <SheetContent
-            className="p-0 gap-0 w-(--sidebar-width)"
+            className="p-0 gap-0"
+            style={{ width: sidebarWidth }}
             side="left"
             close={false}
           >
