@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { AdvancedFilter, FilterRule } from '@/components/filters/advanced-filter';
 import { DASHBOARD_FILTER_FIELDS } from '@/components/filters/filter-fields';
+import { LeadFunnelChart, sampleFunnelData } from '@/components/charts/lead-funnel-chart';
 import { 
   Plus, 
   Upload, 
@@ -20,7 +21,6 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Progress } from '@/components/ui/progress';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Input } from '@/components/ui/input';
 
@@ -54,31 +54,6 @@ function KPICard({ title, value, change, trend, icon }: KPICardProps) {
   );
 }
 
-interface FunnelStageProps {
-  stage: string;
-  count: number;
-  value: string;
-  percentage: number;
-  color: string;
-}
-
-function FunnelStage({ stage, count, value, percentage, color }: FunnelStageProps) {
-  return (
-    <div className="flex items-center justify-between p-4 border rounded-lg hover:bg-gray-50 cursor-pointer transition-colors">
-      <div className="flex items-center space-x-3">
-        <div className={`w-3 h-3 rounded-full ${color}`}></div>
-        <div>
-          <p className="font-medium">{stage}</p>
-          <p className="text-sm text-muted-foreground">{count} leads • {value}</p>
-        </div>
-      </div>
-      <div className="text-right">
-        <p className="text-sm font-medium">{percentage}%</p>
-        <Progress value={percentage} className="w-16 h-2" />
-      </div>
-    </div>
-  );
-}
 
 interface ActivityItemProps {
   type: 'call' | 'email' | 'meeting' | 'note';
@@ -135,6 +110,19 @@ export function LeadDashboardContent() {
   const [filters, setFilters] = useState<FilterRule[]>([]);
   const [savedFilters, setSavedFilters] = useState<{ name: string; filters: FilterRule[]; }[]>([]);
 
+  const handleStageClick = (stage: string) => {
+    // Navigate to leads list with the stage filter applied
+    const stageFilterUrl = `/leads/list?filter=status&value=${encodeURIComponent(stage)}`;
+    
+    // In a real application with React Router, you could use:
+    // navigate(stageFilterUrl);
+    
+    // For now, we'll open in the same window
+    window.location.href = stageFilterUrl;
+    
+    console.log(`Navigating to leads filtered by stage: ${stage}`);
+  };
+
   const kpiData = [
     {
       title: 'Total Leads',
@@ -180,14 +168,6 @@ export function LeadDashboardContent() {
     }
   ];
 
-  const funnelData = [
-    { stage: 'New Leads', count: 342, value: '$4.2M', percentage: 100, color: 'bg-gray-400' },
-    { stage: 'Contacted', count: 268, value: '$3.8M', percentage: 78, color: 'bg-blue-500' },
-    { stage: 'Qualified', count: 156, value: '$2.9M', percentage: 46, color: 'bg-yellow-500' },
-    { stage: 'Proposal Sent', count: 89, value: '$2.1M', percentage: 26, color: 'bg-orange-500' },
-    { stage: 'Negotiation', count: 34, value: '$1.2M', percentage: 10, color: 'bg-purple-500' },
-    { stage: 'Won', count: 23, value: '$890K', percentage: 7, color: 'bg-green-500' }
-  ];
 
   const recentActivities = [
     {
@@ -301,17 +281,12 @@ export function LeadDashboardContent() {
       {/* Main Content Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-5 lg:gap-7.5">
         {/* Lead Funnel Chart */}
-        <Card className="xl:col-span-2">
-          <CardHeader>
-            <CardTitle>Lead Funnel</CardTitle>
-            <CardDescription>Track leads through your sales pipeline</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-3">
-            {funnelData.map((stage, index) => (
-              <FunnelStage key={index} {...stage} />
-            ))}
-          </CardContent>
-        </Card>
+        <div className="xl:col-span-2">
+          <LeadFunnelChart 
+            data={sampleFunnelData}
+            onStageClick={handleStageClick}
+          />
+        </div>
 
         {/* Recent Activities */}
         <Card>

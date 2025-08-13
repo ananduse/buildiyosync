@@ -202,14 +202,18 @@ function TimeInput({
 
 function Calendar({ 
   selectedDate, 
+  endDate,
   onDateSelect, 
   month, 
-  onMonthChange 
+  onMonthChange,
+  selectingEndDate
 }: {
   selectedDate?: Date;
+  endDate?: Date;
   onDateSelect: (date: Date) => void;
   month: Date;
   onMonthChange: (month: Date) => void;
+  selectingEndDate?: boolean;
 }) {
   const today = new Date();
   const daysInMonth = getDaysInMonth(month);
@@ -286,8 +290,12 @@ function Calendar({
             return <div key={index} className="h-6" />;
           }
 
-          const isSelected = selectedDate && isSameDay(date, selectedDate);
+          const isStartDate = selectedDate && isSameDay(date, selectedDate);
+          const isEndDate = endDate && isSameDay(date, endDate);
+          const isInRange = selectedDate && endDate && !isSameDay(selectedDate, endDate) && 
+                           date > selectedDate && date < endDate;
           const isToday = isSameDay(date, today);
+          const isSelected = isStartDate || isEndDate;
 
           return (
             <Button
@@ -296,10 +304,12 @@ function Calendar({
               size="sm"
               onClick={() => onDateSelect(date)}
               className={cn(
-                "h-6 w-6 p-0 text-xs font-normal",
-                isSelected && "bg-blue-600 text-white hover:bg-blue-700",
-                isToday && !isSelected && "bg-blue-100 text-blue-600",
-                !isSelected && !isToday && "hover:bg-gray-100"
+                "h-6 w-6 p-0 text-xs font-normal relative",
+                isSelected && "bg-blue-600 text-white hover:bg-blue-700 z-10",
+                isInRange && "bg-blue-100 text-blue-900 hover:bg-blue-200",
+                isToday && !isSelected && !isInRange && "bg-blue-50 text-blue-600 border border-blue-200",
+                !isSelected && !isInRange && !isToday && "hover:bg-gray-100",
+                selectingEndDate && selectedDate && "hover:bg-blue-50"
               )}
             >
               {date.getDate()}
@@ -315,6 +325,7 @@ export function DateRangePicker({ value, onChange, placeholder = "Select date" }
   const [isOpen, setIsOpen] = useState(false);
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [selectedQuickOption, setSelectedQuickOption] = useState<string>('');
+  const [selectingEndDate, setSelectingEndDate] = useState(false);
 
   const handleQuickOptionSelect = (option: typeof QUICK_OPTIONS[0]) => {
     const range = option.getRange();
@@ -325,15 +336,57 @@ export function DateRangePicker({ value, onChange, placeholder = "Select date" }
     };
     onChange(newValue);
     setSelectedQuickOption(option.value);
+    setSelectingEndDate(false);
   };
 
   const handleDateSelect = (date: Date) => {
-    const newValue = {
-      ...value,
-      startDate: date,
-      endDate: date,
-    };
-    onChange(newValue);
+    if (!value?.startDate || selectingEndDate) {
+      // If no start date or we're selecting end date
+      if (selectingEndDate && value?.startDate) {
+        // Ensure end date is after start date
+        const startDate = value.startDate;
+        const endDate = date < startDate ? startDate : date;
+        const finalStartDate = date < startDate ? date : startDate;
+        
+        onChange({
+          ...value,
+          startDate: finalStartDate,
+          endDate: endDate,
+        });
+        setSelectingEndDate(false);
+      } else {
+        // Set start date
+        onChange({
+          ...value,
+          startDate: date,
+          endDate: date,
+        });
+        setSelectingEndDate(true);
+      }
+    } else {
+      // We have a start date and are selecting end date
+      const startDate = value.startDate;
+      if (isSameDay(date, startDate)) {
+        // Same date selected, keep as single date
+        onChange({
+          ...value,
+          startDate: date,
+          endDate: date,
+        });
+        setSelectingEndDate(false);
+      } else {
+        // Different date, create range
+        const endDate = date < startDate ? startDate : date;
+        const finalStartDate = date < startDate ? date : startDate;
+        
+        onChange({
+          ...value,
+          startDate: finalStartDate,
+          endDate: endDate,
+        });
+        setSelectingEndDate(false);
+      }
+    }
     setSelectedQuickOption('custom');
   };
 
@@ -361,6 +414,12 @@ export function DateRangePicker({ value, onChange, placeholder = "Select date" }
     const newValue = { ...value };
     delete newValue.endTime;
     onChange(newValue);
+  };
+
+  const clearSelection = () => {
+    onChange({});
+    setSelectingEndDate(false);
+    setSelectedQuickOption('');
   };
 
   const formatButtonText = () => {
@@ -430,65 +489,89 @@ export function DateRangePicker({ value, onChange, placeholder = "Select date" }
 
           {/* Right Panel - Calendar */}
           <div className="p-3">
+            {/* Date Selection Status */}
+            {selectingEndDate && (
+              <div className="mb-2 p-2 bg-blue-50 border border-blue-200 rounded-md">
+                <div className="text-xs text-blue-700 font-medium">
+                  Select end date or click the same date for single day
+                </div>
+              </div>
+            )}
+            
             {/* Date Badges at Top */}
-            <div className="flex flex-wrap items-center gap-2 mb-3 pb-3 border-b min-h-[40px]">
-              {value?.startDate && (
-                <div className="flex items-center gap-1 px-2 py-1 bg-gray-100 rounded-md border text-xs">
-                  <CalendarIcon className="h-3 w-3 text-gray-600" />
-                  <span className="font-medium">
-                    {format(value.startDate, 'M/d/yy')}
-                  </span>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => onChange({ ...value, startDate: undefined })}
-                    className="h-3 w-3 p-0 hover:bg-transparent ml-1"
-                  >
-                    <X className="h-2 w-2" />
-                  </Button>
-                  <div className="ml-1">
-                    <TimeInput
-                      value={value?.startTime}
-                      onChange={handleStartTimeChange}
-                      onRemove={value?.startTime ? removeStartTime : undefined}
-                      placeholder="Add time"
-                    />
+            <div className="flex flex-wrap items-center justify-between gap-2 mb-3 pb-3 border-b min-h-[40px]">
+              <div className="flex flex-wrap items-center gap-2">
+                {value?.startDate && (
+                  <div className="flex items-center gap-1 px-2 py-1 bg-gray-100 rounded-md border text-xs">
+                    <CalendarIcon className="h-3 w-3 text-gray-600" />
+                    <span className="font-medium">
+                      {format(value.startDate, 'M/d/yy')}
+                    </span>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => onChange({ ...value, startDate: undefined, endDate: undefined })}
+                      className="h-3 w-3 p-0 hover:bg-transparent ml-1"
+                    >
+                      <X className="h-2 w-2" />
+                    </Button>
+                    <div className="ml-1">
+                      <TimeInput
+                        value={value?.startTime}
+                        onChange={handleStartTimeChange}
+                        onRemove={value?.startTime ? removeStartTime : undefined}
+                        placeholder="Add time"
+                      />
+                    </div>
                   </div>
-                </div>
-              )}
+                )}
+                
+                {value?.endDate && value?.startDate && !isSameDay(value.startDate, value.endDate) && (
+                  <div className="flex items-center gap-1 px-2 py-1 bg-gray-100 rounded-md border text-xs">
+                    <CalendarIcon className="h-3 w-3 text-gray-600" />
+                    <span className="font-medium">
+                      {format(value.endDate, 'M/d/yy')}
+                    </span>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => onChange({ ...value, endDate: value.startDate })}
+                      className="h-3 w-3 p-0 hover:bg-transparent ml-1"
+                    >
+                      <X className="h-2 w-2" />
+                    </Button>
+                    <div className="ml-1">
+                      <TimeInput
+                        value={value?.endTime}
+                        onChange={handleEndTimeChange}
+                        onRemove={value?.endTime ? removeEndTime : undefined}
+                        placeholder="Add time"
+                      />
+                    </div>
+                  </div>
+                )}
+              </div>
               
-              {value?.endDate && value?.startDate && !isSameDay(value.startDate, value.endDate) && (
-                <div className="flex items-center gap-1 px-2 py-1 bg-gray-100 rounded-md border text-xs">
-                  <CalendarIcon className="h-3 w-3 text-gray-600" />
-                  <span className="font-medium">
-                    {format(value.endDate, 'M/d/yy')}
-                  </span>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => onChange({ ...value, endDate: value.startDate })}
-                    className="h-3 w-3 p-0 hover:bg-transparent ml-1"
-                  >
-                    <X className="h-2 w-2" />
-                  </Button>
-                  <div className="ml-1">
-                    <TimeInput
-                      value={value?.endTime}
-                      onChange={handleEndTimeChange}
-                      onRemove={value?.endTime ? removeEndTime : undefined}
-                      placeholder="Add time"
-                    />
-                  </div>
-                </div>
+              {(value?.startDate || value?.endDate) && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={clearSelection}
+                  className="text-xs text-gray-500 hover:text-red-600 p-1"
+                >
+                  Clear
+                </Button>
               )}
             </div>
 
             {/* Calendar Component */}
             <Calendar
               selectedDate={value?.startDate}
+              endDate={value?.endDate}
               onDateSelect={handleDateSelect}
               month={currentMonth}
               onMonthChange={setCurrentMonth}
+              selectingEndDate={selectingEndDate}
             />
           </div>
         </div>
