@@ -38,7 +38,7 @@ import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Card, CardContent } from '@/components/ui/card';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
-//
+import { HoverCard, HoverCardContent, HoverCardTrigger } from '@/components/ui/hover-card';
 import { DataGrid } from '@/components/ui/data-grid';
 import { DataGridColumnHeader } from '@/components/ui/data-grid-column-header';
 import { SimpleFilter, SimpleFilterRule } from '@/components/filters/simple-filter';
@@ -189,6 +189,19 @@ function getStatusLabel(status: Lead['status']) {
     lost: 'Lost'
   };
   return labels[status];
+}
+
+function getStatusGradient(status: Lead['status']) {
+  const map: Record<Lead['status'], string> = {
+    new: 'bg-gradient-to-r from-slate-500 to-slate-600 text-white',
+    contacted: 'bg-gradient-to-r from-blue-500 to-cyan-500 text-white',
+    qualified: 'bg-gradient-to-r from-amber-500 to-yellow-500 text-white',
+    proposal: 'bg-gradient-to-r from-orange-500 to-rose-500 text-white',
+    negotiation: 'bg-gradient-to-r from-purple-500 to-pink-500 text-white',
+    won: 'bg-gradient-to-r from-green-500 to-emerald-500 text-white',
+    lost: 'bg-gradient-to-r from-red-500 to-rose-600 text-white',
+  };
+  return map[status];
 }
 
 function LeadScoreStars({ score }: { score: number }) {
@@ -386,27 +399,53 @@ export function AllLeadsContent() {
           const initials = getInitials(row.original.name);
           const bg = stringToHslColor(row.original.name);
           return (
-            <div className="flex items-center gap-3">
-              <Avatar className="h-8 w-8 ring-1 ring-border">
-                {/* No image for lead entity by default. Keep for future extension */}
-                <AvatarImage src="" />
-                <AvatarFallback
-                  className="text-[10px] font-semibold text-white"
-                  style={{ backgroundColor: bg }}
-                >
-                  {initials}
-                </AvatarFallback>
-              </Avatar>
-              <div>
-                <p className="font-medium leading-none">{row.original.name}</p>
-                <div className="flex items-center gap-2 mt-1">
-                  <span className="text-xs text-muted-foreground">{row.original.company}</span>
-                  <Badge variant="outline" className="text-[10px] px-1.5 py-0.5">
-                    {row.original.source}
-                  </Badge>
+            <HoverCard openDelay={120}>
+              <HoverCardTrigger asChild>
+                <div className="flex items-center gap-3 cursor-pointer">
+                  <Avatar className="h-8 w-8 ring-1 ring-border shadow-sm">
+                    <AvatarImage src="" />
+                    <AvatarFallback
+                      className="text-[10px] font-semibold text-white"
+                      style={{ backgroundColor: bg }}
+                    >
+                      {initials}
+                    </AvatarFallback>
+                  </Avatar>
+                  <div>
+                    <p className="font-medium leading-none hover:underline">{row.original.name}</p>
+                    <div className="flex items-center gap-2 mt-1">
+                      <span className="text-xs text-muted-foreground">{row.original.company}</span>
+                      <Badge className={`${getStatusGradient(row.original.status)} text-[10px] px-1.5 py-0.5 border-0`}> 
+                        {getStatusLabel(row.original.status)}
+                      </Badge>
+                    </div>
+                  </div>
                 </div>
-              </div>
-            </div>
+              </HoverCardTrigger>
+              <HoverCardContent className="w-80">
+                <div className="flex gap-3">
+                  <Avatar className="h-10 w-10 ring-1 ring-border shadow">
+                    <AvatarImage src="" />
+                    <AvatarFallback
+                      className="text-xs font-semibold text-white"
+                      style={{ backgroundColor: bg }}
+                    >
+                      {initials}
+                    </AvatarFallback>
+                  </Avatar>
+                  <div className="space-y-1">
+                    <p className="font-semibold">{row.original.name}</p>
+                    <p className="text-xs text-muted-foreground">{row.original.company}</p>
+                    <div className="grid grid-cols-2 gap-2 mt-2 text-xs">
+                      <div className="flex items-center gap-1 text-muted-foreground"><MapPin className="h-3 w-3" /> {row.original.location}</div>
+                      <div className="flex items-center gap-1 text-muted-foreground"><Calendar className="h-3 w-3" /> Next: {row.original.nextFollowUp}</div>
+                      <div className="flex items-center gap-1 text-muted-foreground"><Phone className="h-3 w-3" /> {row.original.phone}</div>
+                      <div className="flex items-center gap-1 text-muted-foreground"><Mail className="h-3 w-3" /> {row.original.email}</div>
+                    </div>
+                  </div>
+                </div>
+              </HoverCardContent>
+            </HoverCard>
           );
         },
         enableSorting: true,
@@ -505,18 +544,39 @@ export function AllLeadsContent() {
           const initials = getInitials(row.original.assignedTo.name);
           const bg = stringToHslColor(row.original.assignedTo.name, 60, 50);
           return (
-            <div className="flex items-center gap-2">
-              <Avatar className="h-7 w-7 ring-1 ring-border">
-                <AvatarImage src={row.original.assignedTo.avatar} />
-                <AvatarFallback
-                  className="text-[10px] font-semibold text-white"
-                  style={{ backgroundColor: bg }}
-                >
-                  {initials}
-                </AvatarFallback>
-              </Avatar>
-              <span className="text-sm">{row.original.assignedTo.name}</span>
-            </div>
+            <HoverCard openDelay={120}>
+              <HoverCardTrigger asChild>
+                <div className="flex items-center gap-2 cursor-pointer">
+                  <Avatar className="h-7 w-7 ring-1 ring-border shadow-sm">
+                    <AvatarImage src={row.original.assignedTo.avatar} />
+                    <AvatarFallback
+                      className="text-[10px] font-semibold text-white"
+                      style={{ backgroundColor: bg }}
+                    >
+                      {initials}
+                    </AvatarFallback>
+                  </Avatar>
+                  <span className="text-sm hover:underline">{row.original.assignedTo.name}</span>
+                </div>
+              </HoverCardTrigger>
+              <HoverCardContent>
+                <div className="flex items-center gap-3">
+                  <Avatar className="h-9 w-9 ring-1 ring-border shadow">
+                    <AvatarImage src={row.original.assignedTo.avatar} />
+                    <AvatarFallback
+                      className="text-xs font-semibold text-white"
+                      style={{ backgroundColor: bg }}
+                    >
+                      {initials}
+                    </AvatarFallback>
+                  </Avatar>
+                  <div>
+                    <p className="font-medium">{row.original.assignedTo.name}</p>
+                    <p className="text-xs text-muted-foreground">Owner</p>
+                  </div>
+                </div>
+              </HoverCardContent>
+            </HoverCard>
           );
         },
         enableSorting: true,

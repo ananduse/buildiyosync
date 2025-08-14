@@ -277,7 +277,14 @@ function KanbanBoard({ children, className }: KanbanBoardProps) {
 
   return (
     <SortableContext items={columnIds} strategy={rectSortingStrategy}>
-      <div data-slot="kanban-board" className={cn('grid auto-rows-fr sm:grid-cols-3 gap-4', className)}>
+      <div
+        data-slot="kanban-board"
+        className={cn(
+          // Use horizontal grid flow by default; consumers can override
+          'grid auto-rows-fr grid-flow-col auto-cols-[20rem] gap-4',
+          className
+        )}
+      >
         {children}
       </div>
     </SortableContext>
