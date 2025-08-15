@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import {
   TrendingUp,
   TrendingDown,
@@ -30,7 +30,12 @@ import {
   UserCheck,
   Zap,
   AlertTriangle,
-  Building2
+  Building2,
+  MoreHorizontal,
+  Eye,
+  TrendingDownIcon,
+  TrendingUpIcon,
+  Loader2
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -39,7 +44,10 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Progress } from '@/components/ui/progress';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Skeleton } from '@/components/ui/skeleton';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { cn } from '@/lib/utils';
+import { useNavigate } from 'react-router-dom';
 
 // Types
 interface KPIMetric {
@@ -231,8 +239,21 @@ function getPriorityColor(priority: 'high' | 'medium' | 'low') {
 }
 
 export function LeadDashboard() {
+  const navigate = useNavigate();
   const [dateRange, setDateRange] = useState('this-month');
   const [selectedFunnelStage, setSelectedFunnelStage] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
+  const [lastRefresh, setLastRefresh] = useState(new Date());
+
+  // Auto-refresh functionality
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setLastRefresh(new Date());
+    }, 30000); // 30 seconds
+
+    return () => clearInterval(interval);
+  }, []);
 
   // Calculate funnel metrics
   const funnelMetrics = useMemo(() => {
@@ -243,6 +264,34 @@ export function LeadDashboard() {
     
     return { totalValue, totalLeads, wonLeads, overallConversion };
   }, []);
+
+  // Handle refresh
+  const handleRefresh = async () => {
+    setRefreshing(true);
+    // Simulate API call
+    await new Promise(resolve => setTimeout(resolve, 1000));
+    setLastRefresh(new Date());
+    setRefreshing(false);
+  };
+
+  // Handle export
+  const handleExport = (format: 'pdf' | 'csv') => {
+    // Simulate export functionality
+    console.log(`Exporting dashboard as ${format}...`);
+  };
+
+  // Handle KPI card click
+  const handleKPIClick = (drilldownPath?: string) => {
+    if (drilldownPath) {
+      navigate(drilldownPath);
+    }
+  };
+
+  // Handle funnel stage click
+  const handleFunnelStageClick = (stageName: string) => {
+    setSelectedFunnelStage(prev => prev === stageName ? null : stageName);
+    navigate(`/leads/list?status=${stageName.toLowerCase()}`);
+  };
 
   return (
     <div className="min-h-screen bg-gray-50/50">
@@ -255,8 +304,13 @@ export function LeadDashboard() {
           </div>
           
           <div className="flex items-center space-x-3">
+            <div className="hidden sm:flex items-center space-x-2 text-xs text-gray-500">
+              <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+              <span>Updated {lastRefresh.toLocaleTimeString()}</span>
+            </div>
+            
             <Select value={dateRange} onValueChange={setDateRange}>
-              <SelectTrigger className="w-40">
+              <SelectTrigger className="w-32 sm:w-40">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
@@ -270,15 +324,32 @@ export function LeadDashboard() {
               </SelectContent>
             </Select>
             
-            <Button variant="outline" size="sm">
-              <RefreshCw className="h-4 w-4 mr-2" />
-              Refresh
+            <Button 
+              variant="outline" 
+              size="sm"
+              onClick={handleRefresh}
+              disabled={refreshing}
+            >
+              <RefreshCw className={cn("h-4 w-4 mr-2", refreshing && "animate-spin")} />
+              <span className="hidden sm:inline">Refresh</span>
             </Button>
             
-            <Button variant="outline" size="sm">
-              <Download className="h-4 w-4 mr-2" />
-              Export
-            </Button>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline" size="sm">
+                  <Download className="h-4 w-4 mr-2" />
+                  <span className="hidden sm:inline">Export</span>
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem onClick={() => handleExport('pdf')}>
+                  Export as PDF
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => handleExport('csv')}>
+                  Export as CSV
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
             
             <Button variant="outline" size="sm">
               <Settings className="h-4 w-4" />
@@ -338,53 +409,79 @@ export function LeadDashboard() {
         </Card>
 
         {/* KPI Metrics */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4">
-          {kpiMetrics.map((metric, index) => {
-            const Icon = metric.icon;
-            const isPositiveTrend = metric.trend === 'up' && metric.change > 0;
-            
-            return (
-              <Card
-                key={index}
-                className={cn(
-                  "relative overflow-hidden cursor-pointer transition-all hover:shadow-lg hover:-translate-y-1",
-                  getAlertColor(metric.alert)
-                )}
-              >
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4">
+          {loading ? (
+            // Loading skeleton
+            Array.from({ length: 6 }).map((_, index) => (
+              <Card key={index}>
                 <CardContent className="p-4">
                   <div className="flex items-start justify-between">
-                    <div className={cn("p-2 rounded-lg", metric.bgColor)}>
-                      <Icon className={cn("h-5 w-5", metric.color)} />
-                    </div>
-                    <div className={cn(
-                      "flex items-center text-xs font-semibold",
-                      isPositiveTrend ? "text-emerald-600" : "text-red-600"
-                    )}>
-                      {isPositiveTrend ? (
-                        <ArrowUpRight className="h-3 w-3 mr-1" />
-                      ) : (
-                        <ArrowDownRight className="h-3 w-3 mr-1" />
-                      )}
-                      {Math.abs(metric.change)}%
-                    </div>
+                    <Skeleton className="h-10 w-10 rounded-lg" />
+                    <Skeleton className="h-4 w-12" />
                   </div>
-                  
-                  <div className="mt-3">
-                    <p className="text-xs text-gray-500">{metric.title}</p>
-                    <p className="text-xl font-bold text-gray-900 mt-1">{metric.value}</p>
+                  <div className="mt-3 space-y-2">
+                    <Skeleton className="h-3 w-20" />
+                    <Skeleton className="h-6 w-16" />
                   </div>
-                  
-                  {metric.alert && (
-                    <div className="absolute top-2 right-2">
-                      {metric.alert === 'success' && <CheckCircle className="h-3 w-3 text-emerald-500" />}
-                      {metric.alert === 'warning' && <AlertTriangle className="h-3 w-3 text-amber-500" />}
-                      {metric.alert === 'error' && <AlertCircle className="h-3 w-3 text-red-500" />}
-                    </div>
-                  )}
                 </CardContent>
               </Card>
-            );
-          })}
+            ))
+          ) : (
+            kpiMetrics.map((metric, index) => {
+              const Icon = metric.icon;
+              const isPositiveTrend = metric.trend === 'up' && metric.change > 0;
+              
+              return (
+                <Card
+                  key={index}
+                  className={cn(
+                    "relative overflow-hidden cursor-pointer transition-all hover:shadow-lg hover:-translate-y-1 group",
+                    getAlertColor(metric.alert)
+                  )}
+                  onClick={() => handleKPIClick(metric.drilldownPath)}
+                >
+                  <CardContent className="p-4">
+                    <div className="flex items-start justify-between">
+                      <div className={cn("p-2 rounded-lg transition-all group-hover:scale-110", metric.bgColor)}>
+                        <Icon className={cn("h-5 w-5", metric.color)} />
+                      </div>
+                      <div className={cn(
+                        "flex items-center text-xs font-semibold",
+                        isPositiveTrend ? "text-emerald-600" : "text-red-600"
+                      )}>
+                        {isPositiveTrend ? (
+                          <TrendingUp className="h-3 w-3 mr-1" />
+                        ) : (
+                          <TrendingDown className="h-3 w-3 mr-1" />
+                        )}
+                        {Math.abs(metric.change)}%
+                      </div>
+                    </div>
+                    
+                    <div className="mt-3">
+                      <p className="text-xs text-gray-500 group-hover:text-gray-700 transition-colors">{metric.title}</p>
+                      <p className="text-xl font-bold text-gray-900 mt-1 group-hover:text-gray-800 transition-colors">
+                        {typeof metric.value === 'number' ? metric.value.toLocaleString() : metric.value}
+                      </p>
+                    </div>
+                    
+                    {metric.alert && (
+                      <div className="absolute top-2 right-2">
+                        {metric.alert === 'success' && <CheckCircle className="h-3 w-3 text-emerald-500" />}
+                        {metric.alert === 'warning' && <AlertTriangle className="h-3 w-3 text-amber-500" />}
+                        {metric.alert === 'error' && <AlertCircle className="h-3 w-3 text-red-500" />}
+                      </div>
+                    )}
+                    
+                    {/* Hover indicator */}
+                    <div className="absolute bottom-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                      <Eye className="h-3 w-3 text-gray-400" />
+                    </div>
+                  </CardContent>
+                </Card>
+              );
+            })
+          )}
         </div>
 
         {/* Main Content Grid */}
@@ -421,7 +518,7 @@ export function LeadDashboard() {
                           "relative cursor-pointer transition-all",
                           isSelected && "scale-105"
                         )}
-                        onClick={() => setSelectedFunnelStage(isSelected ? null : stage.name)}
+                        onClick={() => handleFunnelStageClick(stage.name)}
                       >
                         <div className="flex items-center space-x-4">
                           {/* Stage Icon and Name */}
@@ -434,11 +531,11 @@ export function LeadDashboard() {
                           
                           {/* Funnel Bar */}
                           <div className="flex-1">
-                            <div className="relative">
-                              <div className="h-12 bg-gray-100 rounded-lg overflow-hidden">
+                            <div className="relative group">
+                              <div className="h-12 bg-gray-100 rounded-lg overflow-hidden hover:bg-gray-200 transition-colors">
                                 <div
                                   className={cn(
-                                    "h-full flex items-center justify-between px-4 text-white text-sm font-medium transition-all",
+                                    "h-full flex items-center justify-between px-4 text-white text-sm font-medium transition-all hover:opacity-90",
                                     stage.color
                                   )}
                                   style={{ width: `${widthPercentage}%` }}
@@ -454,6 +551,11 @@ export function LeadDashboard() {
                                   {stage.conversion}% conversion
                                 </div>
                               )}
+                              
+                              {/* Tooltip on hover */}
+                              <div className="absolute top-14 left-1/2 transform -translate-x-1/2 bg-black text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-10">
+                                Click to filter leads in {stage.name} status
+                              </div>
                             </div>
                           </div>
                           
@@ -606,38 +708,41 @@ export function LeadDashboard() {
             <CardHeader>
               <div className="flex items-center justify-between">
                 <CardTitle>Activity Timeline</CardTitle>
-                <Button variant="ghost" size="sm">
+                <Button variant="ghost" size="sm" onClick={() => navigate('/leads/timeline')}>
                   View All
                   <ChevronRight className="h-4 w-4 ml-1" />
                 </Button>
               </div>
             </CardHeader>
             <CardContent>
-              <div className="space-y-4">
+              <div className="max-h-96 overflow-y-auto space-y-4">
                 {recentActivities.map((activity) => {
                   const Icon = activity.icon;
                   
                   return (
-                    <div key={activity.id} className="flex items-start space-x-3">
+                    <div 
+                      key={activity.id} 
+                      className="flex items-start space-x-3 hover:bg-gray-50 p-2 rounded-lg cursor-pointer transition-colors"
+                    >
                       <div className={cn(
-                        "p-2 rounded-lg bg-gray-50",
+                        "p-2 rounded-lg bg-gray-50 flex-shrink-0",
                         activity.iconColor
                       )}>
                         <Icon className="h-4 w-4" />
                       </div>
                       
-                      <div className="flex-1 space-y-1">
-                        <p className="text-sm">{activity.description}</p>
+                      <div className="flex-1 space-y-1 min-w-0">
+                        <p className="text-sm font-medium">{activity.description}</p>
                         <div className="flex items-center space-x-2 text-xs text-gray-500">
-                          <span className="font-medium">{activity.leadName}</span>
+                          <span className="font-medium truncate">{activity.leadName}</span>
                           <span>•</span>
-                          <span>{activity.user}</span>
+                          <span className="truncate">{activity.user}</span>
                           <span>•</span>
-                          <span>{activity.timestamp}</span>
+                          <span className="whitespace-nowrap">{activity.timestamp}</span>
                         </div>
                       </div>
                       
-                      <Avatar className="h-6 w-6">
+                      <Avatar className="h-6 w-6 flex-shrink-0">
                         <AvatarImage src={activity.userAvatar} />
                         <AvatarFallback className="text-xs">
                           {activity.user.split(' ').map(n => n[0]).join('')}
@@ -646,6 +751,14 @@ export function LeadDashboard() {
                     </div>
                   );
                 })}
+                
+                {/* Load More Button */}
+                <div className="pt-4 border-t">
+                  <Button variant="outline" size="sm" className="w-full">
+                    <Loader2 className="h-4 w-4 mr-2" />
+                    Load More Activities
+                  </Button>
+                </div>
               </div>
             </CardContent>
           </Card>

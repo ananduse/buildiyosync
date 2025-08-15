@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import {
   Plus,
   Search,
@@ -18,7 +18,20 @@ import {
   MessageSquare,
   Activity,
   DollarSign,
-  User
+  User,
+  Filter,
+  Download,
+  Settings,
+  RefreshCw,
+  X,
+  CheckSquare,
+  Copy,
+  ExternalLink,
+  AlertTriangle,
+  Clock,
+  TrendingUp,
+  FileText,
+  Users
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import {
@@ -36,8 +49,13 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Card, CardContent } from '@/components/ui/card';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from '@/components/ui/dropdown-menu';
+import { Skeleton } from '@/components/ui/skeleton';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import { HoverCard, HoverCardContent, HoverCardTrigger } from '@/components/ui/hover-card';
 import { DataGrid } from '@/components/ui/data-grid';
 import { DataGridColumnHeader } from '@/components/ui/data-grid-column-header';
@@ -162,6 +180,69 @@ const mockLeads: Lead[] = [
     lastContact: '2024-01-12',
     nextFollowUp: '2024-01-22',
     createdDate: '2024-01-05'
+  },
+  {
+    id: 'L004',
+    name: 'Creative Solutions Ltd',
+    company: 'Creative Solutions',
+    contact: 'Sarah Martinez',
+    phone: '+1 (555) 234-5678',
+    email: 'sarah.m@creative.com',
+    source: 'Social Media',
+    score: 78,
+    status: 'new',
+    budget: '$75K - $150K',
+    projectType: 'Retail Space',
+    location: 'Austin, TX',
+    assignedTo: {
+      name: 'David Brown',
+      avatar: '/avatars/david.jpg'
+    },
+    lastContact: '2024-01-16',
+    nextFollowUp: '2024-01-19',
+    createdDate: '2024-01-12'
+  },
+  {
+    id: 'L005',
+    name: 'Innovation Hub',
+    company: 'Innovation Hub',
+    contact: 'Michael Chen',
+    phone: '+1 (555) 345-6789',
+    email: 'michael@innovationhub.com',
+    source: 'Website',
+    score: 95,
+    status: 'won',
+    budget: '$200K - $500K',
+    projectType: 'Technology Center',
+    location: 'Seattle, WA',
+    assignedTo: {
+      name: 'Sarah Johnson',
+      avatar: '/avatars/sarah.jpg'
+    },
+    lastContact: '2024-01-17',
+    nextFollowUp: '2024-01-21',
+    createdDate: '2024-01-09'
+  },
+  {
+    id: 'L006',
+    name: 'Metro Developers',
+    company: 'Metro Developers',
+    contact: 'Lisa Thompson',
+    phone: '+1 (555) 456-7891',
+    email: 'lisa.t@metrodev.com',
+    source: 'Referral',
+    score: 43,
+    status: 'lost',
+    budget: '$30K - $60K',
+    projectType: 'Residential',
+    location: 'Denver, CO',
+    assignedTo: {
+      name: 'Mike Chen',
+      avatar: '/avatars/mike.jpg'
+    },
+    lastContact: '2024-01-11',
+    nextFollowUp: '2024-01-25',
+    createdDate: '2024-01-06'
   }
 ];
 
@@ -222,49 +303,152 @@ function LeadScoreStars({ score }: { score: number }) {
   );
 }
 
-function ActionsCell({ row }: { row: Row<Lead> }) {
+function ActionsCell({ row, onDelete }: { row: Row<Lead>; onDelete: (lead: Lead) => void }) {
+  const [isCallActive, setIsCallActive] = useState(false);
+  
+  const handleCall = () => {
+    setIsCallActive(true);
+    window.open(`tel:${row.original.phone}`, '_self');
+    setTimeout(() => setIsCallActive(false), 3000);
+  };
+
+  const handleEmail = () => {
+    window.open(`mailto:${row.original.email}`, '_self');
+  };
+
+  const handleWhatsApp = () => {
+    const phoneNumber = row.original.phone.replace(/\D/g, '');
+    window.open(`https://wa.me/${phoneNumber}`, '_blank');
+  };
+
+  const handleCopyInfo = () => {
+    const info = `${row.original.name}\n${row.original.contact}\n${row.original.phone}\n${row.original.email}`;
+    navigator.clipboard.writeText(info);
+  };
+
   return (
-    <DropdownMenu>
-      <DropdownMenuTrigger asChild>
-        <Button 
-          variant="ghost" 
-          size="sm"
-          onClick={(e) => e.stopPropagation()}
-        >
-          <MoreHorizontal className="h-4 w-4" />
-        </Button>
-      </DropdownMenuTrigger>
-      <DropdownMenuContent align="end">
-        <DropdownMenuItem asChild>
-          <Link to={`/leads/${row.original.id}`}>
-            <Eye className="h-4 w-4 mr-2" />
-            View Details
-          </Link>
-        </DropdownMenuItem>
-        <DropdownMenuItem asChild>
-          <Link to={`/leads/${row.original.id}/activities`}>
-            <Activity className="h-4 w-4 mr-2" />
-            Activities
-          </Link>
-        </DropdownMenuItem>
-        <DropdownMenuItem asChild>
-          <Link to={`/leads/${row.original.id}/communications`}>
-            <MessageSquare className="h-4 w-4 mr-2" />
-            Communications
-          </Link>
-        </DropdownMenuItem>
-        <DropdownMenuItem asChild>
-          <Link to={`/leads/${row.original.id}/convert`}>
-            <Edit className="h-4 w-4 mr-2" />
-            Convert to Project
-          </Link>
-        </DropdownMenuItem>
-        <DropdownMenuItem className="text-red-600">
-          <Trash2 className="h-4 w-4 mr-2" />
-          Delete Lead
-        </DropdownMenuItem>
-      </DropdownMenuContent>
-    </DropdownMenu>
+    <div className="flex items-center space-x-1">
+      {/* Quick Actions */}
+      <TooltipProvider>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button 
+              variant="ghost" 
+              size="sm"
+              className={`h-8 w-8 p-0 ${isCallActive ? 'bg-green-100 text-green-600' : ''}`}
+              onClick={(e) => {
+                e.stopPropagation();
+                handleCall();
+              }}
+            >
+              <Phone className="h-3 w-3" />
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent>Call Lead</TooltipContent>
+        </Tooltip>
+      </TooltipProvider>
+
+      <TooltipProvider>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button 
+              variant="ghost" 
+              size="sm"
+              className="h-8 w-8 p-0"
+              onClick={(e) => {
+                e.stopPropagation();
+                handleEmail();
+              }}
+            >
+              <Mail className="h-3 w-3" />
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent>Send Email</TooltipContent>
+        </Tooltip>
+      </TooltipProvider>
+
+      <TooltipProvider>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button 
+              variant="ghost" 
+              size="sm"
+              className="h-8 w-8 p-0"
+              onClick={(e) => {
+                e.stopPropagation();
+                handleWhatsApp();
+              }}
+            >
+              <MessageSquare className="h-3 w-3" />
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent>WhatsApp</TooltipContent>
+        </Tooltip>
+      </TooltipProvider>
+
+      {/* More Actions Dropdown */}
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <Button 
+            variant="ghost" 
+            size="sm"
+            className="h-8 w-8 p-0"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <MoreHorizontal className="h-3 w-3" />
+          </Button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="end" className="w-48">
+          <DropdownMenuItem asChild>
+            <Link to={`/leads/${row.original.id}/view`}>
+              <Eye className="h-4 w-4 mr-2" />
+              View Details
+            </Link>
+          </DropdownMenuItem>
+          <DropdownMenuItem asChild>
+            <Link to={`/leads/${row.original.id}/edit`}>
+              <Edit className="h-4 w-4 mr-2" />
+              Edit Lead
+            </Link>
+          </DropdownMenuItem>
+          <DropdownMenuSeparator />
+          <DropdownMenuItem asChild>
+            <Link to={`/leads/${row.original.id}/activities`}>
+              <Activity className="h-4 w-4 mr-2" />
+              View Activities
+            </Link>
+          </DropdownMenuItem>
+          <DropdownMenuItem asChild>
+            <Link to={`/leads/${row.original.id}/communications`}>
+              <MessageSquare className="h-4 w-4 mr-2" />
+              Communications
+            </Link>
+          </DropdownMenuItem>
+          <DropdownMenuSeparator />
+          <DropdownMenuItem onClick={handleCopyInfo}>
+            <Copy className="h-4 w-4 mr-2" />
+            Copy Info
+          </DropdownMenuItem>
+          <DropdownMenuItem asChild>
+            <Link to={`/leads/${row.original.id}/convert`}>
+              <TrendingUp className="h-4 w-4 mr-2" />
+              Convert to Project
+            </Link>
+          </DropdownMenuItem>
+          <DropdownMenuSeparator />
+          <DropdownMenuItem 
+            className="text-red-600 focus:text-red-600"
+            onClick={(e) => {
+              e.stopPropagation();
+              onDelete(row.original);
+            }}
+          >
+            <Trash2 className="h-4 w-4 mr-2" />
+            Delete Lead
+          </DropdownMenuItem>
+        </DropdownMenuContent>
+      </DropdownMenu>
+    </div>
   );
 }
 
@@ -275,11 +459,20 @@ export function AllLeadsContent() {
   const [savedFilters, setSavedFilters] = useState<{ name: string; filters: SimpleFilterRule[]; }[]>([]);
   const [pagination, setPagination] = useState<PaginationState>({
     pageIndex: 0,
-    pageSize: 10,
+    pageSize: 25,
   });
   const [sorting, setSorting] = useState<SortingState>([
     { id: 'createdDate', desc: true },
   ]);
+  const [loading, setLoading] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [leadToDelete, setLeadToDelete] = useState<Lead | null>(null);
+  const [columnVisibility, setColumnVisibility] = useState<Record<string, boolean>>({});
+  const [filterPanelOpen, setFilterPanelOpen] = useState(false);
+  const [selectedStatus, setSelectedStatus] = useState<string>('all');
+  const [selectedSource, setSelectedSource] = useState<string>('all');
+  const [selectedAssignee, setSelectedAssignee] = useState<string>('all');
 
   // Apply filters function
   const applyFilters = (lead: any, filterRules: SimpleFilterRule[]) => {
@@ -377,6 +570,64 @@ export function AllLeadsContent() {
   const handleLoadFilter = (filterRules: SimpleFilterRule[]) => {
     setFilters(filterRules);
   };
+
+  // Handle refresh
+  const handleRefresh = async () => {
+    setRefreshing(true);
+    // Simulate API call
+    await new Promise(resolve => setTimeout(resolve, 1000));
+    setRefreshing(false);
+  };
+
+  // Handle bulk actions
+  const handleBulkDelete = () => {
+    const selectedRows = table.getFilteredSelectedRowModel().rows;
+    console.log('Bulk deleting:', selectedRows.map(row => row.original.id));
+    table.resetRowSelection();
+  };
+
+  const handleBulkAssign = (assignee: string) => {
+    const selectedRows = table.getFilteredSelectedRowModel().rows;
+    console.log('Bulk assigning to:', assignee, selectedRows.map(row => row.original.id));
+    table.resetRowSelection();
+  };
+
+  const handleBulkStatusChange = (status: string) => {
+    const selectedRows = table.getFilteredSelectedRowModel().rows;
+    console.log('Bulk status change to:', status, selectedRows.map(row => row.original.id));
+    table.resetRowSelection();
+  };
+
+  // Handle export
+  const handleExport = (format: 'csv' | 'excel' | 'pdf') => {
+    const selectedRows = table.getFilteredSelectedRowModel().rows;
+    const dataToExport = selectedRows.length > 0 
+      ? selectedRows.map(row => row.original)
+      : filteredData;
+    console.log(`Exporting ${dataToExport.length} leads as ${format}`);
+  };
+
+  // Handle delete lead
+  const handleDeleteLead = (lead: Lead) => {
+    setLeadToDelete(lead);
+    setShowDeleteDialog(true);
+  };
+
+  const confirmDeleteLead = () => {
+    if (leadToDelete) {
+      console.log('Deleting lead:', leadToDelete.id);
+      setShowDeleteDialog(false);
+      setLeadToDelete(null);
+    }
+  };
+
+  // Debounced search
+  useEffect(() => {
+    const timeoutId = setTimeout(() => {
+      // Trigger search with 300ms delay
+    }, 300);
+    return () => clearTimeout(timeoutId);
+  }, [searchQuery]);
 
   // Define columns for the data grid
   const columns = useMemo<ColumnDef<Lead>[]>(
@@ -618,9 +869,9 @@ export function AllLeadsContent() {
       {
         id: 'actions',
         header: '',
-        cell: ({ row }) => <ActionsCell row={row} />,
+        cell: ({ row }) => <ActionsCell row={row} onDelete={handleDeleteLead} />,
         enableSorting: false,
-        size: 50,
+        size: 120,
       },
     ],
     []
@@ -646,124 +897,474 @@ export function AllLeadsContent() {
   });
 
   return (
-    <div className="grid gap-5 lg:gap-7.5">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-        <div className="flex items-center space-x-4">
-          <h1 className="text-2xl font-bold tracking-tight">All Leads</h1>
-          <Badge variant="secondary">{filteredData.length} total</Badge>
-        </div>
-
-        <div className="flex items-center gap-2">
-          {/* View Switcher */}
-          <div className="flex border rounded-lg p-1">
-            <Button
-              variant={view === 'list' ? 'primary' : 'ghost'}
-              size="sm"
-              onClick={() => setView('list')}
-            >
-              <List className="h-4 w-4" />
-            </Button>
-            <Button
-              variant={view === 'kanban' ? 'primary' : 'ghost'}
-              size="sm"
-              onClick={() => setView('kanban')}
-            >
-              <Grid3X3 className="h-4 w-4" />
-            </Button>
-            <Button
-              variant={view === 'calendar' ? 'primary' : 'ghost'}
-              size="sm"
-              onClick={() => setView('calendar')}
-            >
-              <Calendar className="h-4 w-4" />
-            </Button>
-            <Button
-              variant={view === 'map' ? 'primary' : 'ghost'}
-              size="sm"
-              onClick={() => setView('map')}
-            >
-              <MapIcon className="h-4 w-4" />
-            </Button>
+    <div className="space-y-6">
+      {/* Enhanced Header */}
+      <div className="flex flex-col space-y-4">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+          <div className="flex items-center space-x-4">
+            <h1 className="text-2xl font-bold tracking-tight">All Leads</h1>
+            <div className="flex items-center space-x-2">
+              <Badge variant="secondary">{filteredData.length} total</Badge>
+              {table.getFilteredSelectedRowModel().rows.length > 0 && (
+                <Badge variant="outline">
+                  {table.getFilteredSelectedRowModel().rows.length} selected
+                </Badge>
+              )}
+            </div>
           </div>
 
-          {/* Filter */}
-          <SimpleFilter
-            fields={LEAD_FILTER_FIELDS}
-            filters={filters}
-            onFiltersChange={setFilters}
-            savedFilters={savedFilters}
-            onSaveFilter={handleSaveFilter}
-            onLoadFilter={handleLoadFilter}
-          />
+          <div className="flex items-center gap-2 flex-wrap">
+            {/* Refresh Button */}
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleRefresh}
+              disabled={refreshing}
+            >
+              <RefreshCw className={`h-4 w-4 mr-2 ${refreshing ? 'animate-spin' : ''}`} />
+              <span className="hidden sm:inline">Refresh</span>
+            </Button>
 
-          <Button variant="outline" size="sm">
-            <Upload className="h-4 w-4 mr-2" />
-            Import
-          </Button>
-          <Button size="sm">
-            <Plus className="h-4 w-4 mr-2" />
-            New Lead
-          </Button>
+            {/* Export Menu */}
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline" size="sm">
+                  <Download className="h-4 w-4 mr-2" />
+                  <span className="hidden sm:inline">Export</span>
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem onClick={() => handleExport('csv')}>
+                  <FileText className="h-4 w-4 mr-2" />
+                  Export as CSV
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => handleExport('excel')}>
+                  <FileText className="h-4 w-4 mr-2" />
+                  Export as Excel
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => handleExport('pdf')}>
+                  <FileText className="h-4 w-4 mr-2" />
+                  Export as PDF
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+
+            {/* View Switcher */}
+            <div className="flex border rounded-lg p-1">
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      variant={view === 'list' ? 'default' : 'ghost'}
+                      size="sm"
+                      onClick={() => setView('list')}
+                      className="h-8 w-8 p-0"
+                    >
+                      <List className="h-4 w-4" />
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>List View</TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      variant={view === 'kanban' ? 'default' : 'ghost'}
+                      size="sm"
+                      onClick={() => setView('kanban')}
+                      className="h-8 w-8 p-0"
+                    >
+                      <Grid3X3 className="h-4 w-4" />
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>Kanban View</TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      variant={view === 'calendar' ? 'default' : 'ghost'}
+                      size="sm"
+                      onClick={() => setView('calendar')}
+                      className="h-8 w-8 p-0"
+                    >
+                      <Calendar className="h-4 w-4" />
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>Calendar View</TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      variant={view === 'map' ? 'default' : 'ghost'}
+                      size="sm"
+                      onClick={() => setView('map')}
+                      className="h-8 w-8 p-0"
+                    >
+                      <MapIcon className="h-4 w-4" />
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>Map View</TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+            </div>
+
+            <Button variant="outline" size="sm">
+              <Upload className="h-4 w-4 mr-2" />
+              <span className="hidden sm:inline">Import</span>
+            </Button>
+
+            <Button size="sm" asChild>
+              <Link to="/leads/new">
+                <Plus className="h-4 w-4 mr-2" />
+                New Lead
+              </Link>
+            </Button>
+          </div>
         </div>
+
+        {/* Quick Filters Row */}
+        <div className="flex flex-wrap items-center gap-2">
+          <Select value={selectedStatus} onValueChange={setSelectedStatus}>
+            <SelectTrigger className="w-32">
+              <SelectValue placeholder="All Status" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Status</SelectItem>
+              <SelectItem value="new">New</SelectItem>
+              <SelectItem value="contacted">Contacted</SelectItem>
+              <SelectItem value="qualified">Qualified</SelectItem>
+              <SelectItem value="proposal">Proposal</SelectItem>
+              <SelectItem value="won">Won</SelectItem>
+              <SelectItem value="lost">Lost</SelectItem>
+            </SelectContent>
+          </Select>
+
+          <Select value={selectedSource} onValueChange={setSelectedSource}>
+            <SelectTrigger className="w-32">
+              <SelectValue placeholder="All Sources" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Sources</SelectItem>
+              <SelectItem value="website">Website</SelectItem>
+              <SelectItem value="referral">Referral</SelectItem>
+              <SelectItem value="social">Social Media</SelectItem>
+              <SelectItem value="cold_call">Cold Call</SelectItem>
+            </SelectContent>
+          </Select>
+
+          <Select value={selectedAssignee} onValueChange={setSelectedAssignee}>
+            <SelectTrigger className="w-36">
+              <SelectValue placeholder="All Assignees" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Assignees</SelectItem>
+              <SelectItem value="sarah">Sarah Johnson</SelectItem>
+              <SelectItem value="mike">Mike Chen</SelectItem>
+              <SelectItem value="lisa">Lisa Wang</SelectItem>
+              <SelectItem value="david">David Brown</SelectItem>
+            </SelectContent>
+          </Select>
+
+          {/* Advanced Filter Toggle */}
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setFilterPanelOpen(!filterPanelOpen)}
+            className={filterPanelOpen ? 'bg-muted' : ''}
+          >
+            <Filter className="h-4 w-4 mr-2" />
+            <span className="hidden sm:inline">Filters</span>
+            {filters.length > 0 && (
+              <Badge className="ml-2 h-5 w-5 rounded-full p-0 text-xs">
+                {filters.length}
+              </Badge>
+            )}
+          </Button>
+
+          {/* Clear Filters */}
+          {(selectedStatus !== 'all' || selectedSource !== 'all' || selectedAssignee !== 'all' || filters.length > 0) && (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => {
+                setSelectedStatus('all');
+                setSelectedSource('all');
+                setSelectedAssignee('all');
+                setFilters([]);
+              }}
+            >
+              <X className="h-4 w-4 mr-2" />
+              Clear
+            </Button>
+          )}
+        </div>
+
+        {/* Advanced Filters Panel */}
+        {filterPanelOpen && (
+          <Card>
+            <CardContent className="p-4">
+              <SimpleFilter
+                fields={LEAD_FILTER_FIELDS}
+                filters={filters}
+                onFiltersChange={setFilters}
+                savedFilters={savedFilters}
+                onSaveFilter={handleSaveFilter}
+                onLoadFilter={handleLoadFilter}
+              />
+            </CardContent>
+          </Card>
+        )}
       </div>
 
-      {/* Action Bar */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center space-x-2">
-          {/* Search */}
-          <div className="relative">
+      {/* Enhanced Search and Action Bar */}
+      <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
+        <div className="flex items-center space-x-2 w-full sm:w-auto">
+          {/* Enhanced Search */}
+          <div className="relative flex-1 sm:flex-none">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
             <Input
-              placeholder="Search leads..."
-              className="pl-10 w-64"
+              placeholder="Search leads by name, company, email..."
+              className="pl-10 w-full sm:w-80"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
             />
           </div>
 
+          {/* Page Size Selector */}
+          <Select
+            value={pagination.pageSize.toString()}
+            onValueChange={(value) => setPagination(prev => ({ ...prev, pageSize: parseInt(value), pageIndex: 0 }))}
+          >
+            <SelectTrigger className="w-20">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="25">25</SelectItem>
+              <SelectItem value="50">50</SelectItem>
+              <SelectItem value="100">100</SelectItem>
+              <SelectItem value="200">200</SelectItem>
+            </SelectContent>
+          </Select>
         </div>
 
-        {/* Bulk Actions */}
+        {/* Bulk Actions Bar */}
         {table.getFilteredSelectedRowModel().rows.length > 0 && (
-          <div className="flex items-center space-x-2">
-            <span className="text-sm text-muted-foreground">
-              {table.getFilteredSelectedRowModel().rows.length} selected
-            </span>
-            <Button variant="outline" size="sm">Assign</Button>
-            <Button variant="outline" size="sm">Export</Button>
-            <Button variant="outline" size="sm">
-              <Trash2 className="h-4 w-4" />
-            </Button>
-          </div>
+          <Card className="w-full sm:w-auto">
+            <CardContent className="p-3">
+              <div className="flex items-center space-x-2 flex-wrap">
+                <span className="text-sm text-muted-foreground whitespace-nowrap">
+                  {table.getFilteredSelectedRowModel().rows.length} of {filteredData.length} selected
+                </span>
+                
+                {/* Bulk Assign */}
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="outline" size="sm">
+                      <Users className="h-4 w-4 mr-2" />
+                      Assign
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent>
+                    <DropdownMenuItem onClick={() => handleBulkAssign('sarah')}>
+                      <User className="h-4 w-4 mr-2" />
+                      Sarah Johnson
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => handleBulkAssign('mike')}>
+                      <User className="h-4 w-4 mr-2" />
+                      Mike Chen
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => handleBulkAssign('lisa')}>
+                      <User className="h-4 w-4 mr-2" />
+                      Lisa Wang
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => handleBulkAssign('david')}>
+                      <User className="h-4 w-4 mr-2" />
+                      David Brown
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+
+                {/* Bulk Status Change */}
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="outline" size="sm">
+                      <Activity className="h-4 w-4 mr-2" />
+                      Status
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent>
+                    <DropdownMenuItem onClick={() => handleBulkStatusChange('contacted')}>
+                      Mark as Contacted
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => handleBulkStatusChange('qualified')}>
+                      Mark as Qualified
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => handleBulkStatusChange('proposal')}>
+                      Mark as Proposal Sent
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => handleBulkStatusChange('won')}>
+                      Mark as Won
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => handleBulkStatusChange('lost')}>
+                      Mark as Lost
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+
+                {/* Bulk Export */}
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="outline" size="sm">
+                      <Download className="h-4 w-4 mr-2" />
+                      Export Selected
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent>
+                    <DropdownMenuItem onClick={() => handleExport('csv')}>
+                      <FileText className="h-4 w-4 mr-2" />
+                      Export as CSV
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => handleExport('excel')}>
+                      <FileText className="h-4 w-4 mr-2" />
+                      Export as Excel
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+
+                {/* Bulk Delete */}
+                <Button 
+                  variant="outline" 
+                  size="sm"
+                  className="text-red-600 hover:text-red-700"
+                  onClick={handleBulkDelete}
+                >
+                  <Trash2 className="h-4 w-4 mr-2" />
+                  Delete
+                </Button>
+
+                {/* Clear Selection */}
+                <Button 
+                  variant="ghost" 
+                  size="sm"
+                  onClick={() => table.resetRowSelection()}
+                >
+                  <X className="h-4 w-4 mr-2" />
+                  Clear
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
         )}
       </div>
 
 
-      {/* Data Grid */}
-      <DataGrid
-        table={table}
-        recordCount={filteredData.length}
-        tableLayout={{
-          cellBorder: false,
-          rowBorder: true,
-          stripped: false,
-          headerBorder: true,
-          headerBackground: true,
-          columnsResizable: true,
-        }}
-      >
+      {/* Enhanced Data Grid */}
+      {loading ? (
         <Card>
-          <CardContent className="p-0">
-            <div className="overflow-x-auto">
-              <DataGridTable />
+          <CardContent className="p-6">
+            <div className="space-y-4">
+              {Array.from({ length: 5 }).map((_, i) => (
+                <div key={i} className="flex items-center space-x-4">
+                  <Skeleton className="h-10 w-10 rounded-full" />
+                  <div className="space-y-2 flex-1">
+                    <Skeleton className="h-4 w-48" />
+                    <Skeleton className="h-3 w-32" />
+                  </div>
+                  <Skeleton className="h-8 w-24" />
+                  <Skeleton className="h-8 w-8" />
+                </div>
+              ))}
             </div>
           </CardContent>
         </Card>
+      ) : (
+        <DataGrid
+          table={table}
+          recordCount={filteredData.length}
+          tableLayout={{
+            cellBorder: false,
+            rowBorder: true,
+            stripped: true,
+            headerBorder: true,
+            headerBackground: true,
+            columnsResizable: true,
+          }}
+        >
+          <Card>
+            <CardContent className="p-0">
+              <div className="overflow-x-auto">
+                <DataGridTable className="min-w-full" />
+              </div>
+              
+              {/* Empty State */}
+              {filteredData.length === 0 && !loading && (
+                <div className="text-center py-12">
+                  <Users className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                  <h3 className="text-lg font-semibold mb-2">No leads found</h3>
+                  <p className="text-muted-foreground mb-4">
+                    {searchQuery || filters.length > 0 || selectedStatus !== 'all' 
+                      ? "Try adjusting your search or filters"
+                      : "Get started by creating your first lead"
+                    }
+                  </p>
+                  {(!searchQuery && filters.length === 0 && selectedStatus === 'all') && (
+                    <Button asChild>
+                      <Link to="/leads/new">
+                        <Plus className="h-4 w-4 mr-2" />
+                        Create Lead
+                      </Link>
+                    </Button>
+                  )}
+                </div>
+              )}
+            </CardContent>
+          </Card>
 
-        {/* Pagination */}
-        <DataGridPagination />
-      </DataGrid>
+          {/* Enhanced Pagination */}
+          <DataGridPagination />
+        </DataGrid>
+      )}
+
+      {/* Delete Confirmation Dialog */}
+      <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle className="flex items-center">
+              <AlertTriangle className="h-5 w-5 text-red-500 mr-2" />
+              Confirm Deletion
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to delete the lead{" "}
+              <span className="font-semibold">{leadToDelete?.name}</span>?
+              This action cannot be undone and will remove all associated data including:
+              <ul className="list-disc list-inside mt-2 space-y-1">
+                <li>Contact information</li>
+                <li>Communication history</li>
+                <li>Activities and notes</li>
+                <li>Documents and attachments</li>
+              </ul>
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={confirmDeleteLead}
+              className="bg-red-600 hover:bg-red-700 focus:ring-red-600"
+            >
+              <Trash2 className="h-4 w-4 mr-2" />
+              Delete Lead
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

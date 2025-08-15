@@ -134,8 +134,8 @@ import AssignmentRules from '@/pages/leads/master-data/assignment-rules';
 import ScoringRules from '@/pages/leads/master-data/scoring-rules';
 
 // Additional components
-import ActivityManagement from '@/pages/leads/additional/activity-management';
-import QuoteGenerator from '@/pages/leads/additional/quote-generator';
+import { ActivityManagement } from '@/pages/leads/additional/activity-management';
+import { QuoteGenerator } from '@/pages/leads/additional/quote-generator';
 import MeetingScheduler from '@/pages/leads/additional/meeting-scheduler';
 import FollowUpManager from '@/pages/leads/additional/follow-up-manager';
 import CampaignManager from '@/pages/leads/additional/campaign-manager';
@@ -234,12 +234,12 @@ export function AppRoutingSetup() {
         <Route path="/leads/master-data/project-types" element={<ProjectTypes />} />
         <Route path="/leads/master-data/service-types" element={<div>Service Types Page</div>} />
         <Route path="/leads/master-data/countries" element={<LocationMasters />} />
-        <Route path="/leads/master-data/states" element={<div>States/Regions Page</div>} />
-        <Route path="/leads/master-data/cities" element={<div>Cities Page</div>} />
-        <Route path="/leads/master-data/territories" element={<div>Sales Territories Page</div>} />
-        <Route path="/leads/master-data/team-management" element={<div>Team Management Page</div>} />
-        <Route path="/leads/master-data/assignment-rules" element={<div>Assignment Rules Page</div>} />
-        <Route path="/leads/master-data/scoring-rules" element={<div>Scoring Rules Page</div>} />
+        <Route path="/leads/master-data/states" element={<LocationMasters />} />
+        <Route path="/leads/master-data/cities" element={<LocationMasters />} />
+        <Route path="/leads/master-data/territories" element={<LocationMasters />} />
+        <Route path="/leads/master-data/team-management" element={<TeamManagement />} />
+        <Route path="/leads/master-data/assignment-rules" element={<AssignmentRules />} />
+        <Route path="/leads/master-data/scoring-rules" element={<ScoringRules />} />
 
         {/* Data Quality */}
         <Route path="/leads/data-quality/duplicates" element={<div>Duplicate Management Page</div>} />
@@ -247,17 +247,17 @@ export function AppRoutingSetup() {
         <Route path="/leads/data-quality/cleanup" element={<div>Data Cleanup Page</div>} />
 
         {/* Additional Tools */}
-        <Route path="/leads/additional/quote-generator" element={<div>Quote Generator Page</div>} />
+        <Route path="/leads/additional/quote-generator" element={<QuoteGenerator />} />
         <Route path="/leads/additional/proposal-management" element={<div>Proposal Management Page</div>} />
-        <Route path="/leads/additional/meeting-scheduler" element={<div>Meeting Scheduler Page</div>} />
-        <Route path="/leads/additional/follow-up-manager" element={<div>Follow-up Manager Page</div>} />
+        <Route path="/leads/additional/meeting-scheduler" element={<MeetingScheduler />} />
+        <Route path="/leads/additional/follow-up-manager" element={<FollowUpManager />} />
         <Route path="/leads/additional/task-management" element={<div>Task Management Page</div>} />
-        <Route path="/leads/additional/activity-management" element={<div>Activity Management Page</div>} />
+        <Route path="/leads/additional/activity-management" element={<ActivityManagement />} />
         <Route path="/leads/additional/document-management" element={<div>Document Management Page</div>} />
-        <Route path="/leads/additional/campaign-manager" element={<div>Campaign Manager Page</div>} />
-        <Route path="/leads/additional/lead-tools" element={<div>Lead Tools Page</div>} />
-        <Route path="/leads/additional/bulk-operations" element={<div>Bulk Operations Page</div>} />
-        <Route path="/leads/additional/audit-trail" element={<div>Audit Trail Page</div>} />
+        <Route path="/leads/additional/campaign-manager" element={<CampaignManager />} />
+        <Route path="/leads/additional/lead-tools" element={<LeadTools />} />
+        <Route path="/leads/additional/bulk-operations" element={<BulkOperations />} />
+        <Route path="/leads/additional/audit-trail" element={<AuditTrail />} />
 
         {/* Team & Collaboration */}
         <Route path="/leads/team/roles" element={<div>Roles & Permissions Page</div>} />
