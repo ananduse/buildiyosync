@@ -97,7 +97,6 @@ import {
   LeadDashboardPage,
   AllLeadsPage,
   LeadKanbanPage,
-  LeadDetailPage,
   AddLeadPage,
   ImportLeadsPage,
   LeadActivitiesPage,
@@ -105,6 +104,7 @@ import {
   ConvertLeadPage,
   LeadReportsPage,
 } from '@/pages/leads';
+import { LeadDetailView } from '@/pages/leads/detail/lead-detail-view';
 
 // Import all lead management components
 import LeadCalendarView from '@/pages/leads/calendar/lead-calendar-view';
@@ -118,14 +118,24 @@ import LeadAnalyticsDashboard from '@/pages/leads/analytics/lead-analytics-dashb
 import CommunicationHub from '@/pages/leads/communication/communication-hub';
 import EmailComposer from '@/pages/leads/communication/email-composer';
 import EmailTemplates from '@/pages/leads/communication/email-templates';
+import EmailCampaigns from '@/pages/leads/communication/email-campaigns';
+import EmailAnalytics from '@/pages/leads/communication/email-analytics';
+import LiveChat from '@/pages/leads/communication/live-chat';
 import WhatsAppChat from '@/pages/leads/communication/whatsapp-chat';
 import SMSCenter from '@/pages/leads/communication/sms-center';
 import CallCenter from '@/pages/leads/communication/call-center';
+import VideoMeetings from '@/pages/leads/communication/video-meetings';
+import CallAnalytics from '@/pages/leads/communication/call-analytics';
+import CommunicationHistory from '@/pages/leads/communication/communication-history';
+import InteractionTimeline from '@/pages/leads/communication/interaction-timeline';
+import ResponseAnalytics from '@/pages/leads/communication/response-analytics';
 
 // Master data components
 import LeadSources from '@/pages/leads/master-data/lead-sources';
 import LeadStatuses from '@/pages/leads/master-data/lead-statuses';
 import LeadCategories from '@/pages/leads/master-data/lead-categories';
+import LeadStages from '@/pages/leads/master-data/lead-stages';
+import CompanySizes from '@/pages/leads/master-data/company-sizes';
 import Industries from '@/pages/leads/master-data/industries';
 import ProjectTypes from '@/pages/leads/master-data/project-types';
 import LocationMasters from '@/pages/leads/master-data/location-masters';
@@ -142,18 +152,71 @@ import CampaignManager from '@/pages/leads/additional/campaign-manager';
 import LeadTools from '@/pages/leads/additional/lead-tools';
 import BulkOperations from '@/pages/leads/additional/bulk-operations';
 import AuditTrail from '@/pages/leads/additional/audit-trail';
+import TaskManagement from '@/pages/leads/additional/task-management';
 
 // Automation components
 import WorkflowBuilder from '@/pages/leads/automation/workflow-builder';
 import TriggerEvents from '@/pages/leads/automation/triggers';
 import ConditionBuilder from '@/pages/leads/automation/conditions';
 import ActionBlocks from '@/pages/leads/automation/actions';
+import LeadNurturingTemplates from '@/pages/leads/automation/lead-nurturing-templates';
+import FollowUpSequences from '@/pages/leads/automation/follow-up-sequences';
+import WelcomeSeries from '@/pages/leads/automation/welcome-series';
+import WorkflowAnalytics from '@/pages/leads/automation/workflow-analytics';
+import AutomationLogs from '@/pages/leads/automation/automation-logs';
+import PerformanceMetrics from '@/pages/leads/automation/performance-metrics';
 
 // Analytics components
 import ReportBuilder from '@/pages/leads/analytics/report-builder';
+import SalesDashboard from '@/pages/leads/analytics/sales-dashboard';
+import PerformanceDashboard from '@/pages/leads/analytics/performance-dashboard';
+import ExecutiveDashboard from '@/pages/leads/analytics/executive-dashboard';
+import StandardReports from '@/pages/leads/analytics/standard-reports';
+import CustomReports from '@/pages/leads/analytics/custom-reports';
+import ScheduledReports from '@/pages/leads/analytics/scheduled-reports';
+import ExportCenter from '@/pages/leads/analytics/export-center';
+import DataBackup from '@/pages/leads/analytics/data-backup';
+import APIAccess from '@/pages/leads/analytics/api-access';
+
+// Data Quality components
+import DuplicateManagement from '@/pages/leads/data-quality/duplicate-management';
+import DataValidation from '@/pages/leads/data-quality/data-validation';
+import DataCleanup from '@/pages/leads/data-quality/data-cleanup';
+
+// Team Management components
+import RolesPermissions from '@/pages/leads/team/roles-permissions';
+import TeamPerformance from '@/pages/leads/team/team-performance';
+import LoadBalancing from '@/pages/leads/team/load-balancing';
+import TerritoryManagement from '@/pages/leads/team/territory-management';
+
+// Collaboration components
+import SharedNotes from '@/pages/leads/collaboration/shared-notes';
+import InternalMessaging from '@/pages/leads/collaboration/internal-messaging';
+import LeadHandoffs from '@/pages/leads/collaboration/lead-handoffs';
+
+// Sales components
+import OpportunityManagement from '@/pages/leads/sales/opportunities';
+import DealTracking from '@/pages/leads/sales/deal-tracking';
+import SalesForecasting from '@/pages/leads/sales/sales-forecasting';
+import ProposalManagement from '@/pages/leads/sales/proposal-management';
+import ContractManagement from '@/pages/leads/sales/contract-management';
 
 // Conversion component
 import LeadConversionWizard from '@/pages/leads/conversion/lead-conversion-wizard';
+
+// Admin components
+import SystemConfiguration from '@/pages/leads/admin/system-configuration';
+import QualificationCriteria from '@/pages/leads/admin/qualification-criteria';
+import EscalationRules from '@/pages/leads/admin/escalation-rules';
+import DataPrivacy from '@/pages/leads/admin/data-privacy';
+import AccessLogs from '@/pages/leads/admin/access-logs';
+import SecuritySettings from '@/pages/leads/admin/security-settings';
+import SystemHealth from '@/pages/leads/admin/system-health';
+import PerformanceMonitoring from '@/pages/leads/admin/performance-monitoring';
+import SystemLogs from '@/pages/leads/admin/system-logs';
+import LeadManagementSettings from '@/pages/leads/settings/lead-management-settings';
+import LeadEnrichmentAnalytics from '@/pages/leads/analytics/lead-enrichment-analytics';
+
 import { Navigate, Route, Routes } from 'react-router';
 
 export function AppRoutingSetup() {
@@ -168,8 +231,8 @@ export function AppRoutingSetup() {
         <Route path="/leads/calendar" element={<LeadCalendarView />} />
         <Route path="/leads/map" element={<LeadMapView />} />
         <Route path="/leads/pipeline" element={<LeadPipelineView />} />
-        <Route path="/leads/detail" element={<LeadDetailPage />} />
-        <Route path="/leads/:id" element={<LeadDetailPage />} />
+        <Route path="/leads/detail" element={<LeadDetailView />} />
+        <Route path="/leads/:id" element={<LeadDetailView />} />
         <Route path="/leads/add" element={<AddLeadPage />} />
         <Route path="/leads/new" element={<AddLeadPage />} />
         <Route path="/leads/conversion" element={<LeadConversionWizard />} />
@@ -181,56 +244,58 @@ export function AppRoutingSetup() {
         <Route path="/leads/communication/hub" element={<CommunicationHub />} />
         <Route path="/leads/communication/email-composer" element={<EmailComposer />} />
         <Route path="/leads/communication/email-templates" element={<EmailTemplates />} />
-        <Route path="/leads/communication/campaigns" element={<div>Email Campaigns Page</div>} />
-        <Route path="/leads/communication/email-analytics" element={<div>Email Analytics Page</div>} />
+        <Route path="/leads/communication/campaigns" element={<EmailCampaigns />} />
+        <Route path="/leads/communication/email-analytics" element={<EmailAnalytics />} />
         <Route path="/leads/communication/whatsapp" element={<WhatsAppChat />} />
         <Route path="/leads/communication/sms" element={<SMSCenter />} />
-        <Route path="/leads/communication/live-chat" element={<div>Live Chat Page</div>} />
+        <Route path="/leads/communication/live-chat" element={<LiveChat />} />
         <Route path="/leads/communication/call-center" element={<CallCenter />} />
-        <Route path="/leads/communication/video-meetings" element={<div>Video Meetings Page</div>} />
-        <Route path="/leads/communication/call-analytics" element={<div>Call Analytics Page</div>} />
-        <Route path="/leads/communication/history" element={<div>Communication History Page</div>} />
-        <Route path="/leads/communication/timeline" element={<div>Interaction Timeline Page</div>} />
-        <Route path="/leads/communication/analytics" element={<div>Response Analytics Page</div>} />
+        <Route path="/leads/communication/video-meetings" element={<VideoMeetings />} />
+        <Route path="/leads/communication/call-analytics" element={<CallAnalytics />} />
+        <Route path="/leads/communication/history" element={<CommunicationHistory />} />
+        <Route path="/leads/communication/timeline" element={<InteractionTimeline />} />
+        <Route path="/leads/communication/analytics" element={<ResponseAnalytics />} />
 
         {/* Sales Operations */}
-        <Route path="/leads/sales/opportunities" element={<div>Opportunity Management Page</div>} />
-        <Route path="/leads/sales/deals" element={<div>Deal Tracking Page</div>} />
-        <Route path="/leads/sales/forecasting" element={<div>Sales Forecasting Page</div>} />
-        <Route path="/leads/sales/contracts" element={<div>Contract Management Page</div>} />
+        <Route path="/leads/sales/opportunities" element={<OpportunityManagement />} />
+        <Route path="/leads/sales/deals" element={<DealTracking />} />
+        <Route path="/leads/sales/forecasting" element={<SalesForecasting />} />
+        <Route path="/leads/sales/contracts" element={<ContractManagement />} />
+        <Route path="/leads/sales/proposals" element={<ProposalManagement />} />
 
         {/* Automation & Workflows */}
         <Route path="/leads/automation/workflow-builder" element={<WorkflowBuilder />} />
         <Route path="/leads/automation/triggers" element={<TriggerEvents />} />
         <Route path="/leads/automation/conditions" element={<ConditionBuilder />} />
         <Route path="/leads/automation/actions" element={<ActionBlocks />} />
-        <Route path="/leads/automation/templates/nurturing" element={<div>Lead Nurturing Templates Page</div>} />
-        <Route path="/leads/automation/templates/followup" element={<div>Follow-up Sequences Page</div>} />
-        <Route path="/leads/automation/templates/welcome" element={<div>Welcome Series Page</div>} />
-        <Route path="/leads/automation/analytics" element={<div>Workflow Analytics Page</div>} />
-        <Route path="/leads/automation/logs" element={<div>Automation Logs Page</div>} />
-        <Route path="/leads/automation/metrics" element={<div>Performance Metrics Page</div>} />
+        <Route path="/leads/automation/templates/nurturing" element={<LeadNurturingTemplates />} />
+        <Route path="/leads/automation/templates/followup" element={<FollowUpSequences />} />
+        <Route path="/leads/automation/templates/welcome" element={<WelcomeSeries />} />
+        <Route path="/leads/automation/analytics" element={<WorkflowAnalytics />} />
+        <Route path="/leads/automation/logs" element={<AutomationLogs />} />
+        <Route path="/leads/automation/metrics" element={<PerformanceMetrics />} />
 
         {/* Analytics & Reporting */}
         <Route path="/leads/analytics/dashboard" element={<LeadAnalyticsDashboard />} />
-        <Route path="/leads/analytics/sales-dashboard" element={<div>Sales Dashboard Page</div>} />
-        <Route path="/leads/analytics/performance-dashboard" element={<div>Performance Dashboard Page</div>} />
-        <Route path="/leads/analytics/executive-dashboard" element={<div>Executive Dashboard Page</div>} />
+        <Route path="/leads/analytics/sales-dashboard" element={<SalesDashboard />} />
+        <Route path="/leads/analytics/performance-dashboard" element={<PerformanceDashboard />} />
+        <Route path="/leads/analytics/executive-dashboard" element={<ExecutiveDashboard />} />
         <Route path="/leads/analytics/report-builder" element={<ReportBuilder />} />
-        <Route path="/leads/analytics/standard-reports" element={<div>Standard Reports Page</div>} />
-        <Route path="/leads/analytics/custom-reports" element={<div>Custom Reports Page</div>} />
-        <Route path="/leads/analytics/scheduled-reports" element={<div>Scheduled Reports Page</div>} />
-        <Route path="/leads/analytics/export-center" element={<div>Export Center Page</div>} />
-        <Route path="/leads/analytics/backup" element={<div>Data Backup Page</div>} />
-        <Route path="/leads/analytics/api" element={<div>API Access Page</div>} />
+        <Route path="/leads/analytics/standard-reports" element={<StandardReports />} />
+        <Route path="/leads/analytics/custom-reports" element={<CustomReports />} />
+        <Route path="/leads/analytics/scheduled-reports" element={<ScheduledReports />} />
+        <Route path="/leads/analytics/export-center" element={<ExportCenter />} />
+        <Route path="/leads/analytics/backup" element={<DataBackup />} />
+        <Route path="/leads/analytics/api" element={<APIAccess />} />
+        <Route path="/leads/analytics/enrichment" element={<LeadEnrichmentAnalytics />} />
 
         {/* Data Management */}
         <Route path="/leads/master-data/lead-sources" element={<LeadSources />} />
         <Route path="/leads/master-data/lead-statuses" element={<LeadStatuses />} />
         <Route path="/leads/master-data/lead-categories" element={<LeadCategories />} />
-        <Route path="/leads/master-data/lead-stages" element={<div>Lead Stages Page</div>} />
+        <Route path="/leads/master-data/lead-stages" element={<LeadStages />} />
         <Route path="/leads/master-data/industries" element={<Industries />} />
-        <Route path="/leads/master-data/company-sizes" element={<div>Company Sizes Page</div>} />
+        <Route path="/leads/master-data/company-sizes" element={<CompanySizes />} />
         <Route path="/leads/master-data/project-types" element={<ProjectTypes />} />
         <Route path="/leads/master-data/service-types" element={<div>Service Types Page</div>} />
         <Route path="/leads/master-data/countries" element={<LocationMasters />} />
@@ -242,16 +307,16 @@ export function AppRoutingSetup() {
         <Route path="/leads/master-data/scoring-rules" element={<ScoringRules />} />
 
         {/* Data Quality */}
-        <Route path="/leads/data-quality/duplicates" element={<div>Duplicate Management Page</div>} />
-        <Route path="/leads/data-quality/validation" element={<div>Data Validation Page</div>} />
-        <Route path="/leads/data-quality/cleanup" element={<div>Data Cleanup Page</div>} />
+        <Route path="/leads/data-quality/duplicates" element={<DuplicateManagement />} />
+        <Route path="/leads/data-quality/validation" element={<DataValidation />} />
+        <Route path="/leads/data-quality/cleanup" element={<DataCleanup />} />
 
         {/* Additional Tools */}
         <Route path="/leads/additional/quote-generator" element={<QuoteGenerator />} />
-        <Route path="/leads/additional/proposal-management" element={<div>Proposal Management Page</div>} />
+        <Route path="/leads/additional/proposal-management" element={<ProposalManagement />} />
         <Route path="/leads/additional/meeting-scheduler" element={<MeetingScheduler />} />
         <Route path="/leads/additional/follow-up-manager" element={<FollowUpManager />} />
-        <Route path="/leads/additional/task-management" element={<div>Task Management Page</div>} />
+        <Route path="/leads/additional/task-management" element={<TaskManagement />} />
         <Route path="/leads/additional/activity-management" element={<ActivityManagement />} />
         <Route path="/leads/additional/document-management" element={<div>Document Management Page</div>} />
         <Route path="/leads/additional/campaign-manager" element={<CampaignManager />} />
@@ -260,29 +325,29 @@ export function AppRoutingSetup() {
         <Route path="/leads/additional/audit-trail" element={<AuditTrail />} />
 
         {/* Team & Collaboration */}
-        <Route path="/leads/team/roles" element={<div>Roles & Permissions Page</div>} />
-        <Route path="/leads/team/performance" element={<div>Team Performance Page</div>} />
-        <Route path="/leads/team/load-balancing" element={<div>Load Balancing Page</div>} />
-        <Route path="/leads/team/territories" element={<div>Territory Management Page</div>} />
-        <Route path="/leads/collaboration/notes" element={<div>Shared Notes Page</div>} />
-        <Route path="/leads/collaboration/messaging" element={<div>Internal Messaging Page</div>} />
-        <Route path="/leads/collaboration/handoffs" element={<div>Lead Handoffs Page</div>} />
+        <Route path="/leads/team/roles" element={<RolesPermissions />} />
+        <Route path="/leads/team/performance" element={<TeamPerformance />} />
+        <Route path="/leads/team/load-balancing" element={<LoadBalancing />} />
+        <Route path="/leads/team/territories" element={<TerritoryManagement />} />
+        <Route path="/leads/collaboration/notes" element={<SharedNotes />} />
+        <Route path="/leads/collaboration/messaging" element={<InternalMessaging />} />
+        <Route path="/leads/collaboration/handoffs" element={<LeadHandoffs />} />
 
         {/* Administration */}
-        <Route path="/leads/admin/general-settings" element={<div>General Settings Page</div>} />
+        <Route path="/leads/admin/general-settings" element={<SystemConfiguration />} />
         <Route path="/leads/admin/email-settings" element={<div>Email Configuration Page</div>} />
         <Route path="/leads/admin/integrations" element={<div>Integrations Page</div>} />
-        <Route path="/leads/admin/qualification" element={<div>Qualification Criteria Page</div>} />
-        <Route path="/leads/admin/escalation" element={<div>Escalation Rules Page</div>} />
-        <Route path="/leads/admin/privacy" element={<div>Data Privacy Page</div>} />
-        <Route path="/leads/admin/access-logs" element={<div>Access Logs Page</div>} />
-        <Route path="/leads/admin/security" element={<div>Security Settings Page</div>} />
-        <Route path="/leads/admin/system-health" element={<div>System Health Page</div>} />
-        <Route path="/leads/admin/performance" element={<div>Performance Monitoring Page</div>} />
-        <Route path="/leads/admin/logs" element={<div>System Logs Page</div>} />
+        <Route path="/leads/admin/qualification" element={<QualificationCriteria />} />
+        <Route path="/leads/admin/escalation" element={<EscalationRules />} />
+        <Route path="/leads/admin/privacy" element={<DataPrivacy />} />
+        <Route path="/leads/admin/access-logs" element={<AccessLogs />} />
+        <Route path="/leads/admin/security" element={<SecuritySettings />} />
+        <Route path="/leads/admin/system-health" element={<SystemHealth />} />
+        <Route path="/leads/admin/performance" element={<PerformanceMonitoring />} />
+        <Route path="/leads/admin/logs" element={<SystemLogs />} />
 
         {/* Settings */}
-        <Route path="/leads/settings" element={<div>Lead Management Settings Page</div>} />
+        <Route path="/leads/settings" element={<LeadManagementSettings />} />
 
         {/* Legacy routes for backward compatibility */}
         <Route path="/leads/import" element={<ImportLeadsPage />} />

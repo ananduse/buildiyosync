@@ -1163,7 +1163,7 @@ export function LeadDetailView() {
                 </Card>
               </TabsContent>
 
-              {/* Other tabs would follow similar patterns */}
+              {/* Documents Tab */}
               <TabsContent value="documents" className="mt-6">
                 <Card>
                   <CardHeader>
@@ -1239,6 +1239,315 @@ export function LeadDetailView() {
                           </div>
                         </div>
                       ))}
+                    </div>
+                  </CardContent>
+                </Card>
+              </TabsContent>
+
+              {/* Proposals Tab */}
+              <TabsContent value="proposals" className="mt-6">
+                <Card>
+                  <CardHeader>
+                    <div className="flex items-center justify-between">
+                      <CardTitle>Proposals</CardTitle>
+                      <Button size="sm">
+                        <Plus className="h-4 w-4 mr-2" />
+                        Create Proposal
+                      </Button>
+                    </div>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-4">
+                      <div className="flex items-center justify-between p-4 border rounded-lg">
+                        <div className="flex items-center space-x-3">
+                          <div className="p-2 bg-blue-100 rounded">
+                            <FileText className="h-5 w-5 text-blue-600" />
+                          </div>
+                          <div>
+                            <p className="font-medium text-sm">Commercial Building Proposal v2</p>
+                            <p className="text-xs text-gray-500">Created Jan 17, 2024 • $75,000</p>
+                          </div>
+                        </div>
+                        <div className="flex items-center space-x-2">
+                          <Badge className="bg-green-100 text-green-800">Sent</Badge>
+                          <Button variant="ghost" size="sm">
+                            <Eye className="h-4 w-4" />
+                          </Button>
+                          <Button variant="ghost" size="sm">
+                            <Download className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      </div>
+                      
+                      <div className="flex items-center justify-between p-4 border rounded-lg">
+                        <div className="flex items-center space-x-3">
+                          <div className="p-2 bg-gray-100 rounded">
+                            <FileText className="h-5 w-5 text-gray-600" />
+                          </div>
+                          <div>
+                            <p className="font-medium text-sm">Initial Proposal v1</p>
+                            <p className="text-xs text-gray-500">Created Jan 15, 2024 • $65,000</p>
+                          </div>
+                        </div>
+                        <div className="flex items-center space-x-2">
+                          <Badge variant="outline">Draft</Badge>
+                          <Button variant="ghost" size="sm">
+                            <Edit className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              </TabsContent>
+
+              {/* Notes Tab */}
+              <TabsContent value="notes" className="mt-6">
+                <Card>
+                  <CardHeader>
+                    <div className="flex items-center justify-between">
+                      <CardTitle>Notes & Observations</CardTitle>
+                      <Button size="sm">
+                        <Plus className="h-4 w-4 mr-2" />
+                        Add Note
+                      </Button>
+                    </div>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-4">
+                      <div className="border rounded-lg p-4">
+                        <div className="flex items-start justify-between mb-2">
+                          <div className="flex items-center space-x-2">
+                            <Avatar className="h-6 w-6">
+                              <AvatarFallback className="text-xs bg-blue-100 text-blue-600">SJ</AvatarFallback>
+                            </Avatar>
+                            <span className="text-sm font-medium">Sarah Johnson</span>
+                            <span className="text-xs text-gray-500">Jan 18, 2024 at 2:30 PM</span>
+                          </div>
+                          <Button variant="ghost" size="sm">
+                            <Edit className="h-3 w-3" />
+                          </Button>
+                        </div>
+                        <p className="text-sm">
+                          Client is very interested in sustainable building features. They emphasized the importance of 
+                          LEED certification and energy-efficient systems. Budget is confirmed at $75K but they're 
+                          willing to go up to $85K for additional green features.
+                        </p>
+                        <div className="flex space-x-2 mt-2">
+                          <Badge variant="secondary" className="text-xs">Important</Badge>
+                          <Badge variant="secondary" className="text-xs">Budget</Badge>
+                        </div>
+                      </div>
+
+                      <div className="border rounded-lg p-4">
+                        <div className="flex items-start justify-between mb-2">
+                          <div className="flex items-center space-x-2">
+                            <Avatar className="h-6 w-6">
+                              <AvatarFallback className="text-xs bg-purple-100 text-purple-600">MC</AvatarFallback>
+                            </Avatar>
+                            <span className="text-sm font-medium">Mike Chen</span>
+                            <span className="text-xs text-gray-500">Jan 16, 2024 at 4:15 PM</span>
+                          </div>
+                        </div>
+                        <p className="text-sm">
+                          Technical discussion went well. They're looking for flexible office spaces that can be 
+                          reconfigured easily. Parking for 50+ vehicles is a must-have requirement.
+                        </p>
+                        <div className="flex space-x-2 mt-2">
+                          <Badge variant="secondary" className="text-xs">Technical</Badge>
+                          <Badge variant="secondary" className="text-xs">Requirements</Badge>
+                        </div>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              </TabsContent>
+
+              {/* Analytics Tab */}
+              <TabsContent value="analytics" className="mt-6">
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="text-base">Lead Score Breakdown</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="space-y-4">
+                        <div className="flex items-center justify-between">
+                          <span className="text-sm">Company Size</span>
+                          <div className="flex items-center space-x-2">
+                            <Progress value={85} className="w-20 h-2" />
+                            <span className="text-sm font-medium">85</span>
+                          </div>
+                        </div>
+                        <div className="flex items-center justify-between">
+                          <span className="text-sm">Budget Fit</span>
+                          <div className="flex items-center space-x-2">
+                            <Progress value={90} className="w-20 h-2" />
+                            <span className="text-sm font-medium">90</span>
+                          </div>
+                        </div>
+                        <div className="flex items-center justify-between">
+                          <span className="text-sm">Engagement</span>
+                          <div className="flex items-center space-x-2">
+                            <Progress value={75} className="w-20 h-2" />
+                            <span className="text-sm font-medium">75</span>
+                          </div>
+                        </div>
+                        <div className="flex items-center justify-between">
+                          <span className="text-sm">Timeline Match</span>
+                          <div className="flex items-center space-x-2">
+                            <Progress value={95} className="w-20 h-2" />
+                            <span className="text-sm font-medium">95</span>
+                          </div>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="text-base">Engagement Analytics</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="space-y-4">
+                        <div className="flex items-center justify-between">
+                          <span className="text-sm text-gray-500">Email Opens</span>
+                          <span className="text-sm font-medium">67% (12/18)</span>
+                        </div>
+                        <div className="flex items-center justify-between">
+                          <span className="text-sm text-gray-500">Link Clicks</span>
+                          <span className="text-sm font-medium">8 clicks</span>
+                        </div>
+                        <div className="flex items-center justify-between">
+                          <span className="text-sm text-gray-500">Document Views</span>
+                          <span className="text-sm font-medium">5 views</span>
+                        </div>
+                        <div className="flex items-center justify-between">
+                          <span className="text-sm text-gray-500">Website Visits</span>
+                          <span className="text-sm font-medium">12 visits</span>
+                        </div>
+                        <div className="flex items-center justify-between">
+                          <span className="text-sm text-gray-500">Response Time</span>
+                          <span className="text-sm font-medium">2.3 hours avg</span>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="text-base">Conversion Probability</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="text-center">
+                        <div className="text-3xl font-bold text-green-600 mb-2">78%</div>
+                        <p className="text-sm text-gray-500 mb-4">Likelihood to convert</p>
+                        
+                        <div className="space-y-2 text-sm">
+                          <div className="flex items-center justify-between">
+                            <span>Historical patterns</span>
+                            <TrendingUp className="h-4 w-4 text-green-600" />
+                          </div>
+                          <div className="flex items-center justify-between">
+                            <span>Engagement level</span>
+                            <TrendingUp className="h-4 w-4 text-green-600" />
+                          </div>
+                          <div className="flex items-center justify-between">
+                            <span>Budget alignment</span>
+                            <CheckCircle className="h-4 w-4 text-green-600" />
+                          </div>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="text-base">Risk Factors</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="space-y-3">
+                        <div className="flex items-center space-x-2 p-2 bg-yellow-50 rounded">
+                          <AlertTriangle className="h-4 w-4 text-yellow-600" />
+                          <span className="text-sm">Budget approval pending</span>
+                        </div>
+                        <div className="flex items-center space-x-2 p-2 bg-orange-50 rounded">
+                          <AlertTriangle className="h-4 w-4 text-orange-600" />
+                          <span className="text-sm">Competitor offering lower price</span>
+                        </div>
+                        <div className="flex items-center space-x-2 p-2 bg-blue-50 rounded">
+                          <Info className="h-4 w-4 text-blue-600" />
+                          <span className="text-sm">Q1 budget cycle timing</span>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </div>
+              </TabsContent>
+
+              {/* History Tab */}
+              <TabsContent value="history" className="mt-6">
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Lead History & Audit Trail</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-4">
+                      <div className="flex space-x-3 p-3 border rounded-lg">
+                        <div className="p-2 bg-blue-100 rounded">
+                          <Activity className="h-4 w-4 text-blue-600" />
+                        </div>
+                        <div className="flex-1">
+                          <div className="flex items-center justify-between">
+                            <p className="font-medium text-sm">Status changed to Qualified</p>
+                            <span className="text-xs text-gray-500">Jan 16, 2024 3:45 PM</span>
+                          </div>
+                          <p className="text-sm text-gray-600">Changed from Contacted to Qualified</p>
+                          <p className="text-xs text-gray-500">by Sarah Johnson</p>
+                        </div>
+                      </div>
+
+                      <div className="flex space-x-3 p-3 border rounded-lg">
+                        <div className="p-2 bg-green-100 rounded">
+                          <User className="h-4 w-4 text-green-600" />
+                        </div>
+                        <div className="flex-1">
+                          <div className="flex items-center justify-between">
+                            <p className="font-medium text-sm">Lead assigned</p>
+                            <span className="text-xs text-gray-500">Jan 15, 2024 10:30 AM</span>
+                          </div>
+                          <p className="text-sm text-gray-600">Assigned to Sarah Johnson from Mike Chen</p>
+                          <p className="text-xs text-gray-500">by System Auto-assignment</p>
+                        </div>
+                      </div>
+
+                      <div className="flex space-x-3 p-3 border rounded-lg">
+                        <div className="p-2 bg-purple-100 rounded">
+                          <Star className="h-4 w-4 text-purple-600" />
+                        </div>
+                        <div className="flex-1">
+                          <div className="flex items-center justify-between">
+                            <p className="font-medium text-sm">Lead score updated</p>
+                            <span className="text-xs text-gray-500">Jan 14, 2024 2:15 PM</span>
+                          </div>
+                          <p className="text-sm text-gray-600">Score increased from 75 to 85</p>
+                          <p className="text-xs text-gray-500">by Lead Scoring Engine</p>
+                        </div>
+                      </div>
+
+                      <div className="flex space-x-3 p-3 border rounded-lg">
+                        <div className="p-2 bg-gray-100 rounded">
+                          <Plus className="h-4 w-4 text-gray-600" />
+                        </div>
+                        <div className="flex-1">
+                          <div className="flex items-center justify-between">
+                            <p className="font-medium text-sm">Lead created</p>
+                            <span className="text-xs text-gray-500">Jan 10, 2024 9:00 AM</span>
+                          </div>
+                          <p className="text-sm text-gray-600">Lead imported from website contact form</p>
+                          <p className="text-xs text-gray-500">by Website Integration</p>
+                        </div>
+                      </div>
                     </div>
                   </CardContent>
                 </Card>
