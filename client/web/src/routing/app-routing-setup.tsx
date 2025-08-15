@@ -233,6 +233,8 @@ export function AppRoutingSetup() {
         <Route path="/leads/pipeline" element={<LeadPipelineView />} />
         <Route path="/leads/detail" element={<LeadDetailView />} />
         <Route path="/leads/:id" element={<LeadDetailView />} />
+        <Route path="/leads/:id/view" element={<LeadDetailView />} />
+        <Route path="/leads/:id/edit" element={<LeadDetailView />} />
         <Route path="/leads/add" element={<AddLeadPage />} />
         <Route path="/leads/new" element={<AddLeadPage />} />
         <Route path="/leads/conversion" element={<LeadConversionWizard />} />

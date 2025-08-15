@@ -1,5 +1,8 @@
 {
   "permissions": {
-    "defaultMode": "acceptEdits"
+    "defaultMode": "acceptEdits",
+    "additionalDirectories": [
+      "E:\\E\\Buildiyo_Projects\\buildiyoSync\\client"
+    ]
   }
 }

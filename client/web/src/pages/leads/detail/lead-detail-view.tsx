@@ -27,6 +27,8 @@ import {
   Target,
   TrendingUp,
   AlertCircle,
+  AlertTriangle,
+  Info,
   ChevronRight,
   Paperclip,
   Play,
