@@ -2,6 +2,7 @@ import {
   AlertCircle,
   Award,
   Badge,
+  BarChart3,
   Bell,
   Bitcoin,
   Bolt,
@@ -14,6 +15,7 @@ import {
   Code,
   Codepen,
   Coffee,
+  Database,
   File as DocumentIcon,
   Euro,
   Eye,
@@ -68,15 +70,278 @@ export const MENU_SIDEBAR: MenuConfig = [
   },
   { heading: 'Lead Management' },
   {
-    title: 'Leads',
+    title: 'Leads Overview',
     icon: Target,
     children: [
       { title: 'Dashboard', path: '/leads/dashboard' },
-      { title: 'All Leads', path: '/leads/list' },
+      { title: 'Recent Activity', path: '/leads/timeline' },
+    ],
+  },
+  {
+    title: 'Lead Views',
+    icon: Eye,
+    children: [
+      { title: 'All Leads', path: '/leads/list', badge: '1,247' },
       { title: 'Kanban Board', path: '/leads/board' },
-      { title: 'Add New Lead', path: '/leads/new' },
-      { title: 'Import Leads', path: '/leads/import' },
-      { title: 'Reports & Analytics', path: '/leads/reports' },
+      { title: 'Calendar View', path: '/leads/calendar' },
+      { title: 'Map View', path: '/leads/map' },
+      { title: 'Pipeline View', path: '/leads/pipeline', badge: 'New' },
+    ],
+  },
+  {
+    title: 'Lead Operations',
+    icon: Settings,
+    children: [
+      { title: 'Add New Lead', path: '/leads/add' },
+      { title: 'Lead Details', path: '/leads/detail' },
+      { title: 'Lead Conversion', path: '/leads/conversion', badge: 'New' },
+      { title: 'Advanced Search', path: '/leads/search' },
+      { title: 'Import/Export', path: '/leads/import-export' },
+      { title: 'Bulk Operations', path: '/leads/additional/bulk-operations' },
+    ],
+  },
+  {
+    title: 'Communication Hub',
+    icon: MessageSquare,
+    children: [
+      { title: 'Communication Center', path: '/leads/communication/hub', badge: '12' },
+      {
+        title: 'Email Marketing',
+        children: [
+          { title: 'Compose Email', path: '/leads/communication/email-composer' },
+          { title: 'Email Templates', path: '/leads/communication/email-templates', badge: '24' },
+          { title: 'Email Campaigns', path: '/leads/communication/campaigns' },
+          { title: 'Email Analytics', path: '/leads/communication/email-analytics' },
+        ],
+      },
+      {
+        title: 'Messaging Channels',
+        children: [
+          { title: 'WhatsApp Business', path: '/leads/communication/whatsapp', badge: '8' },
+          { title: 'SMS Marketing', path: '/leads/communication/sms', badge: '3' },
+          { title: 'Live Chat', path: '/leads/communication/live-chat' },
+        ],
+      },
+      {
+        title: 'Voice & Video',
+        children: [
+          { title: 'Call Center', path: '/leads/communication/call-center' },
+          { title: 'Video Meetings', path: '/leads/communication/video-meetings' },
+          { title: 'Call Analytics', path: '/leads/communication/call-analytics' },
+        ],
+      },
+      {
+        title: 'Communication Tracking',
+        children: [
+          { title: 'Communication History', path: '/leads/communication/history' },
+          { title: 'Interaction Timeline', path: '/leads/communication/timeline' },
+          { title: 'Response Analytics', path: '/leads/communication/analytics' },
+        ],
+      },
+    ],
+  },
+  {
+    title: 'Sales Operations',
+    icon: TrendingUp,
+    children: [
+      {
+        title: 'Sales Pipeline',
+        children: [
+          { title: 'Opportunity Management', path: '/leads/sales/opportunities' },
+          { title: 'Deal Tracking', path: '/leads/sales/deals' },
+          { title: 'Sales Forecasting', path: '/leads/sales/forecasting' },
+        ],
+      },
+      {
+        title: 'Quotations & Proposals',
+        children: [
+          { title: 'Quote Generator', path: '/leads/additional/quote-generator' },
+          { title: 'Proposal Management', path: '/leads/additional/proposal-management' },
+          { title: 'Contract Management', path: '/leads/sales/contracts' },
+        ],
+      },
+      {
+        title: 'Sales Activities',
+        children: [
+          { title: 'Meeting Scheduler', path: '/leads/additional/meeting-scheduler' },
+          { title: 'Follow-up Manager', path: '/leads/additional/follow-up-manager' },
+          { title: 'Task Management', path: '/leads/additional/task-management' },
+        ],
+      },
+    ],
+  },
+  {
+    title: 'Automation & Workflows',
+    icon: Zap,
+    children: [
+      { title: 'Workflow Designer', path: '/leads/automation/workflow-builder', badge: 'New' },
+      {
+        title: 'Automation Components',
+        children: [
+          { title: 'Trigger Events', path: '/leads/automation/triggers', badge: '15' },
+          { title: 'Condition Builder', path: '/leads/automation/conditions', badge: '8' },
+          { title: 'Action Blocks', path: '/leads/automation/actions', badge: '12' },
+        ],
+      },
+      {
+        title: 'Automation Templates',
+        children: [
+          { title: 'Lead Nurturing Templates', path: '/leads/automation/templates/nurturing' },
+          { title: 'Follow-up Sequences', path: '/leads/automation/templates/followup' },
+          { title: 'Welcome Series', path: '/leads/automation/templates/welcome' },
+        ],
+      },
+      {
+        title: 'Monitoring & Analytics',
+        children: [
+          { title: 'Workflow Analytics', path: '/leads/automation/analytics' },
+          { title: 'Automation Logs', path: '/leads/automation/logs' },
+          { title: 'Performance Metrics', path: '/leads/automation/metrics' },
+        ],
+      },
+    ],
+  },
+  {
+    title: 'Analytics & Reporting',
+    icon: BarChart3,
+    children: [
+      {
+        title: 'Dashboards',
+        children: [
+          { title: 'Lead Analytics', path: '/leads/analytics/dashboard' },
+          { title: 'Sales Dashboard', path: '/leads/analytics/sales-dashboard' },
+          { title: 'Performance Dashboard', path: '/leads/analytics/performance-dashboard' },
+          { title: 'Executive Dashboard', path: '/leads/analytics/executive-dashboard' },
+        ],
+      },
+      { title: 'Report Builder', path: '/leads/analytics/report-builder', badge: 'New' },
+      {
+        title: 'Reports',
+        children: [
+          { title: 'Standard Reports', path: '/leads/analytics/standard-reports' },
+          { title: 'Custom Reports', path: '/leads/analytics/custom-reports' },
+          { title: 'Scheduled Reports', path: '/leads/analytics/scheduled-reports' },
+        ],
+      },
+      {
+        title: 'Data Export',
+        children: [
+          { title: 'Export Center', path: '/leads/analytics/export-center' },
+          { title: 'Data Backup', path: '/leads/analytics/backup' },
+          { title: 'API Access', path: '/leads/analytics/api' },
+        ],
+      },
+    ],
+  },
+  {
+    title: 'Data Management',
+    icon: Database,
+    children: [
+      {
+        title: 'Lead Data',
+        children: [
+          { title: 'Lead Sources', path: '/leads/master-data/lead-sources', badge: '12' },
+          { title: 'Lead Statuses', path: '/leads/master-data/lead-statuses', badge: '8' },
+          { title: 'Lead Categories', path: '/leads/master-data/lead-categories', badge: '6' },
+          { title: 'Lead Stages', path: '/leads/master-data/lead-stages' },
+        ],
+      },
+      {
+        title: 'Organizational Data',
+        children: [
+          { title: 'Industries', path: '/leads/master-data/industries' },
+          { title: 'Company Sizes', path: '/leads/master-data/company-sizes' },
+          { title: 'Project Types', path: '/leads/master-data/project-types' },
+          { title: 'Service Types', path: '/leads/master-data/service-types' },
+        ],
+      },
+      {
+        title: 'Geographical Data',
+        children: [
+          { title: 'Countries', path: '/leads/master-data/countries' },
+          { title: 'States/Regions', path: '/leads/master-data/states' },
+          { title: 'Cities', path: '/leads/master-data/cities' },
+          { title: 'Sales Territories', path: '/leads/master-data/territories' },
+        ],
+      },
+      {
+        title: 'Data Quality',
+        children: [
+          { title: 'Lead Enrichment Tools', path: '/leads/additional/lead-tools' },
+          { title: 'Duplicate Management', path: '/leads/data-quality/duplicates' },
+          { title: 'Data Validation', path: '/leads/data-quality/validation' },
+          { title: 'Data Cleanup', path: '/leads/data-quality/cleanup' },
+        ],
+      },
+    ],
+  },
+  {
+    title: 'Team & Collaboration',
+    icon: Users,
+    children: [
+      {
+        title: 'Team Management',
+        children: [
+          { title: 'Team Members', path: '/leads/master-data/team-management' },
+          { title: 'Roles & Permissions', path: '/leads/team/roles' },
+          { title: 'Team Performance', path: '/leads/team/performance' },
+        ],
+      },
+      {
+        title: 'Assignment & Distribution',
+        children: [
+          { title: 'Assignment Rules', path: '/leads/master-data/assignment-rules' },
+          { title: 'Load Balancing', path: '/leads/team/load-balancing' },
+          { title: 'Territory Management', path: '/leads/team/territories' },
+        ],
+      },
+      {
+        title: 'Collaboration Tools',
+        children: [
+          { title: 'Shared Notes', path: '/leads/collaboration/notes' },
+          { title: 'Internal Messaging', path: '/leads/collaboration/messaging' },
+          { title: 'Lead Handoffs', path: '/leads/collaboration/handoffs' },
+        ],
+      },
+    ],
+  },
+  {
+    title: 'Administration',
+    icon: Settings,
+    children: [
+      {
+        title: 'System Configuration',
+        children: [
+          { title: 'General Settings', path: '/leads/admin/general-settings' },
+          { title: 'Email Configuration', path: '/leads/admin/email-settings' },
+          { title: 'Integrations', path: '/leads/admin/integrations' },
+        ],
+      },
+      {
+        title: 'Business Rules',
+        children: [
+          { title: 'Lead Scoring Rules', path: '/leads/master-data/scoring-rules' },
+          { title: 'Qualification Criteria', path: '/leads/admin/qualification' },
+          { title: 'Escalation Rules', path: '/leads/admin/escalation' },
+        ],
+      },
+      {
+        title: 'Compliance & Security',
+        children: [
+          { title: 'Audit Trail', path: '/leads/additional/audit-trail' },
+          { title: 'Data Privacy (GDPR)', path: '/leads/admin/privacy' },
+          { title: 'Access Logs', path: '/leads/admin/access-logs' },
+          { title: 'Security Settings', path: '/leads/admin/security' },
+        ],
+      },
+      {
+        title: 'System Maintenance',
+        children: [
+          { title: 'System Health', path: '/leads/admin/system-health' },
+          { title: 'Performance Monitoring', path: '/leads/admin/performance' },
+          { title: 'System Logs', path: '/leads/admin/logs' },
+        ],
+      },
     ],
   },
   { heading: 'User' },

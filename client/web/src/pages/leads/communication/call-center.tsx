@@ -57,7 +57,7 @@ import {
   UserX,
   Maximize2,
   Minimize2,
-  Record,
+  Circle,
   StopCircle
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
@@ -514,7 +514,7 @@ function AgentCard({ agent }: { agent: CallAgent }) {
               <span className="font-medium">Active Call</span>
               {agent.activeCall.isRecording && (
                 <Badge variant="outline" className="text-xs">
-                  <Record className="h-3 w-3 mr-1" />
+                  <Circle className="h-3 w-3 mr-1" />
                   Recording
                 </Badge>
               )}
@@ -1067,7 +1067,7 @@ export function CallCenter() {
                     <Volume2 className="h-4 w-4" />
                   </Button>
                   <Button variant="outline" size="sm">
-                    <Record className="h-4 w-4" />
+                    <Circle className="h-4 w-4" />
                   </Button>
                   <Button variant="destructive" onClick={handleEndCall}>
                     <StopCircle className="h-4 w-4" />
@@ -1121,3 +1121,5 @@ export function CallCenter() {
     </TooltipProvider>
   );
 }
+
+export default CallCenter;

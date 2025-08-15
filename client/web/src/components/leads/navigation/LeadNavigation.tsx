@@ -1,8 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { Link, useLocation } from 'react-router-dom';
 import { 
   Users, 
   BarChart3, 
@@ -27,7 +26,7 @@ import {
   Mail,
   Phone,
   Video,
-  Sms,
+  Smartphone,
   Headphones,
   Building,
   MapPin,
@@ -45,7 +44,46 @@ import {
   GitBranch,
   Activity,
   Eye,
-  RefreshCw
+  RefreshCw,
+  Upload,
+  Edit,
+  MessageCircle,
+  DollarSign,
+  CheckSquare,
+  Calculator,
+  Globe,
+  Layers,
+  Copy,
+  CheckCircle2,
+  Trash2,
+  Award,
+  Scale,
+  Share,
+  StickyNote,
+  ArrowRightLeft,
+  Link as LinkIcon,
+  CheckCircle,
+  AlertTriangle,
+  FileCheck,
+  ShieldCheck,
+  Lock,
+  Gauge,
+  Download,
+  Code,
+  Heart,
+  UserPlus,
+  Play,
+  Cog,
+  Template,
+  Monitor,
+  FileBarChart,
+  FilePenLine,
+  Crown,
+  Compass,
+  Timeline,
+  FileSign,
+  Repeat,
+  Star
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
@@ -70,8 +108,8 @@ interface NavigationGroup {
 
 const navigationData: NavigationGroup[] = [
   {
-    id: 'core',
-    title: 'Core Screens',
+    id: 'overview',
+    title: 'Overview',
     items: [
       {
         id: 'dashboard',
@@ -81,349 +119,835 @@ const navigationData: NavigationGroup[] = [
         badge: '15'
       },
       {
-        id: 'leads',
-        title: 'Lead Management',
-        icon: Users,
+        id: 'quick-actions',
+        title: 'Quick Actions',
+        icon: Zap,
         children: [
           {
-            id: 'leads-list',
-            title: 'All Leads',
-            href: '/leads/list',
-            icon: List
-          },
-          {
-            id: 'leads-kanban',
-            title: 'Kanban Board',
-            href: '/leads/board',
-            icon: Grid
-          },
-          {
-            id: 'leads-calendar',
-            title: 'Calendar View',
-            href: '/leads/calendar',
-            icon: Calendar
-          },
-          {
-            id: 'leads-map',
-            title: 'Map View',
-            href: '/leads/map',
-            icon: Map
-          },
-          {
-            id: 'leads-detail',
-            title: 'Lead Details',
-            href: '/leads/detail',
-            icon: User
-          },
-          {
-            id: 'leads-add',
-            title: 'Add Lead',
+            id: 'add-lead',
+            title: 'Add New Lead',
             href: '/leads/add',
             icon: Plus
           },
           {
-            id: 'leads-import',
-            title: 'Import/Export',
+            id: 'import-leads',
+            title: 'Import Leads',
             href: '/leads/import-export',
-            icon: RefreshCw
+            icon: Upload
+          },
+          {
+            id: 'bulk-actions',
+            title: 'Bulk Operations',
+            href: '/leads/additional/bulk-operations',
+            icon: Users
           }
         ]
       },
       {
-        id: 'conversion',
-        title: 'Lead Conversion',
-        href: '/leads/conversion',
-        icon: Target,
-        isNew: true
-      },
-      {
-        id: 'search',
-        title: 'Advanced Search',
-        href: '/leads/search',
-        icon: Search
-      },
-      {
-        id: 'timeline',
-        title: 'Activity Timeline',
+        id: 'recent-activity',
+        title: 'Recent Activity',
         href: '/leads/timeline',
         icon: Clock
       }
     ]
   },
   {
-    id: 'communication',
-    title: 'Communication',
+    id: 'lead-management',
+    title: 'Lead Management',
     items: [
       {
-        id: 'comm-hub',
-        title: 'Communication Hub',
+        id: 'views',
+        title: 'Lead Views',
+        icon: Eye,
+        children: [
+          {
+            id: 'all-leads',
+            title: 'All Leads',
+            href: '/leads/list',
+            icon: List,
+            badge: '1,247'
+          },
+          {
+            id: 'kanban-board',
+            title: 'Kanban Board',
+            href: '/leads/board',
+            icon: Grid
+          },
+          {
+            id: 'calendar-view',
+            title: 'Calendar View',
+            href: '/leads/calendar',
+            icon: Calendar
+          },
+          {
+            id: 'map-view',
+            title: 'Map View',
+            href: '/leads/map',
+            icon: Map
+          },
+          {
+            id: 'pipeline-view',
+            title: 'Pipeline View',
+            href: '/leads/pipeline',
+            icon: TrendingUp,
+            isNew: true
+          }
+        ]
+      },
+      {
+        id: 'lead-operations',
+        title: 'Lead Operations',
+        icon: Settings,
+        children: [
+          {
+            id: 'lead-detail',
+            title: 'Lead Details',
+            href: '/leads/detail',
+            icon: User
+          },
+          {
+            id: 'lead-conversion',
+            title: 'Lead Conversion',
+            href: '/leads/conversion',
+            icon: Target,
+            badge: 'New'
+          },
+          {
+            id: 'advanced-search',
+            title: 'Advanced Search',
+            href: '/leads/search',
+            icon: Search
+          },
+          {
+            id: 'lead-scoring',
+            title: 'Lead Scoring',
+            href: '/leads/scoring',
+            icon: Target
+          }
+        ]
+      }
+    ]
+  },
+  {
+    id: 'communication',
+    title: 'Communication Hub',
+    items: [
+      {
+        id: 'communication-center',
+        title: 'Communication Center',
         href: '/leads/communication/hub',
         icon: MessageSquare,
         badge: '12'
       },
       {
-        id: 'email',
-        title: 'Email Center',
+        id: 'email-marketing',
+        title: 'Email Marketing',
         icon: Mail,
         children: [
           {
             id: 'email-composer',
-            title: 'Email Composer',
+            title: 'Compose Email',
             href: '/leads/communication/email-composer',
-            icon: Mail
+            icon: Edit
           },
           {
             id: 'email-templates',
             title: 'Email Templates',
             href: '/leads/communication/email-templates',
+            icon: FileText,
+            badge: '24'
+          },
+          {
+            id: 'email-campaigns',
+            title: 'Email Campaigns',
+            href: '/leads/communication/campaigns',
+            icon: Megaphone
+          },
+          {
+            id: 'email-analytics',
+            title: 'Email Analytics',
+            href: '/leads/communication/email-analytics',
+            icon: BarChart3
+          }
+        ]
+      },
+      {
+        id: 'messaging-channels',
+        title: 'Messaging Channels',
+        icon: MessageSquare,
+        children: [
+          {
+            id: 'whatsapp-business',
+            title: 'WhatsApp Business',
+            href: '/leads/communication/whatsapp',
+            icon: MessageSquare,
+            badge: '8'
+          },
+          {
+            id: 'sms-marketing',
+            title: 'SMS Marketing',
+            href: '/leads/communication/sms',
+            icon: Smartphone,
+            badge: '3'
+          },
+          {
+            id: 'live-chat',
+            title: 'Live Chat',
+            href: '/leads/communication/live-chat',
+            icon: MessageCircle
+          }
+        ]
+      },
+      {
+        id: 'voice-communication',
+        title: 'Voice & Video',
+        icon: Phone,
+        children: [
+          {
+            id: 'call-center',
+            title: 'Call Center',
+            href: '/leads/communication/call-center',
+            icon: Headphones
+          },
+          {
+            id: 'video-meetings',
+            title: 'Video Meetings',
+            href: '/leads/communication/video-meetings',
+            icon: Video
+          },
+          {
+            id: 'call-analytics',
+            title: 'Call Analytics',
+            href: '/leads/communication/call-analytics',
+            icon: BarChart3
+          }
+        ]
+      },
+      {
+        id: 'communication-tracking',
+        title: 'Communication Tracking',
+        icon: Activity,
+        children: [
+          {
+            id: 'communication-history',
+            title: 'Communication History',
+            href: '/leads/communication/history',
+            icon: Clock
+          },
+          {
+            id: 'interaction-timeline',
+            title: 'Interaction Timeline',
+            href: '/leads/communication/timeline',
+            icon: Activity
+          },
+          {
+            id: 'response-analytics',
+            title: 'Response Analytics',
+            href: '/leads/communication/analytics',
+            icon: TrendingUp
+          }
+        ]
+      }
+    ]
+  },
+  {
+    id: 'sales-operations',
+    title: 'Sales Operations',
+    items: [
+      {
+        id: 'sales-pipeline',
+        title: 'Sales Pipeline',
+        icon: TrendingUp,
+        children: [
+          {
+            id: 'opportunity-management',
+            title: 'Opportunity Management',
+            href: '/leads/sales/opportunities',
+            icon: Target
+          },
+          {
+            id: 'deal-tracking',
+            title: 'Deal Tracking',
+            href: '/leads/sales/deals',
+            icon: DollarSign
+          },
+          {
+            id: 'forecasting',
+            title: 'Sales Forecasting',
+            href: '/leads/sales/forecasting',
+            icon: TrendingUp
+          }
+        ]
+      },
+      {
+        id: 'quotations-proposals',
+        title: 'Quotations & Proposals',
+        icon: FileText,
+        children: [
+          {
+            id: 'quote-generator',
+            title: 'Quote Generator',
+            href: '/leads/additional/quote-generator',
+            icon: Calculator
+          },
+          {
+            id: 'proposal-management',
+            title: 'Proposal Management',
+            href: '/leads/additional/proposal-management',
+            icon: FileText
+          },
+          {
+            id: 'contract-management',
+            title: 'Contract Management',
+            href: '/leads/sales/contracts',
             icon: FileText
           }
         ]
       },
       {
-        id: 'messaging',
-        title: 'Messaging',
-        icon: MessageSquare,
+        id: 'sales-activities',
+        title: 'Sales Activities',
+        icon: Activity,
         children: [
           {
-            id: 'whatsapp',
-            title: 'WhatsApp Chat',
-            href: '/leads/communication/whatsapp',
-            icon: MessageSquare
+            id: 'meeting-scheduler',
+            title: 'Meeting Scheduler',
+            href: '/leads/additional/meeting-scheduler',
+            icon: CalendarDays
           },
           {
-            id: 'sms',
-            title: 'SMS Center',
-            href: '/leads/communication/sms',
-            icon: Sms
+            id: 'follow-up-manager',
+            title: 'Follow-up Manager',
+            href: '/leads/additional/follow-up-manager',
+            icon: Bell
+          },
+          {
+            id: 'task-management',
+            title: 'Task Management',
+            href: '/leads/additional/task-management',
+            icon: CheckSquare
+          }
+        ]
+      }
+    ]
+  },
+  {
+    id: 'automation-workflows',
+    title: 'Automation & Workflows',
+    items: [
+      {
+        id: 'workflow-designer',
+        title: 'Workflow Designer',
+        href: '/leads/automation/workflow-builder',
+        icon: GitBranch,
+        badge: 'New'
+      },
+      {
+        id: 'automation-components',
+        title: 'Automation Components',
+        icon: Settings,
+        children: [
+          {
+            id: 'trigger-events',
+            title: 'Trigger Events',
+            href: '/leads/automation/triggers',
+            icon: Zap,
+            badge: '15'
+          },
+          {
+            id: 'condition-builder',
+            title: 'Condition Builder',
+            href: '/leads/automation/conditions',
+            icon: Filter,
+            badge: '8'
+          },
+          {
+            id: 'action-blocks',
+            title: 'Action Blocks',
+            href: '/leads/automation/actions',
+            icon: Play,
+            badge: '12'
           }
         ]
       },
       {
-        id: 'calls',
-        title: 'Call Center',
-        href: '/leads/communication/call-center',
-        icon: Phone
+        id: 'automation-templates',
+        title: 'Automation Templates',
+        icon: FileText,
+        children: [
+          {
+            id: 'lead-nurturing',
+            title: 'Lead Nurturing Templates',
+            href: '/leads/automation/templates/nurturing',
+            icon: Heart
+          },
+          {
+            id: 'follow-up-sequences',
+            title: 'Follow-up Sequences',
+            href: '/leads/automation/templates/followup',
+            icon: Repeat
+          },
+          {
+            id: 'welcome-series',
+            title: 'Welcome Series',
+            href: '/leads/automation/templates/welcome',
+            icon: UserPlus
+          }
+        ]
       },
       {
-        id: 'comm-history',
-        title: 'Communication History',
-        href: '/leads/communication/history',
-        icon: Clock
-      },
-      {
-        id: 'comm-analytics',
-        title: 'Communication Analytics',
-        href: '/leads/communication/analytics',
-        icon: TrendingUp
+        id: 'automation-monitoring',
+        title: 'Monitoring & Analytics',
+        icon: Activity,
+        children: [
+          {
+            id: 'workflow-analytics',
+            title: 'Workflow Analytics',
+            href: '/leads/automation/analytics',
+            icon: BarChart3
+          },
+          {
+            id: 'automation-logs',
+            title: 'Automation Logs',
+            href: '/leads/automation/logs',
+            icon: FileText
+          },
+          {
+            id: 'performance-metrics',
+            title: 'Performance Metrics',
+            href: '/leads/automation/metrics',
+            icon: Gauge
+          }
+        ]
       }
     ]
   },
   {
-    id: 'master-data',
-    title: 'Master Data',
+    id: 'analytics-reporting',
+    title: 'Analytics & Reporting',
     items: [
       {
-        id: 'lead-sources',
-        title: 'Lead Sources',
-        href: '/leads/master-data/lead-sources',
-        icon: Database
-      },
-      {
-        id: 'lead-statuses',
-        title: 'Lead Statuses',
-        href: '/leads/master-data/lead-statuses',
-        icon: Tag
-      },
-      {
-        id: 'lead-categories',
-        title: 'Lead Categories',
-        href: '/leads/master-data/lead-categories',
-        icon: Grid
-      },
-      {
-        id: 'industries',
-        title: 'Industry Management',
-        href: '/leads/master-data/industries',
-        icon: Building
-      },
-      {
-        id: 'project-types',
-        title: 'Project Types',
-        href: '/leads/master-data/project-types',
-        icon: Briefcase
-      },
-      {
-        id: 'locations',
-        title: 'Location Masters',
-        href: '/leads/master-data/locations',
-        icon: MapPin
-      },
-      {
-        id: 'team-management',
-        title: 'Team Management',
-        href: '/leads/master-data/team-management',
-        icon: Users
-      },
-      {
-        id: 'assignment-rules',
-        title: 'Assignment Rules',
-        href: '/leads/master-data/assignment-rules',
-        icon: GitBranch
-      },
-      {
-        id: 'scoring-rules',
-        title: 'Scoring Rules',
-        href: '/leads/master-data/scoring-rules',
-        icon: Target
-      },
-      {
-        id: 'workflow-automation',
-        title: 'Workflow Automation',
-        href: '/leads/master-data/workflow-automation',
-        icon: Zap
-      }
-    ]
-  },
-  {
-    id: 'additional',
-    title: 'Additional Tools',
-    items: [
-      {
-        id: 'activity-management',
-        title: 'Activity Management',
-        href: '/leads/additional/activity-management',
-        icon: Activity
-      },
-      {
-        id: 'task-management',
-        title: 'Task Management',
-        href: '/leads/additional/task-management',
-        icon: FileText
-      },
-      {
-        id: 'document-management',
-        title: 'Document Management',
-        href: '/leads/additional/document-management',
-        icon: FileText
-      },
-      {
-        id: 'proposal-management',
-        title: 'Proposal Management',
-        href: '/leads/additional/proposal-management',
-        icon: FileText
-      },
-      {
-        id: 'quote-generator',
-        title: 'Quote Generator',
-        href: '/leads/additional/quote-generator',
-        icon: Quote
-      },
-      {
-        id: 'meeting-scheduler',
-        title: 'Meeting Scheduler',
-        href: '/leads/additional/meeting-scheduler',
-        icon: CalendarDays
-      },
-      {
-        id: 'follow-up-manager',
-        title: 'Follow-up Manager',
-        href: '/leads/additional/follow-up-manager',
-        icon: Bell
-      },
-      {
-        id: 'campaign-manager',
-        title: 'Campaign Manager',
-        href: '/leads/additional/campaign-manager',
-        icon: Megaphone
-      },
-      {
-        id: 'lead-tools',
-        title: 'Lead Tools',
-        href: '/leads/additional/lead-tools',
-        icon: Wrench
-      },
-      {
-        id: 'bulk-operations',
-        title: 'Bulk Operations',
-        href: '/leads/additional/bulk-operations',
-        icon: Users
-      },
-      {
-        id: 'audit-trail',
-        title: 'Audit Trail',
-        href: '/leads/additional/audit-trail',
-        icon: Shield
-      }
-    ]
-  },
-  {
-    id: 'analytics',
-    title: 'Analytics & Reports',
-    items: [
-      {
-        id: 'lead-analytics',
-        title: 'Lead Analytics',
-        href: '/leads/analytics/dashboard',
-        icon: BarChart3
+        id: 'dashboards',
+        title: 'Dashboards',
+        icon: BarChart3,
+        children: [
+          {
+            id: 'lead-analytics',
+            title: 'Lead Analytics',
+            href: '/leads/analytics/dashboard',
+            icon: TrendingUp
+          },
+          {
+            id: 'sales-dashboard',
+            title: 'Sales Dashboard',
+            href: '/leads/analytics/sales-dashboard',
+            icon: DollarSign
+          },
+          {
+            id: 'performance-dashboard',
+            title: 'Performance Dashboard',
+            href: '/leads/analytics/performance-dashboard',
+            icon: Activity
+          },
+          {
+            id: 'executive-dashboard',
+            title: 'Executive Dashboard',
+            href: '/leads/analytics/executive-dashboard',
+            icon: Star
+          }
+        ]
       },
       {
         id: 'report-builder',
         title: 'Report Builder',
         href: '/leads/analytics/report-builder',
         icon: PieChart,
-        isNew: true
+        badge: 'New'
       },
       {
-        id: 'custom-reports',
-        title: 'Custom Reports',
-        href: '/leads/analytics/custom-reports',
-        icon: FileText
+        id: 'reports',
+        title: 'Reports',
+        icon: FileText,
+        children: [
+          {
+            id: 'standard-reports',
+            title: 'Standard Reports',
+            href: '/leads/analytics/standard-reports',
+            icon: FileText
+          },
+          {
+            id: 'custom-reports',
+            title: 'Custom Reports',
+            href: '/leads/analytics/custom-reports',
+            icon: Edit
+          },
+          {
+            id: 'scheduled-reports',
+            title: 'Scheduled Reports',
+            href: '/leads/analytics/scheduled-reports',
+            icon: Clock
+          }
+        ]
       },
       {
-        id: 'export-center',
-        title: 'Export Center',
-        href: '/leads/analytics/export-center',
-        icon: RefreshCw
+        id: 'data-export',
+        title: 'Data Export',
+        icon: Download,
+        children: [
+          {
+            id: 'export-center',
+            title: 'Export Center',
+            href: '/leads/analytics/export-center',
+            icon: RefreshCw
+          },
+          {
+            id: 'data-backup',
+            title: 'Data Backup',
+            href: '/leads/analytics/backup',
+            icon: Shield
+          },
+          {
+            id: 'api-access',
+            title: 'API Access',
+            href: '/leads/analytics/api',
+            icon: Code
+          }
+        ]
       }
     ]
   },
   {
-    id: 'automation',
-    title: 'Automation & Workflows',
+    id: 'data-management',
+    title: 'Data Management',
     items: [
       {
-        id: 'workflow-builder',
-        title: 'Workflow Builder',
-        href: '/leads/automation/workflow-builder',
+        id: 'lead-data',
+        title: 'Lead Data',
+        icon: Database,
+        children: [
+          {
+            id: 'lead-sources',
+            title: 'Lead Sources',
+            href: '/leads/master-data/lead-sources',
+            icon: Globe,
+            badge: '12'
+          },
+          {
+            id: 'lead-statuses',
+            title: 'Lead Statuses',
+            href: '/leads/master-data/lead-statuses',
+            icon: Tag,
+            badge: '8'
+          },
+          {
+            id: 'lead-categories',
+            title: 'Lead Categories',
+            href: '/leads/master-data/lead-categories',
+            icon: Grid,
+            badge: '6'
+          },
+          {
+            id: 'lead-stages',
+            title: 'Lead Stages',
+            href: '/leads/master-data/lead-stages',
+            icon: Layers
+          }
+        ]
+      },
+      {
+        id: 'organizational-data',
+        title: 'Organizational Data',
+        icon: Building,
+        children: [
+          {
+            id: 'industries',
+            title: 'Industries',
+            href: '/leads/master-data/industries',
+            icon: Building
+          },
+          {
+            id: 'company-sizes',
+            title: 'Company Sizes',
+            href: '/leads/master-data/company-sizes',
+            icon: Users
+          },
+          {
+            id: 'project-types',
+            title: 'Project Types',
+            href: '/leads/master-data/project-types',
+            icon: Briefcase
+          },
+          {
+            id: 'service-types',
+            title: 'Service Types',
+            href: '/leads/master-data/service-types',
+            icon: Wrench
+          }
+        ]
+      },
+      {
+        id: 'geographical-data',
+        title: 'Geographical Data',
+        icon: MapPin,
+        children: [
+          {
+            id: 'countries',
+            title: 'Countries',
+            href: '/leads/master-data/countries',
+            icon: Globe
+          },
+          {
+            id: 'states-regions',
+            title: 'States/Regions',
+            href: '/leads/master-data/states',
+            icon: Map
+          },
+          {
+            id: 'cities',
+            title: 'Cities',
+            href: '/leads/master-data/cities',
+            icon: MapPin
+          },
+          {
+            id: 'territories',
+            title: 'Sales Territories',
+            href: '/leads/master-data/territories',
+            icon: Compass
+          }
+        ]
+      },
+      {
+        id: 'data-quality',
+        title: 'Data Quality',
+        icon: Shield,
+        children: [
+          {
+            id: 'lead-tools',
+            title: 'Lead Enrichment Tools',
+            href: '/leads/additional/lead-tools',
+            icon: Wrench
+          },
+          {
+            id: 'duplicate-management',
+            title: 'Duplicate Management',
+            href: '/leads/data-quality/duplicates',
+            icon: Copy
+          },
+          {
+            id: 'data-validation',
+            title: 'Data Validation',
+            href: '/leads/data-quality/validation',
+            icon: CheckCircle2
+          },
+          {
+            id: 'data-cleanup',
+            title: 'Data Cleanup',
+            href: '/leads/data-quality/cleanup',
+            icon: Trash2
+          }
+        ]
+      }
+    ]
+  },
+  {
+    id: 'team-collaboration',
+    title: 'Team & Collaboration',
+    items: [
+      {
+        id: 'team-management',
+        title: 'Team Management',
+        icon: Users,
+        children: [
+          {
+            id: 'team-members',
+            title: 'Team Members',
+            href: '/leads/master-data/team-management',
+            icon: Users
+          },
+          {
+            id: 'roles-permissions',
+            title: 'Roles & Permissions',
+            href: '/leads/team/roles',
+            icon: Shield
+          },
+          {
+            id: 'team-performance',
+            title: 'Team Performance',
+            href: '/leads/team/performance',
+            icon: Award
+          }
+        ]
+      },
+      {
+        id: 'assignment-rules',
+        title: 'Assignment & Distribution',
         icon: GitBranch,
-        isNew: true
+        children: [
+          {
+            id: 'assignment-rules',
+            title: 'Assignment Rules',
+            href: '/leads/master-data/assignment-rules',
+            icon: GitBranch
+          },
+          {
+            id: 'load-balancing',
+            title: 'Load Balancing',
+            href: '/leads/team/load-balancing',
+            icon: Scale
+          },
+          {
+            id: 'territory-management',
+            title: 'Territory Management',
+            href: '/leads/team/territories',
+            icon: MapPin
+          }
+        ]
       },
       {
-        id: 'trigger-events',
-        title: 'Trigger Events',
-        href: '/leads/automation/triggers',
-        icon: Zap
+        id: 'collaboration-tools',
+        title: 'Collaboration Tools',
+        icon: Share,
+        children: [
+          {
+            id: 'shared-notes',
+            title: 'Shared Notes',
+            href: '/leads/collaboration/notes',
+            icon: StickyNote
+          },
+          {
+            id: 'internal-messaging',
+            title: 'Internal Messaging',
+            href: '/leads/collaboration/messaging',
+            icon: MessageSquare
+          },
+          {
+            id: 'lead-handoffs',
+            title: 'Lead Handoffs',
+            href: '/leads/collaboration/handoffs',
+            icon: ArrowRightLeft
+          }
+        ]
+      }
+    ]
+  },
+  {
+    id: 'administration',
+    title: 'Administration',
+    items: [
+      {
+        id: 'system-config',
+        title: 'System Configuration',
+        icon: Settings,
+        children: [
+          {
+            id: 'general-settings',
+            title: 'General Settings',
+            href: '/leads/admin/general-settings',
+            icon: Settings
+          },
+          {
+            id: 'email-settings',
+            title: 'Email Configuration',
+            href: '/leads/admin/email-settings',
+            icon: Mail
+          },
+          {
+            id: 'integration-settings',
+            title: 'Integrations',
+            href: '/leads/admin/integrations',
+            icon: LinkIcon
+          }
+        ]
       },
       {
-        id: 'conditions',
-        title: 'Condition Builder',
-        href: '/leads/automation/conditions',
-        icon: Filter
+        id: 'scoring-rules',
+        title: 'Business Rules',
+        icon: Target,
+        children: [
+          {
+            id: 'lead-scoring',
+            title: 'Lead Scoring Rules',
+            href: '/leads/master-data/scoring-rules',
+            icon: Target
+          },
+          {
+            id: 'qualification-criteria',
+            title: 'Qualification Criteria',
+            href: '/leads/admin/qualification',
+            icon: CheckCircle
+          },
+          {
+            id: 'escalation-rules',
+            title: 'Escalation Rules',
+            href: '/leads/admin/escalation',
+            icon: AlertTriangle
+          }
+        ]
       },
       {
-        id: 'actions',
-        title: 'Action Blocks',
-        href: '/leads/automation/actions',
-        icon: Activity
+        id: 'compliance-security',
+        title: 'Compliance & Security',
+        icon: Shield,
+        children: [
+          {
+            id: 'audit-trail',
+            title: 'Audit Trail',
+            href: '/leads/additional/audit-trail',
+            icon: FileText
+          },
+          {
+            id: 'data-privacy',
+            title: 'Data Privacy (GDPR)',
+            href: '/leads/admin/privacy',
+            icon: ShieldCheck
+          },
+          {
+            id: 'access-logs',
+            title: 'Access Logs',
+            href: '/leads/admin/access-logs',
+            icon: Eye
+          },
+          {
+            id: 'security-settings',
+            title: 'Security Settings',
+            href: '/leads/admin/security',
+            icon: Lock
+          }
+        ]
+      },
+      {
+        id: 'system-maintenance',
+        title: 'System Maintenance',
+        icon: Wrench,
+        children: [
+          {
+            id: 'system-health',
+            title: 'System Health',
+            href: '/leads/admin/system-health',
+            icon: Activity
+          },
+          {
+            id: 'performance-monitoring',
+            title: 'Performance Monitoring',
+            href: '/leads/admin/performance',
+            icon: Gauge
+          },
+          {
+            id: 'system-logs',
+            title: 'System Logs',
+            href: '/leads/admin/logs',
+            icon: FileText
+          }
+        ]
       }
     ]
   }
 ];
 
 export default function LeadNavigation() {
-  const pathname = usePathname();
-  const [expandedGroups, setExpandedGroups] = useState<Set<string>>(new Set(['core']));
+  const location = useLocation();
+  const pathname = location.pathname;
+  const [expandedGroups, setExpandedGroups] = useState<Set<string>>(new Set(['overview']));
   const [expandedItems, setExpandedItems] = useState<Set<string>>(new Set());
   const [searchQuery, setSearchQuery] = useState('');
 
@@ -496,7 +1020,7 @@ export default function LeadNavigation() {
     return (
       <div>
         {item.href ? (
-          <Link href={item.href}>
+          <Link to={item.href}>
             {itemContent}
           </Link>
         ) : (
@@ -585,7 +1109,7 @@ export default function LeadNavigation() {
       {/* Footer */}
       <div className="p-4 border-t border-gray-200">
         <div className="space-y-2">
-          <Link href="/leads/settings">
+          <Link to="/leads/settings">
             <div className="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-100 hover:text-gray-900 transition-colors">
               <Settings className="h-4 w-4" />
               <span>Settings</span>

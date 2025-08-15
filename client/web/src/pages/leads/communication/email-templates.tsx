@@ -920,7 +920,7 @@ export function EmailTemplates() {
                   {editingTemplate ? 'Edit Template' : 'Create New Template'}
                 </h2>
                 <p className="text-gray-500">
-                  Use variables like {{`contact_name`}} to personalize your emails
+                  Use variables like {`{{contact_name}}`} to personalize your emails
                 </p>
               </div>
               
@@ -939,3 +939,5 @@ export function EmailTemplates() {
     </TooltipProvider>
   );
 }
+
+export default EmailTemplates;

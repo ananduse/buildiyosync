@@ -830,3 +830,5 @@ export function LeadMapView() {
     </TooltipProvider>
   );
 }
+
+export default LeadMapView;

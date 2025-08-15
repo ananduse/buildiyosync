@@ -14,6 +14,8 @@ import { Header } from './components/header';
 import { Navbar } from './components/navbar';
 import { Sidebar } from './components/sidebar';
 import { Toolbar, ToolbarActions, ToolbarHeading } from './components/toolbar';
+// Import our enhanced lead management components
+import LeadLayout from '@/components/leads/layout/LeadLayout';
 
 export function Demo3Layout() {
   const { pathname } = useLocation();
@@ -21,6 +23,9 @@ export function Demo3Layout() {
   const item = getCurrentItem(MENU_SIDEBAR);
   const { setOption } = useSettings();
   const isMobileMode = useIsMobile();
+  
+  // Check if we're on a lead management page
+  const isLeadPage = pathname.startsWith('/leads/');
   
   // Initialize collapsed state with immediate CSS variable update
   const [isCollapsed, setIsCollapsed] = useState(() => {
@@ -104,6 +109,21 @@ export function Demo3Layout() {
     setOption('container', 'fluid');
   }, [setOption]);
 
+  // If it's a lead page, use our enhanced LeadLayout
+  if (isLeadPage) {
+    return (
+      <>
+        <Helmet>
+          <title>{item?.title}</title>
+        </Helmet>
+        <LeadLayout>
+          <Outlet />
+        </LeadLayout>
+      </>
+    );
+  }
+
+  // Otherwise, use the standard demo3 layout
   return (
     <>
       <Helmet>

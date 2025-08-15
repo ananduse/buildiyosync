@@ -1087,3 +1087,5 @@ export function SMSCenter() {
     </TooltipProvider>
   );
 }
+
+export default SMSCenter;

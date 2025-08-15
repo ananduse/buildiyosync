@@ -838,3 +838,5 @@ export function LeadAnalyticsDashboard() {
     </TooltipProvider>
   );
 }
+
+export default LeadAnalyticsDashboard;

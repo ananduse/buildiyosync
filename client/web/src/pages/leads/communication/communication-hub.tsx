@@ -882,3 +882,5 @@ export function CommunicationHub() {
     </TooltipProvider>
   );
 }
+
+export default CommunicationHub;

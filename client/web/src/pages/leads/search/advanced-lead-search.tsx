@@ -908,3 +908,5 @@ export function AdvancedLeadSearch() {
     </TooltipProvider>
   );
 }
+
+export default AdvancedLeadSearch;

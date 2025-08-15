@@ -852,3 +852,5 @@ export function LeadCalendarView() {
     </TooltipProvider>
   );
 }
+
+export default LeadCalendarView;

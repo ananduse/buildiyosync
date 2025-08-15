@@ -886,3 +886,5 @@ export function WhatsAppChat() {
     </TooltipProvider>
   );
 }
+
+export default WhatsAppChat;

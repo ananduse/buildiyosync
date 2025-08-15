@@ -935,3 +935,5 @@ export function EmailComposer() {
     </TooltipProvider>
   );
 }
+
+export default EmailComposer;
