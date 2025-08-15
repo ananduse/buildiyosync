@@ -1498,3 +1498,5 @@ export function AssignmentRules() {
     </TooltipProvider>
   );
 }
+
+export default AssignmentRules;

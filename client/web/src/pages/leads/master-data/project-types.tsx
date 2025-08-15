@@ -1460,3 +1460,5 @@ export function ProjectTypes() {
     </TooltipProvider>
   );
 }
+
+export default ProjectTypes;

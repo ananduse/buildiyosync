@@ -1757,3 +1757,5 @@ export function ScoringRules() {
     </TooltipProvider>
   );
 }
+
+export default ScoringRules;

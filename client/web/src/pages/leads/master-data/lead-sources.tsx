@@ -879,3 +879,5 @@ export function LeadSources() {
     </TooltipProvider>
   );
 }
+
+export default LeadSources;

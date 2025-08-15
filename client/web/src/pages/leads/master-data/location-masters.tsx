@@ -1584,3 +1584,5 @@ export function LocationMasters() {
     </TooltipProvider>
   );
 }
+
+export default LocationMasters;

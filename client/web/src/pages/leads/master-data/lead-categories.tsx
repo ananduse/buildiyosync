@@ -1165,3 +1165,5 @@ export function LeadCategories() {
     </TooltipProvider>
   );
 }
+
+export default LeadCategories;

@@ -1160,3 +1160,5 @@ export function Industries() {
     </TooltipProvider>
   );
 }
+
+export default Industries;

@@ -1618,3 +1618,5 @@ export function TeamManagement() {
     </TooltipProvider>
   );
 }
+
+export default TeamManagement;

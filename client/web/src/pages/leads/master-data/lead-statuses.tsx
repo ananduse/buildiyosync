@@ -56,7 +56,23 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Switch } from '@/components/ui/switch';
 import { Progress } from '@/components/ui/progress';
 import { Separator } from '@/components/ui/separator';
-import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
+import {
+  DndContext,
+  closestCenter,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+} from '@dnd-kit/core';
+import {
+  arrayMove,
+  SortableContext,
+  sortableKeyboardCoordinates,
+  verticalListSortingStrategy,
+} from '@dnd-kit/sortable';
+import {
+  useSortable,
+} from '@dnd-kit/sortable';
 import { cn } from '@/lib/utils';
 
 // Types
@@ -518,6 +534,49 @@ function getTrendColor(trend: 'up' | 'down' | 'stable') {
   }
 }
 
+function SortableStatusCard({ status, onEdit, onView, onToggle, onDelete }: {
+  status: LeadStatus;
+  onEdit: () => void;
+  onView: () => void;
+  onToggle: () => void;
+  onDelete: () => void;
+}) {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id: status.id });
+
+  const style = {
+    transform: transform ? `translate3d(${transform.x}px, ${transform.y}px, 0)` : undefined,
+    transition,
+  };
+
+  return (
+    <div
+      ref={setNodeRef}
+      style={style}
+      {...attributes}
+      {...listeners}
+      className={cn(
+        "group",
+        isDragging && "opacity-75 rotate-2 scale-105"
+      )}
+    >
+      <StatusCard
+        status={status}
+        onEdit={onEdit}
+        onView={onView}
+        onToggle={onToggle}
+        onDelete={onDelete}
+      />
+    </div>
+  );
+}
+
 function StatusCard({ status, onEdit, onView, onToggle, onDelete, provided, snapshot }: {
   status: LeadStatus;
   onEdit: () => void;
@@ -735,23 +794,33 @@ export function LeadStatuses() {
     return { total, active, totalLeads, avgConversion, avgTime };
   }, [statuses]);
 
-  const handleDragEnd = (result: any) => {
-    if (!result.destination) return;
+  const sensors = useSensors(
+    useSensor(PointerSensor),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    })
+  );
 
-    const items = Array.from(filteredStatuses);
-    const [reorderedItem] = items.splice(result.source.index, 1);
-    items.splice(result.destination.index, 0, reorderedItem);
+  const handleDragEnd = (event: any) => {
+    const { active, over } = event;
 
-    // Update order numbers
-    const updatedStatuses = statuses.map(status => {
-      const newIndex = items.findIndex(item => item.id === status.id);
-      if (newIndex !== -1) {
-        return { ...status, order: newIndex + 1 };
-      }
-      return status;
-    });
+    if (active.id !== over?.id) {
+      const oldIndex = filteredStatuses.findIndex(status => status.id === active.id);
+      const newIndex = filteredStatuses.findIndex(status => status.id === over.id);
 
-    setStatuses(updatedStatuses);
+      const reorderedStatuses = arrayMove(filteredStatuses, oldIndex, newIndex);
+      
+      // Update order numbers
+      const updatedStatuses = statuses.map(status => {
+        const newIndex = reorderedStatuses.findIndex(item => item.id === status.id);
+        if (newIndex !== -1) {
+          return { ...status, order: newIndex + 1 };
+        }
+        return status;
+      });
+
+      setStatuses(updatedStatuses);
+    }
   };
 
   const handleToggleStatus = (statusId: string) => {
@@ -905,37 +974,29 @@ export function LeadStatuses() {
                   </div>
                 </div>
                 
-                <DragDropContext onDragEnd={handleDragEnd}>
-                  <Droppable droppableId="statuses">
-                    {(provided, snapshot) => (
-                      <div
-                        {...provided.droppableProps}
-                        ref={provided.innerRef}
-                        className={cn(
-                          "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4",
-                          snapshot.isDraggingOver && "bg-blue-50 rounded-lg p-2"
-                        )}
-                      >
-                        {filteredStatuses.map((status, index) => (
-                          <Draggable key={status.id} draggableId={status.id} index={index}>
-                            {(provided, snapshot) => (
-                              <StatusCard
-                                status={status}
-                                onEdit={() => {}}
-                                onView={() => {}}
-                                onToggle={() => handleToggleStatus(status.id)}
-                                onDelete={() => handleDeleteStatus(status.id)}
-                                provided={provided}
-                                snapshot={snapshot}
-                              />
-                            )}
-                          </Draggable>
-                        ))}
-                        {provided.placeholder}
-                      </div>
-                    )}
-                  </Droppable>
-                </DragDropContext>
+                <DndContext
+                  sensors={sensors}
+                  collisionDetection={closestCenter}
+                  onDragEnd={handleDragEnd}
+                >
+                  <SortableContext
+                    items={filteredStatuses.map(status => status.id)}
+                    strategy={verticalListSortingStrategy}
+                  >
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                      {filteredStatuses.map((status) => (
+                        <SortableStatusCard
+                          key={status.id}
+                          status={status}
+                          onEdit={() => {}}
+                          onView={() => {}}
+                          onToggle={() => handleToggleStatus(status.id)}
+                          onDelete={() => handleDeleteStatus(status.id)}
+                        />
+                      ))}
+                    </div>
+                  </SortableContext>
+                </DndContext>
               </div>
             </TabsContent>
 
@@ -1177,3 +1238,5 @@ export function LeadStatuses() {
     </TooltipProvider>
   );
 }
+
+export default LeadStatuses;
