@@ -184,8 +184,8 @@ interface StepProps {
 
 function Step1BasicInformation({ formData, updateFormData, errors }: StepProps) {
   return (
-    <div className="space-y-4">
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+    <div className="space-y-4 w-full min-w-full">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 w-full">
         <div>
           <Label htmlFor="leadSource">Lead Source *</Label>
           <Select value={formData.leadSource} onValueChange={(value) => updateFormData({ leadSource: value })}>
@@ -238,7 +238,7 @@ function Step1BasicInformation({ formData, updateFormData, errors }: StepProps) 
         {errors.leadType && <p className="text-sm text-red-600 mt-1">{errors.leadType}</p>}
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 w-full">
         <div>
           <Label htmlFor="companyName">Company Name *</Label>
           <Input
@@ -297,8 +297,8 @@ function Step1BasicInformation({ formData, updateFormData, errors }: StepProps) 
 
 function Step2ContactDetails({ formData, updateFormData, errors }: StepProps) {
   return (
-    <div className="space-y-4">
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+    <div className="space-y-4 w-full min-w-full">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 w-full">
         <div>
           <Label htmlFor="contactName">Primary Contact Name *</Label>
           <Input
@@ -321,7 +321,7 @@ function Step2ContactDetails({ formData, updateFormData, errors }: StepProps) {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 w-full">
         <div>
           <Label htmlFor="mobile">Mobile Number *</Label>
           <Input
@@ -346,7 +346,7 @@ function Step2ContactDetails({ formData, updateFormData, errors }: StepProps) {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 w-full">
         <div>
           <Label htmlFor="email">Email Address *</Label>
           <Input
@@ -382,7 +382,7 @@ function Step2ContactDetails({ formData, updateFormData, errors }: StepProps) {
         />
       </div>
 
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-8 gap-4 w-full">
         <div>
           <Label htmlFor="city">City</Label>
           <Input
@@ -434,8 +434,8 @@ function Step2ContactDetails({ formData, updateFormData, errors }: StepProps) {
 
 function Step3ProjectRequirements({ formData, updateFormData, errors }: StepProps) {
   return (
-    <div className="space-y-4">
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+    <div className="space-y-4 w-full min-w-full">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 w-full">
         <div>
           <Label htmlFor="projectType">Project Type *</Label>
           <Select value={formData.projectType} onValueChange={(value) => updateFormData({ projectType: value })}>
@@ -472,7 +472,7 @@ function Step3ProjectRequirements({ formData, updateFormData, errors }: StepProp
 
       <div>
         <Label>Budget Range *</Label>
-        <div className="grid grid-cols-2 gap-4 mt-2">
+        <div className="grid grid-cols-2 lg:grid-cols-4 xl:grid-cols-6 gap-4 mt-2 w-full">
           <div>
             <Input
               placeholder="Min budget"
@@ -491,7 +491,7 @@ function Step3ProjectRequirements({ formData, updateFormData, errors }: StepProp
         {errors.budgetMin && <p className="text-sm text-red-600 mt-1">{errors.budgetMin}</p>}
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 w-full">
         <div>
           <Label htmlFor="timeline">Timeline</Label>
           <Select value={formData.timeline} onValueChange={(value) => updateFormData({ timeline: value })}>
@@ -518,7 +518,7 @@ function Step3ProjectRequirements({ formData, updateFormData, errors }: StepProp
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 w-full">
         <div>
           <Label htmlFor="projectDuration">Project Duration</Label>
           <Select value={formData.projectDuration} onValueChange={(value) => updateFormData({ projectDuration: value })}>
@@ -545,7 +545,7 @@ function Step3ProjectRequirements({ formData, updateFormData, errors }: StepProp
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 w-full">
         <div>
           <Label htmlFor="area">Area/Size (sq ft)</Label>
           <Input
@@ -600,7 +600,7 @@ function Step4AssignmentScoring({ formData, updateFormData, errors }: StepProps)
   };
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-4 w-full min-w-full">
       <div>
         <Label htmlFor="assignedUser">Assign to User *</Label>
         <Select value={formData.assignedUser} onValueChange={(value) => updateFormData({ assignedUser: value })}>
@@ -617,7 +617,7 @@ function Step4AssignmentScoring({ formData, updateFormData, errors }: StepProps)
         {errors.assignedUser && <p className="text-sm text-red-600 mt-1">{errors.assignedUser}</p>}
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 w-full">
         <div>
           <Label>Lead Priority</Label>
           <RadioGroup 
@@ -780,7 +780,7 @@ export function AddLeadContent() {
   const progress = (currentStep / 4) * 100;
 
   return (
-    <div className="max-w-4xl mx-auto p-6">
+    <div className="w-full px-4 lg:px-6">
       {/* Header */}
       <div className="mb-6">
         <div className="flex items-center mb-4">
@@ -794,12 +794,12 @@ export function AddLeadContent() {
         <Progress value={progress} className="w-full h-2" />
       </div>
 
-      <Card>
+      <Card className="w-full">
         <CardHeader>
           <StepIndicator currentStep={currentStep} />
         </CardHeader>
         
-        <CardContent>
+        <CardContent className="w-full min-w-full">
           {currentStep === 1 && (
             <Step1BasicInformation 
               formData={formData} 

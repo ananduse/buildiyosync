@@ -785,7 +785,7 @@ export function ImportLeadsContent() {
   };
 
   return (
-    <div className="max-w-6xl mx-auto p-6">
+    <div className="w-full px-4 lg:px-6">
       {/* Header */}
       <div className="mb-6">
         <div className="flex items-center mb-4">

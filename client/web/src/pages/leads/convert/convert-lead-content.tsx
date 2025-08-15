@@ -476,7 +476,7 @@ export function ConvertLeadContent({ leadId }: ConvertLeadProps) {
 
   if (conversionComplete) {
     return (
-      <div className="max-w-4xl mx-auto p-6">
+      <div className="w-full px-4 lg:px-6">
         <Card>
           <CardContent className="text-center py-12">
             <CheckCircle className="h-16 w-16 text-green-600 mx-auto mb-4" />
@@ -501,7 +501,7 @@ export function ConvertLeadContent({ leadId }: ConvertLeadProps) {
   }
 
   return (
-    <div className="max-w-6xl mx-auto p-6">
+    <div className="w-full px-4 lg:px-6">
       {/* Header */}
       <div className="mb-6">
         <div className="flex items-center mb-4">

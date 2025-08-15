@@ -3,6 +3,9 @@
     "defaultMode": "acceptEdits",
     "additionalDirectories": [
       "E:\\E\\Buildiyo_Projects\\buildiyoSync\\client"
+    ],
+    "allow": [
+      "Bash(npm run dev:*)"
     ]
   }
 }

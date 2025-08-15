@@ -1434,7 +1434,7 @@ export function LeadImportWizard() {
           </div>
         </div>
 
-        <div className="max-w-6xl mx-auto p-6">
+        <div className="w-full px-4 lg:px-6">
           {/* Step Indicator */}
           <StepIndicator currentStep={currentStep} totalSteps={7} />
 

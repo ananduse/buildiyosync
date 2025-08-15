@@ -358,15 +358,15 @@ export function AddEditLeadForm() {
         </div>
       </div>
 
-      <div className="max-w-4xl mx-auto p-6">
+      <div className="w-full px-4 lg:px-6">
         <FormProvider {...form}>
-          <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">
+          <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6 w-full min-w-full">
             {/* Step Indicator */}
             <StepIndicator currentStep={currentStep} totalSteps={steps.length} />
 
             {/* Step 1: Lead Source & Campaign */}
             {currentStep === 1 && (
-              <Card>
+              <Card className="w-full">
                 <CardHeader>
                   <CardTitle className="flex items-center">
                     <Target className="h-5 w-5 mr-2" />
@@ -376,8 +376,8 @@ export function AddEditLeadForm() {
                     Help us understand how this lead discovered your services
                   </CardDescription>
                 </CardHeader>
-                <CardContent className="space-y-6">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <CardContent className="space-y-6 w-full min-w-full">
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 w-full">
                     <FormField
                       control={form.control}
                       name="source"
@@ -493,7 +493,7 @@ export function AddEditLeadForm() {
 
             {/* Step 2: Contact Information */}
             {currentStep === 2 && (
-              <Card>
+              <Card className="w-full">
                 <CardHeader>
                   <CardTitle className="flex items-center">
                     <User className="h-5 w-5 mr-2" />
@@ -503,7 +503,7 @@ export function AddEditLeadForm() {
                     Primary contact details for this lead
                   </CardDescription>
                 </CardHeader>
-                <CardContent className="space-y-6">
+                <CardContent className="space-y-6 w-full min-w-full">
                   <FormField
                     control={form.control}
                     name="leadType"
@@ -531,7 +531,7 @@ export function AddEditLeadForm() {
                     )}
                   />
 
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 w-full">
                     <FormField
                       control={form.control}
                       name="firstName"
@@ -562,7 +562,7 @@ export function AddEditLeadForm() {
                   </div>
 
                   {watchedValues.leadType === 'company' && (
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 w-full">
                       <FormField
                         control={form.control}
                         name="companyName"
@@ -593,7 +593,7 @@ export function AddEditLeadForm() {
                     </div>
                   )}
 
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 w-full">
                     <FormField
                       control={form.control}
                       name="mobileNumber"
@@ -625,7 +625,7 @@ export function AddEditLeadForm() {
                     />
                   </div>
 
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 w-full">
                     <FormField
                       control={form.control}
                       name="emailAddress"
@@ -684,7 +684,7 @@ export function AddEditLeadForm() {
 
             {/* Step 3: Address & Location */}
             {currentStep === 3 && (
-              <Card>
+              <Card className="w-full">
                 <CardHeader>
                   <CardTitle className="flex items-center">
                     <MapPin className="h-5 w-5 mr-2" />
@@ -694,8 +694,8 @@ export function AddEditLeadForm() {
                     Physical location details for the lead
                   </CardDescription>
                 </CardHeader>
-                <CardContent className="space-y-6">
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <CardContent className="space-y-6 w-full min-w-full">
+                  <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-6 w-full">
                     <FormField
                       control={form.control}
                       name="country"
@@ -764,7 +764,7 @@ export function AddEditLeadForm() {
                     )}
                   />
 
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 w-full">
                     <FormField
                       control={form.control}
                       name="addressLine1"
@@ -794,7 +794,7 @@ export function AddEditLeadForm() {
                     />
                   </div>
 
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 w-full">
                     <FormField
                       control={form.control}
                       name="landmark"
@@ -842,7 +842,7 @@ export function AddEditLeadForm() {
 
             {/* Step 4: Project Requirements */}
             {currentStep === 4 && (
-              <Card>
+              <Card className="w-full">
                 <CardHeader>
                   <CardTitle className="flex items-center">
                     <Building2 className="h-5 w-5 mr-2" />
@@ -852,8 +852,8 @@ export function AddEditLeadForm() {
                     Details about the lead's project needs and budget
                   </CardDescription>
                 </CardHeader>
-                <CardContent className="space-y-6">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <CardContent className="space-y-6 w-full min-w-full">
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 w-full">
                     <FormField
                       control={form.control}
                       name="projectType"
@@ -981,7 +981,7 @@ export function AddEditLeadForm() {
                     />
                   </div>
 
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 w-full">
                     <FormField
                       control={form.control}
                       name="timeline"
@@ -1094,7 +1094,7 @@ export function AddEditLeadForm() {
 
             {/* Step 5: Assignment & Classification */}
             {currentStep === 5 && (
-              <Card>
+              <Card className="w-full">
                 <CardHeader>
                   <CardTitle className="flex items-center">
                     <Users className="h-5 w-5 mr-2" />
@@ -1104,8 +1104,8 @@ export function AddEditLeadForm() {
                     Assign the lead and set priority levels
                   </CardDescription>
                 </CardHeader>
-                <CardContent className="space-y-6">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <CardContent className="space-y-6 w-full min-w-full">
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 w-full">
                     <FormField
                       control={form.control}
                       name="assignTo"
@@ -1168,7 +1168,7 @@ export function AddEditLeadForm() {
                     />
                   </div>
 
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 w-full">
                     <FormField
                       control={form.control}
                       name="temperature"
@@ -1300,7 +1300,7 @@ export function AddEditLeadForm() {
                     )}
                   />
 
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 w-full">
                     <FormField
                       control={form.control}
                       name="followUpDate"

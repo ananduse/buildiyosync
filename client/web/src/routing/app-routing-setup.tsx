@@ -216,6 +216,9 @@ import PerformanceMonitoring from '@/pages/leads/admin/performance-monitoring';
 import SystemLogs from '@/pages/leads/admin/system-logs';
 import LeadManagementSettings from '@/pages/leads/settings/lead-management-settings';
 import LeadEnrichmentAnalytics from '@/pages/leads/analytics/lead-enrichment-analytics';
+import ServiceTypes from '@/pages/leads/master-data/service-types';
+import EmailConfiguration from '@/pages/leads/admin/email-configuration';
+import Integrations from '@/pages/leads/admin/integrations';
 
 import { Navigate, Route, Routes } from 'react-router';
 
@@ -294,16 +297,23 @@ export function AppRoutingSetup() {
         {/* Data Management */}
         <Route path="/leads/master-data/lead-sources" element={<LeadSources />} />
         <Route path="/leads/master-data/lead-statuses" element={<LeadStatuses />} />
+        <Route path="/leads/lead-statuses" element={<LeadStatuses />} />
         <Route path="/leads/master-data/lead-categories" element={<LeadCategories />} />
         <Route path="/leads/master-data/lead-stages" element={<LeadStages />} />
+        <Route path="/leads/lead-stages" element={<LeadStages />} />
         <Route path="/leads/master-data/industries" element={<Industries />} />
         <Route path="/leads/master-data/company-sizes" element={<CompanySizes />} />
         <Route path="/leads/master-data/project-types" element={<ProjectTypes />} />
-        <Route path="/leads/master-data/service-types" element={<div>Service Types Page</div>} />
+        <Route path="/leads/project-types" element={<ProjectTypes />} />
+        <Route path="/leads/master-data/service-types" element={<ServiceTypes />} />
+        <Route path="/leads/service-types" element={<ServiceTypes />} />
         <Route path="/leads/master-data/countries" element={<LocationMasters />} />
+        <Route path="/leads/countries" element={<LocationMasters />} />
         <Route path="/leads/master-data/states" element={<LocationMasters />} />
+        <Route path="/leads/states" element={<LocationMasters />} />
         <Route path="/leads/master-data/cities" element={<LocationMasters />} />
         <Route path="/leads/master-data/territories" element={<LocationMasters />} />
+        <Route path="/leads/territories" element={<LocationMasters />} />
         <Route path="/leads/master-data/team-management" element={<TeamManagement />} />
         <Route path="/leads/master-data/assignment-rules" element={<AssignmentRules />} />
         <Route path="/leads/master-data/scoring-rules" element={<ScoringRules />} />
@@ -337,8 +347,8 @@ export function AppRoutingSetup() {
 
         {/* Administration */}
         <Route path="/leads/admin/general-settings" element={<SystemConfiguration />} />
-        <Route path="/leads/admin/email-settings" element={<div>Email Configuration Page</div>} />
-        <Route path="/leads/admin/integrations" element={<div>Integrations Page</div>} />
+        <Route path="/leads/admin/email-settings" element={<EmailConfiguration />} />
+        <Route path="/leads/admin/integrations" element={<Integrations />} />
         <Route path="/leads/admin/qualification" element={<QualificationCriteria />} />
         <Route path="/leads/admin/escalation" element={<EscalationRules />} />
         <Route path="/leads/admin/privacy" element={<DataPrivacy />} />

@@ -1046,7 +1046,7 @@ export default function LeadConversionWizard() {
       </div>
 
       <div className="flex-1 p-6">
-        <div className="max-w-6xl mx-auto">
+        <div className="w-full">
           {/* Progress Steps */}
           <div className="flex items-center justify-center mb-8">
             <div className="flex items-center gap-4">
