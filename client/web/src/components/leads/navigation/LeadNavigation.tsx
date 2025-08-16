@@ -83,7 +83,22 @@ import {
   Timeline,
   FileSign,
   Repeat,
-  Star
+  Star,
+  FormInput,
+  TestTube,
+  Webhook,
+  Crosshair,
+  FileText as FileTemplate,
+  Type,
+  AtSign,
+  Hash,
+  Circle as RadioButton,
+  List as ListIcon,
+  Palette,
+  Layout,
+  Monitor as MonitorIcon,
+  Tablet,
+  MousePointer
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
@@ -426,6 +441,258 @@ const navigationData: NavigationGroup[] = [
             title: 'Task Management',
             href: '/leads/additional/task-management',
             icon: CheckSquare
+          }
+        ]
+      }
+    ]
+  },
+  {
+    id: 'forms-management',
+    title: 'Forms Management',
+    items: [
+      {
+        id: 'forms-overview',
+        title: 'Forms Overview',
+        href: '/leads/forms',
+        icon: FormInput,
+        badge: '12'
+      },
+      {
+        id: 'form-builder',
+        title: 'Form Builder',
+        icon: Edit,
+        children: [
+          {
+            id: 'new-form',
+            title: 'Create New Form',
+            href: '/leads/forms/builder/new',
+            icon: Plus,
+            isNew: true
+          },
+          {
+            id: 'form-builder-main',
+            title: 'Form Builder',
+            href: '/leads/forms/builder',
+            icon: Edit
+          },
+          {
+            id: 'form-fields',
+            title: 'Form Fields',
+            href: '/leads/forms/builder/fields',
+            icon: Type
+          },
+          {
+            id: 'form-design',
+            title: 'Design & Layout',
+            href: '/leads/forms/builder/design',
+            icon: Palette
+          },
+          {
+            id: 'form-settings',
+            title: 'Form Settings',
+            href: '/leads/forms/builder/settings',
+            icon: Settings
+          }
+        ]
+      },
+      {
+        id: 'form-templates',
+        title: 'Form Templates',
+        href: '/leads/forms/templates',
+        icon: FileTemplate,
+        badge: '50+'
+      },
+      {
+        id: 'advanced-forms',
+        title: 'Advanced Forms',
+        icon: Layers,
+        children: [
+          {
+            id: 'multi-step-forms',
+            title: 'Multi-Step Forms',
+            href: '/leads/forms/multi-step',
+            icon: Layers,
+            isNew: true
+          },
+          {
+            id: 'conditional-logic',
+            title: 'Conditional Logic',
+            href: '/leads/forms/conditional-logic',
+            icon: GitBranch,
+            badge: 'PRO'
+          },
+          {
+            id: 'form-versioning',
+            title: 'Version Control',
+            href: '/leads/forms/versioning',
+            icon: GitBranch,
+            badge: 'PRO'
+          }
+        ]
+      },
+      {
+        id: 'form-field-types',
+        title: 'Field Types',
+        icon: Type,
+        children: [
+          {
+            id: 'text-fields',
+            title: 'Text Input',
+            href: '/leads/forms/fields/text',
+            icon: Type
+          },
+          {
+            id: 'email-fields',
+            title: 'Email Field',
+            href: '/leads/forms/fields/email',
+            icon: AtSign
+          },
+          {
+            id: 'number-fields',
+            title: 'Number Field',
+            href: '/leads/forms/fields/number',
+            icon: Hash
+          },
+          {
+            id: 'checkbox-fields',
+            title: 'Checkbox',
+            href: '/leads/forms/fields/checkbox',
+            icon: CheckSquare
+          },
+          {
+            id: 'radio-fields',
+            title: 'Radio Button',
+            href: '/leads/forms/fields/radio',
+            icon: RadioButton
+          },
+          {
+            id: 'dropdown-fields',
+            title: 'Dropdown',
+            href: '/leads/forms/fields/dropdown',
+            icon: ListIcon
+          }
+        ]
+      },
+      {
+        id: 'form-analytics',
+        title: 'Form Analytics',
+        icon: BarChart3,
+        children: [
+          {
+            id: 'form-analytics-overview',
+            title: 'Analytics Overview',
+            href: '/leads/forms/analytics/overview',
+            icon: TrendingUp
+          },
+          {
+            id: 'advanced-form-analytics',
+            title: 'Advanced Analytics',
+            href: '/leads/forms/analytics/advanced',
+            icon: BarChart3,
+            badge: 'PRO'
+          },
+          {
+            id: 'conversion-funnel-forms',
+            title: 'Conversion Funnel',
+            href: '/leads/forms/analytics/funnel',
+            icon: Target
+          },
+          {
+            id: 'field-analytics',
+            title: 'Field Analytics',
+            href: '/leads/forms/analytics/fields',
+            icon: MousePointer
+          },
+          {
+            id: 'user-heatmaps',
+            title: 'User Heatmaps',
+            href: '/leads/forms/analytics/heatmaps',
+            icon: Crosshair,
+            isNew: true
+          }
+        ]
+      },
+      {
+        id: 'form-testing',
+        title: 'Testing & Preview',
+        icon: TestTube,
+        children: [
+          {
+            id: 'ab-testing-forms',
+            title: 'A/B Testing',
+            href: '/leads/forms/ab-testing',
+            icon: TestTube,
+            badge: 'PRO'
+          },
+          {
+            id: 'form-preview',
+            title: 'Form Preview',
+            href: '/leads/forms/preview',
+            icon: Eye
+          },
+          {
+            id: 'device-testing',
+            title: 'Device Testing',
+            href: '/leads/forms/device-testing',
+            icon: Smartphone
+          }
+        ]
+      },
+      {
+        id: 'form-automation',
+        title: 'Form Automation',
+        icon: Zap,
+        children: [
+          {
+            id: 'form-workflows',
+            title: 'Form Workflows',
+            href: '/leads/forms/workflows',
+            icon: GitBranch
+          },
+          {
+            id: 'form-integrations',
+            title: 'Integrations',
+            href: '/leads/forms/integrations',
+            icon: Zap,
+            badge: '20+'
+          },
+          {
+            id: 'form-webhooks',
+            title: 'Webhooks',
+            href: '/leads/forms/webhooks',
+            icon: Webhook
+          },
+          {
+            id: 'webhook-integration',
+            title: 'Webhook Integration',
+            href: '/leads/forms/webhook-integration',
+            icon: Webhook
+          }
+        ]
+      },
+      {
+        id: 'form-submissions',
+        title: 'Form Submissions',
+        icon: Database,
+        children: [
+          {
+            id: 'all-submissions',
+            title: 'All Submissions',
+            href: '/leads/forms/submissions/all',
+            icon: Database,
+            badge: '1.2k'
+          },
+          {
+            id: 'recent-submissions',
+            title: 'Recent Submissions',
+            href: '/leads/forms/submissions/recent',
+            icon: Clock
+          },
+          {
+            id: 'export-submissions',
+            title: 'Export Data',
+            href: '/leads/forms/submissions/export',
+            icon: Download
           }
         ]
       }
@@ -947,7 +1214,7 @@ const navigationData: NavigationGroup[] = [
 export default function LeadNavigation() {
   const location = useLocation();
   const pathname = location.pathname;
-  const [expandedGroups, setExpandedGroups] = useState<Set<string>>(new Set(['overview']));
+  const [expandedGroups, setExpandedGroups] = useState<Set<string>>(new Set(['overview', 'forms-management']));
   const [expandedItems, setExpandedItems] = useState<Set<string>>(new Set());
   const [searchQuery, setSearchQuery] = useState('');
 

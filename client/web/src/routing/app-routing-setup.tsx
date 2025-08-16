@@ -220,6 +220,22 @@ import ServiceTypes from '@/pages/leads/master-data/service-types';
 import EmailConfiguration from '@/pages/leads/admin/email-configuration';
 import Integrations from '@/pages/leads/admin/integrations';
 
+// Forms Management Components
+import FormsOverview from '@/pages/leads/forms/forms-overview';
+import FormBuilder from '@/pages/leads/forms/form-builder';
+import FormFields from '@/pages/leads/forms/form-fields';
+import FormDesignLayout from '@/pages/leads/forms/form-design-layout';
+import FormSettings from '@/pages/leads/forms/form-settings';
+import FormTemplates from '@/pages/leads/forms/form-templates';
+import MultiStepForm from '@/pages/leads/forms/multi-step-form';
+import ConditionalLogic from '@/pages/leads/forms/form-conditional-logic';
+import FormVersioning from '@/pages/leads/forms/form-versioning';
+import FormAnalyticsDashboard from '@/pages/leads/forms/form-analytics-dashboard';
+import AdvancedAnalytics from '@/pages/leads/forms/advanced-analytics';
+import ABTestingDashboard from '@/pages/leads/forms/ab-testing-dashboard';
+import FormWorkflows from '@/pages/leads/forms/form-workflows';
+import WebhookIntegration from '@/pages/leads/forms/webhook-integration';
+
 import { Navigate, Route, Routes } from 'react-router';
 
 export function AppRoutingSetup() {
@@ -357,6 +373,41 @@ export function AppRoutingSetup() {
         <Route path="/leads/admin/system-health" element={<SystemHealth />} />
         <Route path="/leads/admin/performance" element={<PerformanceMonitoring />} />
         <Route path="/leads/admin/logs" element={<SystemLogs />} />
+
+        {/* Forms Management */}
+        <Route path="/leads/forms" element={<FormsOverview />} />
+        <Route path="/leads/forms/builder" element={<FormBuilder />} />
+        <Route path="/leads/forms/builder/new" element={<FormBuilder />} />
+        <Route path="/leads/forms/builder/fields" element={<FormFields />} />
+        <Route path="/leads/forms/builder/design" element={<FormDesignLayout />} />
+        <Route path="/leads/forms/builder/settings" element={<FormSettings />} />
+        <Route path="/leads/forms/templates" element={<FormTemplates />} />
+        <Route path="/leads/forms/multi-step" element={<MultiStepForm />} />
+        <Route path="/leads/forms/conditional-logic" element={<ConditionalLogic />} />
+        <Route path="/leads/forms/versioning" element={<FormVersioning />} />
+        <Route path="/leads/forms/analytics" element={<FormAnalyticsDashboard />} />
+        <Route path="/leads/forms/analytics/overview" element={<FormAnalyticsDashboard />} />
+        <Route path="/leads/forms/analytics/advanced" element={<AdvancedAnalytics />} />
+        <Route path="/leads/forms/analytics/funnel" element={<FormAnalyticsDashboard />} />
+        <Route path="/leads/forms/analytics/fields" element={<FormAnalyticsDashboard />} />
+        <Route path="/leads/forms/analytics/heatmaps" element={<FormAnalyticsDashboard />} />
+        <Route path="/leads/forms/ab-testing" element={<ABTestingDashboard />} />
+        <Route path="/leads/forms/preview" element={<FormBuilder />} />
+        <Route path="/leads/forms/device-testing" element={<FormBuilder />} />
+        <Route path="/leads/forms/workflows" element={<FormWorkflows />} />
+        <Route path="/leads/forms/integrations" element={<WebhookIntegration />} />
+        <Route path="/leads/forms/webhooks" element={<WebhookIntegration />} />
+        <Route path="/leads/forms/webhook-integration" element={<WebhookIntegration />} />
+        <Route path="/leads/forms/submissions" element={<div>Form Submissions</div>} />
+        <Route path="/leads/forms/submissions/all" element={<div>All Submissions</div>} />
+        <Route path="/leads/forms/submissions/recent" element={<div>Recent Submissions</div>} />
+        <Route path="/leads/forms/submissions/export" element={<div>Export Submissions</div>} />
+        <Route path="/leads/forms/fields/text" element={<FormFields />} />
+        <Route path="/leads/forms/fields/email" element={<FormFields />} />
+        <Route path="/leads/forms/fields/number" element={<FormFields />} />
+        <Route path="/leads/forms/fields/checkbox" element={<FormFields />} />
+        <Route path="/leads/forms/fields/radio" element={<FormFields />} />
+        <Route path="/leads/forms/fields/dropdown" element={<FormFields />} />
 
         {/* Settings */}
         <Route path="/leads/settings" element={<LeadManagementSettings />} />

@@ -10,6 +10,13 @@ import { Switch } from '@/components/ui/switch';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
 import { 
   FormInput,
   Plus,
@@ -66,7 +73,25 @@ import {
   XCircle,
   AlertTriangle
 } from 'lucide-react';
-import { DragDropContext, Droppable, Draggable, DropResult } from 'react-beautiful-dnd';
+import {
+  DndContext,
+  closestCenter,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  DragEndEvent,
+} from '@dnd-kit/core';
+import {
+  arrayMove,
+  SortableContext,
+  sortableKeyboardCoordinates,
+  verticalListSortingStrategy,
+} from '@dnd-kit/sortable';
+import {
+  useSortable,
+} from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
 
 interface FormField {
   id: string;
@@ -89,6 +114,16 @@ interface FormField {
     width: 'full' | 'half' | 'third' | 'quarter';
     cssClass?: string;
   };
+  stepId?: string; // For multi-step forms
+}
+
+interface FormStep {
+  id: string;
+  title: string;
+  description?: string;
+  fields: string[]; // Array of field IDs
+  showProgress?: boolean;
+  order: number;
 }
 
 interface FormSettings {
@@ -242,6 +277,20 @@ const FormBuilder: React.FC = () => {
 
   const [selectedField, setSelectedField] = useState<string | null>(null);
   const [previewMode, setPreviewMode] = useState<'desktop' | 'tablet' | 'mobile'>('desktop');
+  const [formSteps, setFormSteps] = useState<FormStep[]>([
+    {
+      id: 'step_1',
+      title: 'Step 1',
+      description: 'Basic Information',
+      fields: [],
+      order: 1,
+      showProgress: true
+    }
+  ]);
+  const [currentStep, setCurrentStep] = useState(0);
+  const [isMultiStep, setIsMultiStep] = useState(false);
+  const [formLayout, setFormLayout] = useState<'single' | 'two-column' | 'three-column' | 'auto'>('auto');
+  const [showPreviewModal, setShowPreviewModal] = useState(false);
 
   // Mock analytics data
   const analytics: FormAnalytics = {
@@ -280,14 +329,24 @@ const FormBuilder: React.FC = () => {
     { type: 'file', label: 'File Upload', icon: Upload }
   ];
 
-  const handleDragEnd = (result: DropResult) => {
-    if (!result.destination) return;
+  const sensors = useSensors(
+    useSensor(PointerSensor),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    })
+  );
 
-    const newFields = Array.from(fields);
-    const [reorderedItem] = newFields.splice(result.source.index, 1);
-    newFields.splice(result.destination.index, 0, reorderedItem);
+  const handleDragEnd = (event: DragEndEvent) => {
+    const { active, over } = event;
 
-    setFields(newFields);
+    if (active.id !== over?.id) {
+      setFields((items) => {
+        const oldIndex = items.findIndex((item) => item.id === active.id);
+        const newIndex = items.findIndex((item) => item.id === over?.id);
+
+        return arrayMove(items, oldIndex, newIndex);
+      });
+    }
   };
 
   const addField = (type: FormField['type']) => {
@@ -311,16 +370,117 @@ const FormBuilder: React.FC = () => {
   };
 
   const updateField = (fieldId: string, updates: Partial<FormField>) => {
-    setFields(fields.map(field => 
-      field.id === fieldId ? { ...field, ...updates } : field
-    ));
+    setFields(prevFields => 
+      prevFields.map(field => 
+        field.id === fieldId ? { ...field, ...updates } : field
+      )
+    );
   };
 
   const deleteField = (fieldId: string) => {
-    setFields(fields.filter(field => field.id !== fieldId));
+    setFields(prevFields => prevFields.filter(field => field.id !== fieldId));
     if (selectedField === fieldId) {
       setSelectedField(null);
     }
+  };
+
+  const duplicateField = (fieldId: string) => {
+    const fieldToDuplicate = fields.find(f => f.id === fieldId);
+    if (fieldToDuplicate) {
+      const newField: FormField = {
+        ...fieldToDuplicate,
+        id: `field_${Date.now()}`,
+        label: `${fieldToDuplicate.label} (Copy)`
+      };
+      setFields(prevFields => [...prevFields, newField]);
+      setSelectedField(newField.id);
+    }
+  };
+
+  // Multi-step form functions
+  const addStep = () => {
+    const newStep: FormStep = {
+      id: `step_${Date.now()}`,
+      title: `Step ${formSteps.length + 1}`,
+      description: 'New Step',
+      fields: [],
+      order: formSteps.length + 1,
+      showProgress: true
+    };
+    setFormSteps([...formSteps, newStep]);
+  };
+
+  const updateStep = (stepId: string, updates: Partial<FormStep>) => {
+    setFormSteps(prevSteps =>
+      prevSteps.map(step =>
+        step.id === stepId ? { ...step, ...updates } : step
+      )
+    );
+  };
+
+  const deleteStep = (stepId: string) => {
+    if (formSteps.length <= 1) return; // Don't delete the last step
+    setFormSteps(prevSteps => prevSteps.filter(step => step.id !== stepId));
+    if (currentStep >= formSteps.length - 1) {
+      setCurrentStep(Math.max(0, formSteps.length - 2));
+    }
+  };
+
+  const moveFieldToStep = (fieldId: string, stepId: string) => {
+    // Remove field from current step
+    setFormSteps(prevSteps =>
+      prevSteps.map(step => ({
+        ...step,
+        fields: step.fields.filter(id => id !== fieldId)
+      }))
+    );
+    
+    // Add field to target step
+    setFormSteps(prevSteps =>
+      prevSteps.map(step =>
+        step.id === stepId
+          ? { ...step, fields: [...step.fields, fieldId] }
+          : step
+      )
+    );
+    
+    // Update field's stepId
+    setFields(prevFields =>
+      prevFields.map(field =>
+        field.id === fieldId ? { ...field, stepId } : field
+      )
+    );
+  };
+
+  const getCurrentStepFields = () => {
+    if (!isMultiStep) return fields;
+    const currentStepData = formSteps[currentStep];
+    if (!currentStepData) return [];
+    return fields.filter(field => currentStepData.fields.includes(field.id));
+  };
+
+  const getFormLayoutClasses = () => {
+    switch (formLayout) {
+      case 'single':
+        return 'max-w-2xl mx-auto';
+      case 'two-column':
+        return 'max-w-4xl mx-auto';
+      case 'three-column':
+        return 'max-w-6xl mx-auto';
+      case 'auto':
+      default:
+        return 'max-w-5xl mx-auto';
+    }
+  };
+
+  const getFieldAutoWidth = (fieldsCount: number, layout: string, fieldWidth?: string) => {
+    if (layout === 'auto') {
+      if (fieldsCount <= 2) return 'w-full';
+      if (fieldsCount <= 4) return 'w-1/2';
+      if (fieldsCount <= 6) return 'w-1/3';
+      return 'w-1/4';
+    }
+    return fieldWidth || 'w-full';
   };
 
   const generateEmbedCode = () => {
@@ -365,83 +525,163 @@ submitLead({
 });`;
   };
 
+  // Sortable Field Component
+  interface SortableFieldProps {
+    field: FormField;
+    index: number;
+  }
+
+  const SortableField: React.FC<SortableFieldProps> = ({ field }) => {
+    const {
+      attributes,
+      listeners,
+      setNodeRef,
+      transform,
+      transition,
+    } = useSortable({ id: field.id });
+
+    const style = {
+      transform: CSS.Transform.toString(transform),
+      transition,
+    };
+
+    return (
+      <div
+        ref={setNodeRef}
+        style={style}
+        className={`${
+          selectedField === field.id ? 'ring-2 ring-blue-500 ring-opacity-50 bg-blue-50' : 'hover:ring-1 hover:ring-gray-300'
+        } relative group rounded-lg transition-all duration-200 cursor-pointer`}
+        onClick={() => setSelectedField(field.id)}
+      >
+        {/* Drag Handle */}
+        <div
+          {...attributes}
+          {...listeners}
+          className="absolute -left-2 top-2 opacity-0 group-hover:opacity-100 transition-opacity z-10 cursor-move bg-gray-100 rounded p-1"
+        >
+          <GripVertical className="h-3 w-3 text-gray-600" />
+        </div>
+
+        {/* Field Actions */}
+        <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity z-10 flex gap-1">
+          <Button
+            size="sm"
+            variant="outline"
+            className="h-6 w-6 p-0"
+            onClick={(e) => {
+              e.stopPropagation();
+              duplicateField(field.id);
+            }}
+          >
+            <Copy className="h-3 w-3" />
+          </Button>
+          <Button
+            size="sm"
+            variant="outline"
+            className="h-6 w-6 p-0 text-red-600 hover:text-red-700"
+            onClick={(e) => {
+              e.stopPropagation();
+              deleteField(field.id);
+            }}
+          >
+            <Trash2 className="h-3 w-3" />
+          </Button>
+        </div>
+
+        {/* Field Content */}
+        <div className="p-1">
+          {renderFieldPreview(field)}
+        </div>
+
+        {/* Selection Indicator */}
+        {selectedField === field.id && (
+          <div className="absolute -top-1 -left-1 w-3 h-3 bg-blue-500 rounded-full border-2 border-white"></div>
+        )}
+      </div>
+    );
+  };
+
   const renderFieldPreview = (field: FormField) => {
-    const widthClass = {
-      'full': 'w-full',
-      'half': 'w-1/2',
-      'third': 'w-1/3',
-      'quarter': 'w-1/4'
-    }[field.style?.width || 'full'];
-
-    const baseClasses = `${widthClass} p-2`;
-
     switch (field.type) {
       case 'text':
       case 'email':
       case 'phone':
       case 'number':
         return (
-          <div className={baseClasses}>
-            <Label className="text-sm font-medium">
+          <div className="space-y-2">
+            <Label className="text-sm font-medium block">
               {field.label}
               {field.required && <span className="text-red-500 ml-1">*</span>}
             </Label>
             <Input
               type={field.type}
               placeholder={field.placeholder}
-              className="mt-1"
-              style={{ borderColor: form.styling.primaryColor }}
+              className="w-full transition-colors focus:ring-2 focus:ring-opacity-50"
+              style={{ 
+                borderColor: form.styling.primaryColor,
+                '--tw-ring-color': form.styling.primaryColor + '80'
+              } as any}
             />
           </div>
         );
       
       case 'textarea':
         return (
-          <div className={baseClasses}>
-            <Label className="text-sm font-medium">
-              {field.label}
-              {field.required && <span className="text-red-500 ml-1">*</span>}
+          <div className="space-y-2">
+            <Label className="text-sm font-medium block">
+                {field.label}
+                {field.required && <span className="text-red-500 ml-1">*</span>}
             </Label>
             <Textarea
-              placeholder={field.placeholder}
-              className="mt-1 min-h-[100px]"
-              style={{ borderColor: form.styling.primaryColor }}
-            />
+                placeholder={field.placeholder}
+                className="w-full min-h-[100px] resize-y transition-colors focus:ring-2 focus:ring-opacity-50"
+                style={{ 
+                  borderColor: form.styling.primaryColor,
+                  '--tw-ring-color': form.styling.primaryColor + '80'
+                } as any}
+              />
           </div>
         );
       
       case 'select':
         return (
-          <div className={baseClasses}>
-            <Label className="text-sm font-medium">
-              {field.label}
-              {field.required && <span className="text-red-500 ml-1">*</span>}
+          <div className="space-y-2">
+            <Label className="text-sm font-medium block">
+                {field.label}
+                {field.required && <span className="text-red-500 ml-1">*</span>}
             </Label>
             <Select>
-              <SelectTrigger className="mt-1" style={{ borderColor: form.styling.primaryColor }}>
-                <SelectValue placeholder="Select an option" />
-              </SelectTrigger>
-              <SelectContent>
-                {field.options?.map((option) => (
-                  <SelectItem key={option.value} value={option.value}>
-                    {option.label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+                <SelectTrigger 
+                  className="w-full transition-colors focus:ring-2 focus:ring-opacity-50" 
+                  style={{ 
+                    borderColor: form.styling.primaryColor,
+                    '--tw-ring-color': form.styling.primaryColor + '80'
+                  } as any}
+                >
+                  <SelectValue placeholder="Select an option" />
+                </SelectTrigger>
+                <SelectContent>
+                  {field.options?.map((option) => (
+                    <SelectItem key={option.value} value={option.value}>
+                      {option.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
           </div>
         );
       
       case 'checkbox':
         return (
-          <div className={baseClasses}>
-            <div className="flex items-center space-x-2">
+          <div className="space-y-2">
+            <div className="flex items-start space-x-3">
               <input
                 type="checkbox"
-                className="rounded"
+                className="mt-1 rounded border-gray-300 text-blue-600 focus:ring-blue-500 transition-colors"
                 style={{ accentColor: form.styling.primaryColor }}
               />
-              <Label className="text-sm font-medium">
+              <Label className="text-sm font-medium cursor-pointer">
                 {field.label}
                 {field.required && <span className="text-red-500 ml-1">*</span>}
               </Label>
@@ -451,40 +691,80 @@ submitLead({
       
       case 'radio':
         return (
-          <div className={baseClasses}>
-            <Label className="text-sm font-medium mb-2 block">
-              {field.label}
-              {field.required && <span className="text-red-500 ml-1">*</span>}
+          <div className="space-y-2">
+            <Label className="text-sm font-medium block">
+                {field.label}
+                {field.required && <span className="text-red-500 ml-1">*</span>}
             </Label>
             <div className="space-y-2">
-              {field.options?.map((option) => (
-                <div key={option.value} className="flex items-center space-x-2">
-                  <input
-                    type="radio"
-                    name={field.id}
-                    value={option.value}
-                    style={{ accentColor: form.styling.primaryColor }}
-                  />
-                  <Label className="text-sm">{option.label}</Label>
-                </div>
-              ))}
-            </div>
+                {field.options?.map((option) => (
+                  <div key={option.value} className="flex items-center space-x-3">
+                    <input
+                      type="radio"
+                      name={field.id}
+                      value={option.value}
+                      className="border-gray-300 text-blue-600 focus:ring-blue-500 transition-colors"
+                      style={{ accentColor: form.styling.primaryColor }}
+                    />
+                    <Label className="text-sm cursor-pointer">{option.label}</Label>
+                  </div>
+                ))}
+              </div>
+          </div>
+        );
+
+      case 'date':
+        return (
+          <div className="space-y-2">
+            <Label className="text-sm font-medium block">
+                {field.label}
+                {field.required && <span className="text-red-500 ml-1">*</span>}
+            </Label>
+            <Input
+                type="date"
+                className="w-full transition-colors focus:ring-2 focus:ring-opacity-50"
+                style={{ 
+                  borderColor: form.styling.primaryColor,
+                  '--tw-ring-color': form.styling.primaryColor + '80'
+                } as any}
+              />
+          </div>
+        );
+
+      case 'file':
+        return (
+          <div className="space-y-2">
+            <Label className="text-sm font-medium block">
+                {field.label}
+                {field.required && <span className="text-red-500 ml-1">*</span>}
+            </Label>
+            <div 
+                className="border-2 border-dashed rounded-lg p-4 text-center hover:border-opacity-70 transition-colors cursor-pointer"
+                style={{ borderColor: form.styling.primaryColor + '40' }}
+              >
+                <Upload className="h-8 w-8 mx-auto text-gray-400 mb-2" />
+                <p className="text-sm text-gray-600">Click to upload or drag and drop</p>
+                <p className="text-xs text-gray-500 mt-1">SVG, PNG, JPG or GIF (max. 800x400px)</p>
+              </div>
           </div>
         );
       
       default:
         return (
-          <div className={baseClasses}>
-            <Label className="text-sm font-medium">
-              {field.label}
-              {field.required && <span className="text-red-500 ml-1">*</span>}
+          <div className="space-y-2">
+            <Label className="text-sm font-medium block">
+                {field.label}
+                {field.required && <span className="text-red-500 ml-1">*</span>}
             </Label>
             <Input
-              type={field.type}
-              placeholder={field.placeholder}
-              className="mt-1"
-              style={{ borderColor: form.styling.primaryColor }}
-            />
+                type={field.type}
+                placeholder={field.placeholder}
+                className="w-full transition-colors focus:ring-2 focus:ring-opacity-50"
+                style={{ 
+                  borderColor: form.styling.primaryColor,
+                  '--tw-ring-color': form.styling.primaryColor + '80'
+                } as any}
+              />
           </div>
         );
     }
@@ -506,7 +786,7 @@ submitLead({
               <RefreshCw className="h-4 w-4 mr-2" />
               Auto Save
             </Button>
-            <Button variant="outline">
+            <Button variant="outline" onClick={() => setShowPreviewModal(true)}>
               <Eye className="h-4 w-4 mr-2" />
               Preview
             </Button>
@@ -517,9 +797,9 @@ submitLead({
           </div>
         </div>
 
-        <div className="grid grid-cols-12 gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
           {/* Sidebar - Field Types */}
-          <div className="col-span-3">
+          <div className="lg:col-span-3 order-2 lg:order-1">
             <Card>
               <CardHeader>
                 <CardTitle className="text-base">Form Elements</CardTitle>
@@ -556,52 +836,115 @@ submitLead({
                     if (!field) return null;
 
                     return (
-                      <div className="space-y-4">
-                        <div>
-                          <Label>Field Label</Label>
-                          <Input
-                            value={field.label}
-                            onChange={(e) => updateField(field.id, { label: e.target.value })}
-                            className="mt-1"
-                          />
+                      <div className="space-y-4 max-h-96 overflow-y-auto">
+                        {/* Basic Settings */}
+                        <div className="space-y-3">
+                          <div>
+                            <Label className="text-sm font-medium">Field Label</Label>
+                            <Input
+                              value={field.label}
+                              onChange={(e) => updateField(field.id, { label: e.target.value })}
+                              className="mt-1"
+                              placeholder="Enter field label"
+                            />
+                          </div>
+
+                          <div>
+                            <Label className="text-sm font-medium">Placeholder Text</Label>
+                            <Input
+                              value={field.placeholder || ''}
+                              onChange={(e) => updateField(field.id, { placeholder: e.target.value })}
+                              className="mt-1"
+                              placeholder="Enter placeholder text"
+                            />
+                          </div>
+
+                          <div className="flex items-center justify-between">
+                            <div>
+                              <Label className="text-sm font-medium">Required Field</Label>
+                              <p className="text-xs text-gray-500">Make this field mandatory</p>
+                            </div>
+                            <Switch
+                              checked={field.required}
+                              onCheckedChange={(required) => updateField(field.id, { required })}
+                            />
+                          </div>
+
+                          <div>
+                            <Label className="text-sm font-medium">Field Width</Label>
+                            <Select
+                              value={field.style?.width || 'full'}
+                              onValueChange={(width) => updateField(field.id, { 
+                                style: { ...field.style, width: width as any } 
+                              })}
+                            >
+                              <SelectTrigger className="mt-1">
+                                <SelectValue />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="full">Full Width (100%)</SelectItem>
+                                <SelectItem value="half">Half Width (50%)</SelectItem>
+                                <SelectItem value="third">One Third (33%)</SelectItem>
+                                <SelectItem value="quarter">One Quarter (25%)</SelectItem>
+                              </SelectContent>
+                            </Select>
+                          </div>
                         </div>
 
-                        <div>
-                          <Label>Placeholder</Label>
-                          <Input
-                            value={field.placeholder || ''}
-                            onChange={(e) => updateField(field.id, { placeholder: e.target.value })}
-                            className="mt-1"
-                          />
-                        </div>
-
-                        <div className="flex items-center justify-between">
-                          <Label>Required Field</Label>
-                          <Switch
-                            checked={field.required}
-                            onCheckedChange={(required) => updateField(field.id, { required })}
-                          />
-                        </div>
-
-                        <div>
-                          <Label>Field Width</Label>
-                          <Select
-                            value={field.style?.width || 'full'}
-                            onValueChange={(width) => updateField(field.id, { 
-                              style: { ...field.style, width: width as any } 
-                            })}
-                          >
-                            <SelectTrigger className="mt-1">
-                              <SelectValue />
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="full">Full Width</SelectItem>
-                              <SelectItem value="half">Half Width</SelectItem>
-                              <SelectItem value="third">One Third</SelectItem>
-                              <SelectItem value="quarter">One Quarter</SelectItem>
-                            </SelectContent>
-                          </Select>
-                        </div>
+                        {/* Validation Settings */}
+                        {(field.type === 'text' || field.type === 'email' || field.type === 'textarea') && (
+                          <div className="border-t pt-4">
+                            <Label className="text-sm font-medium mb-3 block">Validation Rules</Label>
+                            <div className="space-y-3">
+                              <div className="grid grid-cols-2 gap-2">
+                                <div>
+                                  <Label className="text-xs">Min Length</Label>
+                                  <Input
+                                    type="number"
+                                    value={field.validation?.minLength || ''}
+                                    onChange={(e) => updateField(field.id, { 
+                                      validation: { 
+                                        ...field.validation, 
+                                        minLength: e.target.value ? parseInt(e.target.value) : undefined 
+                                      } 
+                                    })}
+                                    className="mt-1"
+                                  />
+                                </div>
+                                <div>
+                                  <Label className="text-xs">Max Length</Label>
+                                  <Input
+                                    type="number"
+                                    value={field.validation?.maxLength || ''}
+                                    onChange={(e) => updateField(field.id, { 
+                                      validation: { 
+                                        ...field.validation, 
+                                        maxLength: e.target.value ? parseInt(e.target.value) : undefined 
+                                      } 
+                                    })}
+                                    className="mt-1"
+                                  />
+                                </div>
+                              </div>
+                              {field.type === 'text' && (
+                                <div>
+                                  <Label className="text-xs">Pattern (RegEx)</Label>
+                                  <Input
+                                    value={field.validation?.pattern || ''}
+                                    onChange={(e) => updateField(field.id, { 
+                                      validation: { 
+                                        ...field.validation, 
+                                        pattern: e.target.value 
+                                      } 
+                                    })}
+                                    className="mt-1"
+                                    placeholder="^[A-Za-z]+$"
+                                  />
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                        )}
 
                         {(field.type === 'select' || field.type === 'radio') && (
                           <div>
@@ -666,14 +1009,14 @@ submitLead({
           </div>
 
           {/* Main Content */}
-          <div className="col-span-9">
+          <div className="lg:col-span-9 order-1 lg:order-2">
             <Tabs value={selectedTab} onValueChange={setSelectedTab}>
-              <TabsList className="grid w-full grid-cols-5">
-                <TabsTrigger value="builder">Builder</TabsTrigger>
-                <TabsTrigger value="settings">Settings</TabsTrigger>
-                <TabsTrigger value="integrations">Integrations</TabsTrigger>
-                <TabsTrigger value="analytics">Analytics</TabsTrigger>
-                <TabsTrigger value="embed">Embed Code</TabsTrigger>
+              <TabsList className="grid w-full grid-cols-2 md:grid-cols-5">
+                <TabsTrigger value="builder" className="text-xs md:text-sm">Builder</TabsTrigger>
+                <TabsTrigger value="settings" className="text-xs md:text-sm">Settings</TabsTrigger>
+                <TabsTrigger value="integrations" className="text-xs md:text-sm">Integrations</TabsTrigger>
+                <TabsTrigger value="analytics" className="text-xs md:text-sm">Analytics</TabsTrigger>
+                <TabsTrigger value="embed" className="text-xs md:text-sm">Embed</TabsTrigger>
               </TabsList>
 
               <TabsContent value="builder" className="space-y-4">
@@ -684,35 +1027,54 @@ submitLead({
                         <CardTitle>Form Preview</CardTitle>
                         <CardDescription>Drag and drop to reorder fields</CardDescription>
                       </div>
-                      <div className="flex items-center gap-2">
-                        <Button
-                          size="sm"
-                          variant={previewMode === 'desktop' ? 'default' : 'outline'}
-                          onClick={() => setPreviewMode('desktop')}
-                        >
-                          <Monitor className="h-4 w-4" />
-                        </Button>
-                        <Button
-                          size="sm"
-                          variant={previewMode === 'tablet' ? 'default' : 'outline'}
-                          onClick={() => setPreviewMode('tablet')}
-                        >
-                          <Tablet className="h-4 w-4" />
-                        </Button>
-                        <Button
-                          size="sm"
-                          variant={previewMode === 'mobile' ? 'default' : 'outline'}
-                          onClick={() => setPreviewMode('mobile')}
-                        >
-                          <Smartphone className="h-4 w-4" />
-                        </Button>
+                      <div className="flex items-center gap-3">
+                        {/* Layout Selector */}
+                        <div className="flex items-center gap-1">
+                          <Label className="text-xs text-gray-600">Layout:</Label>
+                          <Select value={formLayout} onValueChange={(value) => setFormLayout(value as any)}>
+                            <SelectTrigger className="w-24 h-8 text-xs">
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="auto">Auto</SelectItem>
+                              <SelectItem value="single">Single</SelectItem>
+                              <SelectItem value="two-column">2 Col</SelectItem>
+                              <SelectItem value="three-column">3 Col</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+                        
+                        {/* Device Preview */}
+                        <div className="flex items-center gap-1">
+                          <Button
+                            size="sm"
+                            variant={previewMode === 'desktop' ? 'default' : 'outline'}
+                            onClick={() => setPreviewMode('desktop')}
+                          >
+                            <Monitor className="h-4 w-4" />
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant={previewMode === 'tablet' ? 'default' : 'outline'}
+                            onClick={() => setPreviewMode('tablet')}
+                          >
+                            <Tablet className="h-4 w-4" />
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant={previewMode === 'mobile' ? 'default' : 'outline'}
+                            onClick={() => setPreviewMode('mobile')}
+                          >
+                            <Smartphone className="h-4 w-4" />
+                          </Button>
+                        </div>
                       </div>
                     </div>
                   </CardHeader>
                   <CardContent>
-                    <div className={`mx-auto bg-white rounded-lg border shadow-sm p-6 ${
-                      previewMode === 'mobile' ? 'max-w-sm' : 
-                      previewMode === 'tablet' ? 'max-w-2xl' : 'max-w-4xl'
+                    <div className={`bg-white rounded-lg border shadow-sm p-4 md:p-6 transition-all duration-300 ${
+                      previewMode === 'mobile' ? 'max-w-sm mx-auto' : 
+                      previewMode === 'tablet' ? 'max-w-2xl mx-auto' : getFormLayoutClasses()
                     }`}>
                       <div className="mb-6">
                         <h2 className="text-2xl font-bold" style={{ color: form.styling.primaryColor }}>
@@ -721,43 +1083,83 @@ submitLead({
                         <p className="text-gray-600 mt-2">{form.description}</p>
                       </div>
 
-                      <DragDropContext onDragEnd={handleDragEnd}>
-                        <Droppable droppableId="form-fields">
-                          {(provided) => (
-                            <div
-                              {...provided.droppableProps}
-                              ref={provided.innerRef}
-                              className="space-y-2"
-                            >
-                              <div className="flex flex-wrap -mx-2">
-                                {fields.map((field, index) => (
-                                  <Draggable key={field.id} draggableId={field.id} index={index}>
-                                    {(provided, snapshot) => (
-                                      <div
-                                        ref={provided.innerRef}
-                                        {...provided.draggableProps}
-                                        className={`${snapshot.isDragging ? 'opacity-75' : ''} ${
-                                          selectedField === field.id ? 'ring-2 ring-blue-500 ring-opacity-50' : ''
-                                        } relative group`}
-                                        onClick={() => setSelectedField(field.id)}
-                                      >
-                                        <div
-                                          {...provided.dragHandleProps}
-                                          className="absolute left-0 top-2 opacity-0 group-hover:opacity-100 transition-opacity z-10 cursor-move"
-                                        >
-                                          <GripVertical className="h-4 w-4 text-gray-400" />
-                                        </div>
-                                        {renderFieldPreview(field)}
-                                      </div>
-                                    )}
-                                  </Draggable>
-                                ))}
+                      <DndContext 
+                        sensors={sensors}
+                        collisionDetection={closestCenter}
+                        onDragEnd={handleDragEnd}
+                      >
+                        <SortableContext items={getCurrentStepFields().map(f => f.id)} strategy={verticalListSortingStrategy}>
+                          <div className="min-h-[400px] p-4">
+                            {/* Multi-step navigation */}
+                            {isMultiStep && (
+                              <div className="mb-6">
+                                <div className="flex items-center justify-between mb-4">
+                                  <h3 className="text-lg font-semibold">{formSteps[currentStep]?.title}</h3>
+                                  <div className="text-sm text-gray-500">
+                                    Step {currentStep + 1} of {formSteps.length}
+                                  </div>
+                                </div>
+                                {formSteps[currentStep]?.description && (
+                                  <p className="text-gray-600 mb-4">{formSteps[currentStep].description}</p>
+                                )}
+                                
+                                {/* Progress bar */}
+                                <div className="w-full bg-gray-200 rounded-full h-2 mb-6">
+                                  <div 
+                                    className="bg-blue-600 h-2 rounded-full transition-all duration-300" 
+                                    style={{ width: `${((currentStep + 1) / formSteps.length) * 100}%` }}
+                                  ></div>
+                                </div>
+                                
+                                {/* Step navigation */}
+                                <div className="flex justify-between mb-6">
+                                  <Button
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={() => setCurrentStep(Math.max(0, currentStep - 1))}
+                                    disabled={currentStep === 0}
+                                  >
+                                    Previous
+                                  </Button>
+                                  <Button
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={() => setCurrentStep(Math.min(formSteps.length - 1, currentStep + 1))}
+                                    disabled={currentStep === formSteps.length - 1}
+                                  >
+                                    Next
+                                  </Button>
+                                </div>
                               </div>
-                              {provided.placeholder}
+                            )}
+                            
+                            <div className={`grid gap-4 ${
+                              formLayout === 'single' ? 'grid-cols-1' :
+                              formLayout === 'two-column' ? 'grid-cols-1 md:grid-cols-2' :
+                              formLayout === 'three-column' ? 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3' :
+                              'grid-cols-1 md:grid-cols-2 lg:grid-cols-3'
+                            }`}>
+                              {getCurrentStepFields().map((field, index) => (
+                                <SortableField key={field.id} field={field} index={index} />
+                              ))}
                             </div>
-                          )}
-                        </Droppable>
-                      </DragDropContext>
+                            {getCurrentStepFields().length === 0 && (
+                              <div className="text-center py-12 text-gray-500">
+                                <FormInput className="h-12 w-12 mx-auto mb-4 text-gray-300" />
+                                <p className="text-lg font-medium">
+                                  {isMultiStep ? 'No fields in this step' : 'No fields added yet'}
+                                </p>
+                                <p className="text-sm">
+                                  {isMultiStep 
+                                    ? 'Add form fields from the sidebar or drag existing fields to this step' 
+                                    : 'Add form fields from the sidebar to get started'
+                                  }
+                                </p>
+                              </div>
+                            )}
+                          </div>
+                        </SortableContext>
+                      </DndContext>
 
                       <div className="mt-6 pt-6 border-t">
                         <Button 
@@ -781,37 +1183,47 @@ submitLead({
                     </CardHeader>
                     <CardContent className="space-y-4">
                       <div>
-                        <Label>Form Name</Label>
+                        <Label className="text-sm font-medium">Form Name</Label>
                         <Input
                           value={form.name}
                           onChange={(e) => setForm({ ...form, name: e.target.value })}
                           className="mt-1"
+                          placeholder="Enter form name"
                         />
+                        <p className="text-xs text-gray-500 mt-1">This will be displayed as the form title</p>
                       </div>
                       <div>
-                        <Label>Description</Label>
+                        <Label className="text-sm font-medium">Description</Label>
                         <Textarea
                           value={form.description}
                           onChange={(e) => setForm({ ...form, description: e.target.value })}
                           className="mt-1"
+                          placeholder="Describe the purpose of this form"
+                          rows={3}
                         />
+                        <p className="text-xs text-gray-500 mt-1">Brief description shown below the form title</p>
                       </div>
                       <div>
-                        <Label>Success Message</Label>
+                        <Label className="text-sm font-medium">Success Message</Label>
                         <Textarea
                           value={form.successMessage}
                           onChange={(e) => setForm({ ...form, successMessage: e.target.value })}
                           className="mt-1"
+                          placeholder="Thank you message after submission"
+                          rows={3}
                         />
+                        <p className="text-xs text-gray-500 mt-1">Message displayed after successful form submission</p>
                       </div>
                       <div>
-                        <Label>Redirect URL (Optional)</Label>
+                        <Label className="text-sm font-medium">Redirect URL (Optional)</Label>
                         <Input
                           value={form.redirectUrl || ''}
                           onChange={(e) => setForm({ ...form, redirectUrl: e.target.value })}
                           placeholder="https://example.com/thank-you"
                           className="mt-1"
+                          type="url"
                         />
+                        <p className="text-xs text-gray-500 mt-1">Redirect users to this URL after submission</p>
                       </div>
                     </CardContent>
                   </Card>
@@ -913,13 +1325,72 @@ submitLead({
                           <p className="text-sm text-muted-foreground">Split form into multiple steps</p>
                         </div>
                         <Switch
-                          checked={form.behavior.enableMultiStep}
-                          onCheckedChange={(enableMultiStep) => setForm({
-                            ...form,
-                            behavior: { ...form.behavior, enableMultiStep }
-                          })}
+                          checked={isMultiStep}
+                          onCheckedChange={(checked) => {
+                            setIsMultiStep(checked);
+                            setForm({
+                              ...form,
+                              behavior: { ...form.behavior, enableMultiStep: checked }
+                            });
+                          }}
                         />
                       </div>
+                      
+                      {/* Multi-Step Configuration */}
+                      {isMultiStep && (
+                        <div className="border-t pt-4 mt-4">
+                          <Label className="text-sm font-medium mb-3 block">Step Configuration</Label>
+                          <div className="space-y-3">
+                            {formSteps.map((step, index) => (
+                              <div key={step.id} className="flex items-center justify-between p-3 border rounded-lg">
+                                <div className="flex-1">
+                                  <Input
+                                    value={step.title}
+                                    onChange={(e) => updateStep(step.id, { title: e.target.value })}
+                                    className="font-medium mb-1"
+                                    placeholder="Step title"
+                                  />
+                                  <Input
+                                    value={step.description || ''}
+                                    onChange={(e) => updateStep(step.id, { description: e.target.value })}
+                                    className="text-sm text-gray-600"
+                                    placeholder="Step description"
+                                  />
+                                </div>
+                                <div className="flex items-center gap-2 ml-3">
+                                  <Button
+                                    size="sm"
+                                    variant="outline"
+                                    onClick={() => setCurrentStep(index)}
+                                    className={currentStep === index ? 'bg-blue-100' : ''}
+                                  >
+                                    {currentStep === index ? 'Current' : 'View'}
+                                  </Button>
+                                  {formSteps.length > 1 && (
+                                    <Button
+                                      size="sm"
+                                      variant="outline"
+                                      onClick={() => deleteStep(step.id)}
+                                      className="text-red-600 hover:text-red-700"
+                                    >
+                                      <Trash2 className="h-3 w-3" />
+                                    </Button>
+                                  )}
+                                </div>
+                              </div>
+                            ))}
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={addStep}
+                              className="w-full"
+                            >
+                              <Plus className="h-3 w-3 mr-1" />
+                              Add Step
+                            </Button>
+                          </div>
+                        </div>
+                      )}
                       <div className="flex items-center justify-between">
                         <div>
                           <Label>Save Progress</Label>
@@ -1469,6 +1940,97 @@ submitLead({
             </Tabs>
           </div>
         </div>
+        
+        {/* Preview Modal */}
+        <Dialog open={showPreviewModal} onOpenChange={setShowPreviewModal}>
+          <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle>Form Preview</DialogTitle>
+              <DialogDescription>
+                This is how your form will appear to users
+              </DialogDescription>
+            </DialogHeader>
+            
+            <div className="mt-4">
+              {/* Device Preview Selector */}
+              <div className="flex justify-center gap-2 mb-4">
+                <Button
+                  size="sm"
+                  variant={previewMode === 'desktop' ? 'default' : 'outline'}
+                  onClick={() => setPreviewMode('desktop')}
+                >
+                  <Monitor className="h-4 w-4 mr-2" />
+                  Desktop
+                </Button>
+                <Button
+                  size="sm"
+                  variant={previewMode === 'tablet' ? 'default' : 'outline'}
+                  onClick={() => setPreviewMode('tablet')}
+                >
+                  <Tablet className="h-4 w-4 mr-2" />
+                  Tablet
+                </Button>
+                <Button
+                  size="sm"
+                  variant={previewMode === 'mobile' ? 'default' : 'outline'}
+                  onClick={() => setPreviewMode('mobile')}
+                >
+                  <Smartphone className="h-4 w-4 mr-2" />
+                  Mobile
+                </Button>
+              </div>
+              
+              {/* Form Preview */}
+              <div className={`mx-auto transition-all duration-300 ${
+                previewMode === 'mobile' ? 'max-w-sm' : 
+                previewMode === 'tablet' ? 'max-w-2xl' : 'max-w-full'
+              }`}>
+                <div className="bg-white rounded-lg border shadow-sm p-6">
+                  <div className="mb-6">
+                    <h2 className="text-2xl font-bold" style={{ color: form.styling.primaryColor }}>
+                      {form.name}
+                    </h2>
+                    <p className="text-gray-600 mt-2">{form.description}</p>
+                  </div>
+                  
+                  <div className={`grid gap-4 ${
+                    formLayout === 'single' ? 'grid-cols-1' :
+                    formLayout === 'two-column' ? 'grid-cols-1 md:grid-cols-2' :
+                    formLayout === 'three-column' ? 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3' :
+                    'grid-cols-1 md:grid-cols-2 lg:grid-cols-3'
+                  }`}>
+                    {fields.map((field) => (
+                      <div key={field.id} className={
+                        field.style?.width === 'full' ? 'col-span-full' :
+                        field.style?.width === 'half' && formLayout === 'three-column' ? 'md:col-span-2' : ''
+                      }>
+                        {renderFieldPreview(field)}
+                      </div>
+                    ))}
+                  </div>
+                  
+                  {fields.length === 0 && (
+                    <div className="text-center py-12 text-gray-500">
+                      <FormInput className="h-12 w-12 mx-auto mb-4 text-gray-300" />
+                      <p className="text-lg font-medium">No fields added yet</p>
+                      <p className="text-sm">Add form fields from the sidebar to get started</p>
+                    </div>
+                  )}
+                  
+                  <div className="mt-6 pt-6 border-t">
+                    <Button 
+                      className="w-full" 
+                      style={{ backgroundColor: form.styling.primaryColor }}
+                    >
+                      <Send className="h-4 w-4 mr-2" />
+                      Submit Form
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </DialogContent>
+        </Dialog>
       </div>
     </div>
   );

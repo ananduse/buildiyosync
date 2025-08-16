@@ -109,10 +109,10 @@ function getInitials(fullName: string): string {
 function stringToHslColor(input: string, saturation = 65, lightness = 55): string {
   let hash = 0;
   for (let i = 0; i < input.length; i++) {
-    // eslint-disable-next-line no-bitwise
+     
     hash = input.charCodeAt(i) + ((hash << 5) - hash);
   }
-  // eslint-disable-next-line no-bitwise
+   
   const hue = Math.abs(hash) % 360;
   return `hsl(${hue} ${saturation}% ${lightness}%)`;
 }
