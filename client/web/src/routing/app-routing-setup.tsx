@@ -220,6 +220,12 @@ import ServiceTypes from '@/pages/leads/master-data/service-types';
 import EmailConfiguration from '@/pages/leads/admin/email-configuration';
 import Integrations from '@/pages/leads/admin/integrations';
 
+// Project Management Components
+import ProjectDashboard from '@/pages/projects/dashboard/project-dashboard';
+import ProjectList from '@/pages/projects/list/project-list';
+import ProjectKanban from '@/pages/projects/kanban/project-kanban';
+import ProjectLayout from '@/components/projects/layout/ProjectLayout';
+
 // Forms Management Components
 import FormsOverview from '@/pages/leads/forms/forms-overview';
 import FormBuilder from '@/pages/leads/forms/form-builder';
@@ -418,6 +424,18 @@ export function AppRoutingSetup() {
         <Route path="/leads/:id/communications" element={<LeadCommunicationsPage />} />
         <Route path="/leads/:id/convert" element={<ConvertLeadPage />} />
         <Route path="/leads/reports" element={<LeadReportsPage />} />
+      </Route>
+      
+      {/* Project Management Routes - With Auth */}
+      <Route element={<RequireAuth />}>
+        <Route path="/projects" element={<ProjectLayout />}>
+          <Route index element={<ProjectDashboard />} />
+          <Route path="dashboard" element={<ProjectDashboard />} />
+          <Route path="list" element={<ProjectList />} />
+          <Route path="kanban" element={<ProjectKanban />} />
+          <Route path=":id" element={<ProjectDashboard />} />
+          <Route path=":id/dashboard" element={<ProjectDashboard />} />
+        </Route>
       </Route>
       
       <Route element={<RequireAuth />}>
