@@ -1,50 +1,58 @@
 'use client';
 
-import { useState, ReactNode } from 'react';
-import { User, Menu, X } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import ProjectSidebar from '../navigation/ProjectSidebar';
+import { ReactNode, useState } from 'react';
 import { Outlet } from 'react-router-dom';
+import ProjectSidebar from '../navigation/ProjectSidebar';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { cn } from '@/lib/utils';
 
 interface ProjectLayoutProps {
   children?: ReactNode;
 }
 
 export default function ProjectLayout({ children }: ProjectLayoutProps) {
-  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+  const [isProjectSidebarOpen, setIsProjectSidebarOpen] = useState(true);
 
   return (
-    <div className="h-screen flex bg-gray-50">
-      {/* Sidebar */}
-      <ProjectSidebar />
+    <div className="flex h-full w-full bg-gray-50">
+      {/* Custom Project Sidebar */}
+      <div 
+        className={cn(
+          "relative transition-all duration-300 ease-in-out flex-shrink-0",
+          isProjectSidebarOpen ? "w-64" : "w-0"
+        )}
+        style={{ overflow: isProjectSidebarOpen ? 'visible' : 'hidden' }}
+      >
+        <div className={cn(
+          "absolute inset-0 transition-opacity duration-300",
+          isProjectSidebarOpen ? "opacity-100" : "opacity-0"
+        )}>
+          <ProjectSidebar />
+        </div>
+      </div>
 
-      {/* Main Content */}
-      <div className="flex-1 flex flex-col overflow-hidden">
-        {/* Top Header */}
-        <header className="bg-white border-b border-gray-200">
-          <div className="flex items-center justify-between px-4 py-2">
-            <Button
-              variant="ghost"
-              size="sm"
-              className="lg:hidden"
-              onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-            >
-              {isSidebarOpen ? <X className="h-4 w-4" /> : <Menu className="h-4 w-4" />}
-            </Button>
-            
-            <div className="flex items-center gap-2">
-              <div className="w-6 h-6 bg-blue-600 rounded-full flex items-center justify-center">
-                <User className="h-3 w-3 text-white" />
-              </div>
-              <span className="text-sm">Admin</span>
-            </div>
-          </div>
-        </header>
+      {/* Main Content Area */}
+      <div className="flex-1 flex flex-col overflow-hidden relative">
+        {/* Toggle Button for Project Sidebar */}
+        <Button
+          variant="ghost"
+          size="icon"
+          className="absolute left-2 top-4 z-40 h-8 w-8 rounded-full bg-white shadow-md border border-gray-200 hover:bg-gray-50 transition-transform hover:scale-105"
+          onClick={() => setIsProjectSidebarOpen(!isProjectSidebarOpen)}
+          title={isProjectSidebarOpen ? "Hide project sidebar" : "Show project sidebar"}
+        >
+          {isProjectSidebarOpen ? (
+            <ChevronLeft className="h-4 w-4" />
+          ) : (
+            <ChevronRight className="h-4 w-4" />
+          )}
+        </Button>
 
-        {/* Main Content Area */}
-        <main className="flex-1 overflow-y-auto">
+        {/* Page Content */}
+        <div className="flex-1 overflow-y-auto p-6">
           {children || <Outlet />}
-        </main>
+        </div>
       </div>
     </div>
   );

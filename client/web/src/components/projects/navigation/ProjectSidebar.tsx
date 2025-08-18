@@ -103,6 +103,13 @@ const navigationSections: SidebarSection[] = [
     title: 'Overview',
     links: [
       {
+        name: 'Enterprise View',
+        href: '/projects/enterprise',
+        icon: Building2,
+        badge: 'PRO',
+        isNew: true
+      },
+      {
         name: 'Dashboard',
         href: '/projects/dashboard',
         icon: BarChart3,
@@ -126,8 +133,7 @@ const navigationSections: SidebarSection[] = [
       {
         name: 'Timeline & Gantt',
         href: '/projects/timeline',
-        icon: GitBranch,
-        isNew: true
+        icon: GitBranch
       }
     ]
   },
@@ -485,20 +491,32 @@ export default function ProjectSidebar() {
   };
 
   return (
-    <div className="flex h-screen w-64 flex-col border-r bg-white">
+    <div className="flex h-full w-full flex-col border-r bg-white shadow-sm">
       {/* Header */}
-      <div className="flex h-16 items-center justify-between border-b px-4">
+      <div className="flex h-14 items-center justify-between border-b bg-gradient-to-r from-blue-50 to-white px-4">
         <div className="flex items-center gap-2">
           <Building2 className="h-6 w-6 text-blue-600" />
           <div>
-            <h2 className="text-lg font-semibold">Projects</h2>
+            <h2 className="text-lg font-semibold text-gray-800">Projects</h2>
             <p className="text-xs text-gray-500">Management System</p>
           </div>
         </div>
       </div>
 
+      {/* Enterprise Quick Access */}
+      <div className="p-3 border-b bg-gradient-to-r from-blue-600 to-blue-700">
+        <Button 
+          className="w-full bg-white hover:bg-gray-50 text-blue-700 font-semibold shadow-sm"
+          onClick={() => window.location.href = '/projects/enterprise'}
+        >
+          <Building2 className="h-4 w-4 mr-2" />
+          Enterprise Dashboard
+          <Badge className="ml-2 bg-blue-100 text-blue-700">PRO</Badge>
+        </Button>
+      </div>
+
       {/* Quick Stats */}
-      <div className="grid grid-cols-3 gap-2 border-b p-4">
+      <div className="grid grid-cols-3 gap-2 border-b bg-gray-50 p-3">
         <div className="text-center">
           <p className="text-lg font-bold text-blue-600">48</p>
           <p className="text-xs text-gray-500">Projects</p>
@@ -604,9 +622,9 @@ export default function ProjectSidebar() {
       </ScrollArea>
 
       {/* Footer */}
-      <div className="border-t p-4">
+      <div className="border-t bg-gray-50 p-3">
         <Button 
-          className="w-full" 
+          className="w-full bg-blue-600 hover:bg-blue-700 text-white" 
           onClick={() => window.location.href = '/projects/new'}
         >
           <Plus className="h-4 w-4 mr-2" />

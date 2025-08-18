@@ -111,6 +111,7 @@ export function SidebarMenu({ isCollapsed }: SidebarMenuProps) {
       title: 'Projects',
       active: location.pathname.startsWith('/projects'),
       subItems: [
+        { path: '/projects/enterprise', title: 'Enterprise View', icon: Building2 },
         { path: '/projects', title: 'Overview', icon: Home },
         { path: '/projects/dashboard', title: 'Dashboard', icon: PieChart },
         { path: '/projects/list', title: 'Project List', icon: Layers },

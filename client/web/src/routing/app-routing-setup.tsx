@@ -224,6 +224,8 @@ import Integrations from '@/pages/leads/admin/integrations';
 import ProjectDashboard from '@/pages/projects/dashboard/project-dashboard';
 import ProjectList from '@/pages/projects/list/project-list';
 import ProjectKanban from '@/pages/projects/kanban/project-kanban';
+import ProjectEnterprise from '@/pages/projects/enterprise/project-enterprise';
+import EnterpriseProjectDashboard from '@/pages/projects/enterprise/enterprise-dashboard';
 import ProjectLayout from '@/components/projects/layout/ProjectLayout';
 
 // Forms Management Components
@@ -424,15 +426,14 @@ export function AppRoutingSetup() {
         <Route path="/leads/:id/communications" element={<LeadCommunicationsPage />} />
         <Route path="/leads/:id/convert" element={<ConvertLeadPage />} />
         <Route path="/leads/reports" element={<LeadReportsPage />} />
-      </Route>
-      
-      {/* Project Management Routes - With Auth */}
-      <Route element={<RequireAuth />}>
+        
+        {/* Project Management Routes */}
         <Route path="/projects" element={<ProjectLayout />}>
-          <Route index element={<ProjectDashboard />} />
+          <Route index element={<EnterpriseProjectDashboard />} />
           <Route path="dashboard" element={<ProjectDashboard />} />
           <Route path="list" element={<ProjectList />} />
           <Route path="kanban" element={<ProjectKanban />} />
+          <Route path="enterprise" element={<EnterpriseProjectDashboard />} />
           <Route path=":id" element={<ProjectDashboard />} />
           <Route path=":id/dashboard" element={<ProjectDashboard />} />
         </Route>
