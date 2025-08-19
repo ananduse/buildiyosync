@@ -35,6 +35,7 @@ export const LEADS_NAV: NavConfig = [
     title: 'Dashboard',
     icon: Home,
     path: '/leads/dashboard',
+    pinned: true,
   },
   {
     id: 'leads',
@@ -44,6 +45,7 @@ export const LEADS_NAV: NavConfig = [
     pinnable: true,
     pinned: true,
     badge: '24',
+    more: true,
     new: {
       tooltip: 'Add New Lead',
       path: '/leads/add',
@@ -51,11 +53,15 @@ export const LEADS_NAV: NavConfig = [
   },
   {
     id: 'pipeline',
-    title: 'Pipeline',
+    title: 'Pipeline', 
     icon: GitBranch,
     path: '/leads/pipeline',
     pinnable: true,
     pinned: true,
+    new: {
+      tooltip: 'New Pipeline Stage',
+      path: '/leads/pipeline/new',
+    },
   },
   {
     id: 'tasks',
@@ -79,6 +85,10 @@ export const LEADS_NAV: NavConfig = [
     pinnable: true,
     pinned: true,
     badge: '3',
+    new: {
+      tooltip: 'New Message',
+      path: '/leads/communication/new',
+    },
   },
   {
     id: 'calendar',
@@ -86,7 +96,11 @@ export const LEADS_NAV: NavConfig = [
     icon: Calendar,
     path: '/leads/calendar',
     pinnable: true,
-    pinned: false,
+    pinned: true,
+    new: {
+      tooltip: 'New Event',
+      path: '/leads/calendar/new',
+    },
   },
   {
     id: 'analytics',
@@ -102,7 +116,11 @@ export const LEADS_NAV: NavConfig = [
     icon: Building2,
     path: '/leads/companies',
     pinnable: true,
-    pinned: false,
+    pinned: true,
+    new: {
+      tooltip: 'New Company',
+      path: '/leads/companies/new',
+    },
   },
   {
     id: 'deals',
@@ -111,12 +129,44 @@ export const LEADS_NAV: NavConfig = [
     path: '/leads/deals',
     pinnable: true,
     pinned: false,
+    new: {
+      tooltip: 'New Deal',
+      path: '/leads/deals/new',
+    },
   },
   {
     id: 'activities',
     title: 'Activities',
     icon: Activity,
     path: '/leads/activities',
+    pinnable: true,
+    pinned: false,
+  },
+  {
+    id: 'documents',
+    title: 'Documents',
+    icon: FileText,
+    path: '/leads/documents',
+    pinnable: true,
+    pinned: false,
+    new: {
+      tooltip: 'Upload Document',
+      path: '/leads/documents/upload',
+    },
+  },
+  {
+    id: 'reports',
+    title: 'Reports',
+    icon: TrendingUp,
+    path: '/leads/reports',
+    pinnable: true,
+    pinned: false,
+  },
+  {
+    id: 'automation',
+    title: 'Automation',
+    icon: Zap,
+    path: '/leads/automation',
     pinnable: true,
     pinned: false,
   },

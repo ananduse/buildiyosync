@@ -200,7 +200,3 @@ export function SidebarDefaultNav() {
   );
 }
 
-function unpinSidebarNavItem(id: string): void {
-  const { unpinSidebarNavItem } = useLayout();
-  unpinSidebarNavItem(id);
-}

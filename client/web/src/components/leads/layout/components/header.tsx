@@ -29,17 +29,6 @@ export function Header() {
           </div>
         </div>
         
-        <div className="flex items-center gap-4">
-          <div className="relative hidden lg:block">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-zinc-400" />
-            <Input
-              type="text"
-              placeholder="Search..."
-              className="pl-10 w-64 h-8 bg-zinc-800 border-zinc-700 text-white placeholder:text-zinc-400"
-            />
-          </div>
-        </div>
-
         <div className="flex items-center gap-2">
           <Button
             variant="ghost"
