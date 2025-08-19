@@ -767,7 +767,7 @@ export default function LeadSidebar({ isCollapsed = false }: LeadSidebarProps) {
               <div key={section.title}>
                 <button
                   onClick={() => toggleSection(section.title)}
-                  className="flex w-full items-center justify-between px-2 py-1 text-sm font-medium text-gray-600 hover:text-gray-900"
+                  className="flex w-full items-center justify-between px-2 py-1.5 text-sm font-semibold text-gray-700 hover:text-gray-900"
                 >
                   <div className="flex items-center gap-2">
                     {SectionIcon && <SectionIcon className="h-3 w-3" />}
@@ -781,7 +781,7 @@ export default function LeadSidebar({ isCollapsed = false }: LeadSidebarProps) {
                 </button>
                 
                 {expandedSections.includes(section.title) && (
-                  <div className="mt-1 space-y-1">
+                  <div className="mt-1 ml-4 space-y-1 border-l-2 border-gray-200 pl-2">
                     {section.links.map((link) => (
                       <div key={link.href}>
                         <Link
@@ -834,13 +834,13 @@ export default function LeadSidebar({ isCollapsed = false }: LeadSidebarProps) {
                         
                         {/* Child Links */}
                         {link.children && expandedLinks.includes(link.name) && (
-                          <div className="ml-6 mt-1 space-y-1">
+                          <div className="ml-8 mt-1 space-y-1 border-l border-gray-200 pl-2">
                             {link.children.map((child) => (
                               <Link
                                 key={child.href}
                                 to={child.href}
                                 className={cn(
-                                  "flex items-center gap-2 rounded-lg px-3 py-1.5 text-xs transition-colors",
+                                  "flex items-center gap-2 rounded-lg px-2 py-1.5 text-xs transition-colors",
                                   isActive(child.href)
                                     ? "bg-blue-50 text-blue-600 font-medium"
                                     : "text-gray-500 hover:bg-blue-50 hover:text-gray-900"
