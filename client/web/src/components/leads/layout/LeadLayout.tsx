@@ -1,7 +1,8 @@
 'use client';
 
-import { useState } from 'react';
-import { Bell, Search, User, Menu, X, HelpCircle, Settings, LogOut, ChevronDown } from 'lucide-react';
+import { useState, ReactNode } from 'react';
+import { Outlet } from 'react-router-dom';
+import { Bell, Search, User, Menu, X, HelpCircle, Settings, LogOut, ChevronDown, ChevronLeft, ChevronRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
@@ -13,16 +14,17 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import LeadNavigation from '../navigation/LeadNavigation';
+import LeadSidebar from '../navigation/LeadSidebar';
 import Breadcrumb from '../navigation/Breadcrumb';
 import QuickActions from '../navigation/QuickActions';
+import { cn } from '@/lib/utils';
 
 interface LeadLayoutProps {
-  children: React.ReactNode;
+  children?: ReactNode;
 }
 
 export default function LeadLayout({ children }: LeadLayoutProps) {
-  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+  const [isLeadSidebarOpen, setIsLeadSidebarOpen] = useState(true);
   const [notifications] = useState([
     { id: '1', title: 'New lead assigned', time: '2 min ago', type: 'info' },
     { id: '2', title: 'Follow-up due', time: '5 min ago', type: 'warning' },
@@ -30,19 +32,16 @@ export default function LeadLayout({ children }: LeadLayoutProps) {
   ]);
 
   return (
-    <div className="h-screen flex bg-gray-50">
-      {/* Sidebar */}
-      <div className={`${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'} fixed inset-y-0 left-0 z-50 transition-transform duration-200 ease-in-out lg:translate-x-0 lg:static lg:inset-0`}>
-        <LeadNavigation />
+    <div className="flex h-full w-full bg-gray-50">
+      {/* Custom Lead Sidebar with Toggle */}
+      <div 
+        className={cn(
+          "relative transition-all duration-300 ease-in-out flex-shrink-0",
+          isLeadSidebarOpen ? "w-64" : "w-16"
+        )}
+      >
+        <LeadSidebar isCollapsed={!isLeadSidebarOpen} />
       </div>
-
-      {/* Overlay for mobile */}
-      {isSidebarOpen && (
-        <div 
-          className="fixed inset-0 bg-gray-600 bg-opacity-75 z-40 lg:hidden"
-          onClick={() => setIsSidebarOpen(false)}
-        />
-      )}
 
       {/* Main Content */}
       <div className="flex-1 flex flex-col overflow-hidden">
@@ -53,14 +52,19 @@ export default function LeadLayout({ children }: LeadLayoutProps) {
             <div className="flex items-center gap-4">
               <Button
                 variant="ghost"
-                size="sm"
-                className="lg:hidden"
-                onClick={() => setIsSidebarOpen(!isSidebarOpen)}
+                size="icon"
+                className="h-9 w-9"
+                onClick={() => setIsLeadSidebarOpen(!isLeadSidebarOpen)}
+                title={isLeadSidebarOpen ? "Collapse sidebar" : "Expand sidebar"}
               >
-                {isSidebarOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+                {isLeadSidebarOpen ? (
+                  <ChevronLeft className="h-5 w-5" />
+                ) : (
+                  <ChevronRight className="h-5 w-5" />
+                )}
               </Button>
               
-              <div className="hidden lg:flex items-center gap-4">
+              <div className="flex items-center gap-4">
                 <div className="relative">
                   <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
                   <Input
@@ -177,7 +181,7 @@ export default function LeadLayout({ children }: LeadLayoutProps) {
 
         {/* Main Content Area */}
         <main className="flex-1 overflow-y-auto">
-          {children}
+          {children || <Outlet />}
         </main>
 
         {/* Status Bar */}

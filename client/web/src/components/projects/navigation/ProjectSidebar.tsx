@@ -82,6 +82,13 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@/components/ui/tooltip';
+import { MoreVertical } from 'lucide-react';
 
 interface SidebarLink {
   name: string;
@@ -465,7 +472,11 @@ const navigationSections: SidebarSection[] = [
   }
 ];
 
-export default function ProjectSidebar() {
+interface ProjectSidebarProps {
+  isCollapsed?: boolean;
+}
+
+export default function ProjectSidebar({ isCollapsed = false }: ProjectSidebarProps) {
   const location = useLocation();
   const [expandedSections, setExpandedSections] = useState<string[]>(['Overview', 'Project Management']);
   const [expandedLinks, setExpandedLinks] = useState<string[]>([]);
@@ -490,6 +501,111 @@ export default function ProjectSidebar() {
     return location.pathname === href || location.pathname.startsWith(href + '/');
   };
 
+  if (isCollapsed) {
+    // Collapsed view - Icons only
+    return (
+      <TooltipProvider>
+        <div className="flex h-full w-16 flex-col border-r bg-white shadow-sm">
+          {/* Header - Icon only */}
+          <div className="flex h-14 items-center justify-center border-b bg-gradient-to-r from-blue-50 to-white">
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Building2 className="h-6 w-6 text-blue-600 cursor-pointer" />
+              </TooltipTrigger>
+              <TooltipContent side="right">
+                <p>Projects Management</p>
+              </TooltipContent>
+            </Tooltip>
+          </div>
+
+        {/* Enterprise Quick Access - Icon only */}
+        <div className="p-2 border-b bg-gradient-to-r from-blue-600 to-blue-700">
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button 
+                size="icon"
+                className="w-full h-10 bg-white hover:bg-gray-50"
+                onClick={() => window.location.href = '/projects/enterprise'}
+              >
+                <Building2 className="h-5 w-5 text-blue-700" />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent side="right">
+              <p>Enterprise Dashboard (PRO)</p>
+            </TooltipContent>
+          </Tooltip>
+        </div>
+
+        {/* Navigation Icons */}
+        <ScrollArea className="flex-1 py-2">
+          <div className="space-y-1 px-2">
+            {navigationSections.map((section) => (
+              <div key={section.title} className="space-y-1">
+                {section.links.slice(0, 5).map((link) => (
+                  <Tooltip key={link.href}>
+                    <TooltipTrigger asChild>
+                      <Link
+                        to={link.href}
+                        className={cn(
+                          "flex items-center justify-center h-10 w-full rounded-lg transition-colors",
+                          isActive(link.href)
+                            ? "bg-blue-50 text-blue-600"
+                            : "text-gray-600 hover:bg-gray-100 hover:text-gray-900"
+                        )}
+                      >
+                        <link.icon className="h-5 w-5" />
+                      </Link>
+                    </TooltipTrigger>
+                    <TooltipContent side="right">
+                      <div>
+                        <p className="font-medium">{link.name}</p>
+                        {link.badge && (
+                          <p className="text-xs text-gray-500">{link.badge}</p>
+                        )}
+                      </div>
+                    </TooltipContent>
+                  </Tooltip>
+                ))}
+                {section.links.length > 5 && (
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <div className="flex items-center justify-center h-8 w-full text-gray-400">
+                        <MoreVertical className="h-4 w-4" />
+                      </div>
+                    </TooltipTrigger>
+                    <TooltipContent side="right">
+                      <p className="text-xs">+{section.links.length - 5} more</p>
+                    </TooltipContent>
+                  </Tooltip>
+                )}
+              </div>
+            ))}
+          </div>
+        </ScrollArea>
+
+        {/* Footer - Icon only */}
+        <div className="border-t bg-gray-50 p-2">
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button 
+                size="icon"
+                className="w-full h-10 bg-blue-600 hover:bg-blue-700 text-white"
+                onClick={() => window.location.href = '/projects/new'}
+              >
+                <Plus className="h-5 w-5" />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent side="right">
+              <p>New Project</p>
+            </TooltipContent>
+          </Tooltip>
+        </div>
+      </div>
+      </TooltipProvider>
+    );
+  }
+
+  // Expanded view - Full sidebar
   return (
     <div className="flex h-full w-full flex-col border-r bg-white shadow-sm">
       {/* Header */}

@@ -20,16 +20,10 @@ export default function ProjectLayout({ children }: ProjectLayoutProps) {
       <div 
         className={cn(
           "relative transition-all duration-300 ease-in-out flex-shrink-0",
-          isProjectSidebarOpen ? "w-64" : "w-0"
+          isProjectSidebarOpen ? "w-64" : "w-16"
         )}
-        style={{ overflow: isProjectSidebarOpen ? 'visible' : 'hidden' }}
       >
-        <div className={cn(
-          "absolute inset-0 transition-opacity duration-300",
-          isProjectSidebarOpen ? "opacity-100" : "opacity-0"
-        )}>
-          <ProjectSidebar />
-        </div>
+        <ProjectSidebar isCollapsed={!isProjectSidebarOpen} />
       </div>
 
       {/* Main Content Area */}
