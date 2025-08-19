@@ -683,63 +683,39 @@ export default function LeadSidebar({ isCollapsed = false }: LeadSidebarProps) {
           </div>
 
 
-          {/* Navigation Icons */}
+          {/* Navigation Icons - Main sections only */}
           <ScrollArea className="flex-1 py-2">
-            <div className="space-y-1 px-2">
-              {navigationSections.map((section) => (
-                <div key={section.title} className="space-y-1">
-                  {/* Show first 6 items from each section */}
-                  {section.links.slice(0, 6).map((link) => (
-                    <Tooltip key={link.href}>
-                      <TooltipTrigger asChild>
-                        <Link
-                          to={link.href}
-                          className={cn(
-                            "flex items-center justify-center h-10 w-full rounded-lg transition-colors relative",
-                            isActive(link.href)
-                              ? "bg-blue-50 text-blue-600"
-                              : "text-gray-600 hover:bg-blue-50 hover:text-gray-900"
-                          )}
-                        >
-                          <link.icon className="h-5 w-5" />
-                          {link.badge && (
-                            <div className="absolute -top-1 -right-1 h-4 w-4 bg-red-500 text-white rounded-full text-[10px] flex items-center justify-center">
-                              {link.badge.length > 2 ? '9+' : link.badge}
-                            </div>
-                          )}
-                        </Link>
-                      </TooltipTrigger>
-                      <TooltipContent side="right">
-                        <div>
-                          <p className="font-medium">{link.name}</p>
-                          {link.badge && (
-                            <p className="text-xs text-gray-500">Updates: {link.badge}</p>
-                          )}
-                          {link.isPro && (
-                            <Badge className="mt-1" variant="secondary">PRO</Badge>
-                          )}
-                          {link.isNew && (
-                            <Badge className="mt-1" variant="default">NEW</Badge>
-                          )}
-                        </div>
-                      </TooltipContent>
-                    </Tooltip>
-                  ))}
-                  {section.links.length > 6 && (
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <div className="flex items-center justify-center h-8 w-full text-gray-400">
-                          <MoreVertical className="h-4 w-4" />
-                        </div>
-                      </TooltipTrigger>
-                      <TooltipContent side="right">
-                        <p className="text-xs">+{section.links.length - 6} more in {section.title}</p>
-                      </TooltipContent>
-                    </Tooltip>
-                  )}
-                  <Separator className="my-1" />
-                </div>
-              ))}
+            <div className="space-y-2 px-2">
+              {navigationSections.map((section) => {
+                const SectionIcon = section.icon;
+                if (!SectionIcon) return null;
+                
+                return (
+                  <Tooltip key={section.title}>
+                    <TooltipTrigger asChild>
+                      <Button
+                        size="icon"
+                        variant="ghost"
+                        className={cn(
+                          "w-full h-10",
+                          "hover:bg-blue-50 hover:text-blue-600"
+                        )}
+                        onClick={() => {
+                          // Navigate to first link in the section
+                          if (section.links.length > 0) {
+                            window.location.href = section.links[0].href;
+                          }
+                        }}
+                      >
+                        <SectionIcon className="h-5 w-5" />
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent side="right">
+                      <p className="font-medium">{section.title}</p>
+                    </TooltipContent>
+                  </Tooltip>
+                );
+              })}
             </div>
           </ScrollArea>
 
