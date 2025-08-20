@@ -5,6 +5,8 @@ import { useEffect, useState } from 'react';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { SidebarContent } from './sidebar-content';
 import { useLocation } from 'react-router-dom';
+import { HeaderWorkspace } from './header-workspace';
+import { Separator } from '@/components/ui/separator';
 
 export function HeaderBrand() {
   const { pathname } = useLocation();
@@ -17,15 +19,20 @@ export function HeaderBrand() {
   }, [pathname]);
   
   return (
-    <div className="flex items-center -ms-1">
+    <div className="flex items-center gap-3">
       <div className="flex items-center gap-2">
         <img 
           src="/media/brand-logos/buildiyosync.svg" 
           alt="BuildiyoSync" 
-          className="h-7 w-auto"
+          className="h-6 w-auto"
         />
-        <span className="font-semibold text-white text-lg">BuildiyoSync</span>
+        <span className="font-semibold text-white text-base hidden lg:block">BuildiyoSync</span>
       </div>
+      
+      <Separator orientation="vertical" className="bg-zinc-600 h-5" />
+      
+      <HeaderWorkspace />
+      
       {isMobile && (
         <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
           <SheetTrigger asChild>
