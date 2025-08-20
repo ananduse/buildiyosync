@@ -50,7 +50,7 @@ interface WorkspaceMenuItem {
 const mockWorkspace: Workspace = {
   id: '1',
   name: 'Lead Management Hub',
-  logo: '/media/brand-logos/lead-hub.svg',
+  logo: '/media/brand-logos/synclogo.svg',
   plan: 'pro',
   status: 'active',
   members: 42,
