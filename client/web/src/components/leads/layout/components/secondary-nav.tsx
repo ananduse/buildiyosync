@@ -52,7 +52,7 @@ export function SecondaryNav() {
         <TabsList 
           variant="line" 
           size="md"
-          className="px-5 gap-6 bg-transparent w-full justify-start overflow-x-auto [&_button]:border-b-2 [&_button_svg]:size-4 [&_button]:text-secondary-foreground"
+          className="px-4 lg:px-6 gap-6 bg-transparent w-full justify-start overflow-x-auto [&_button]:border-b-2 [&_button_svg]:size-4 [&_button]:text-secondary-foreground"
         >
           {navItems.map((item) => {
             const Icon = item.icon;
