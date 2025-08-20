@@ -18,11 +18,13 @@ export function HeaderBrand() {
   
   return (
     <div className="flex items-center -ms-1">
-      <div className="flex items-center gap-2 text-white">
-        <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-blue-600 rounded-lg flex items-center justify-center shadow-lg">
-          <span className="text-white font-bold text-sm">L</span>
-        </div>
-        <span className="font-semibold text-sm hidden sm:inline">Lead Management</span>
+      <div className="flex items-center gap-2">
+        <img 
+          src="/media/brand-logos/buildiyosync.svg" 
+          alt="BuildiyoSync" 
+          className="h-7 w-auto"
+        />
+        <span className="font-semibold text-white text-lg">BuildiyoSync</span>
       </div>
       {isMobile && (
         <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>

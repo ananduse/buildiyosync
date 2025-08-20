@@ -24,7 +24,7 @@ export function SidebarDefaultFooter() {
       <div className="border-t border-border py-2 space-y-1">
         {footerItems.map((item) => (
           <div key={item.label} className="px-2">
-            <Tooltip>
+            <Tooltip delayDuration={300}>
               <TooltipTrigger asChild>
                 {item.action ? (
                   <Button 
@@ -58,26 +58,39 @@ export function SidebarDefaultFooter() {
       <div className="px-[var(--sidebar-space-x)] py-2 space-y-1">
         {footerItems.map((item, index) => (
           <div key={item.label}>
-            {item.action ? (
-              <Button
-                variant="ghost"
-                className="w-full justify-start h-8 px-2 text-sm text-muted-foreground hover:text-foreground"
-                onClick={item.action}
-              >
-                <item.icon className="size-4 mr-2" strokeWidth={2.5} />
+            <Tooltip delayDuration={300}>
+              <TooltipTrigger asChild>
+                {item.action ? (
+                  <Button
+                    variant="ghost"
+                    className="w-full justify-start h-8 px-2 text-sm text-muted-foreground hover:text-foreground"
+                    onClick={item.action}
+                  >
+                    <item.icon className="size-4 mr-2" strokeWidth={2.5} />
+                    {item.label}
+                  </Button>
+                ) : (
+                  <Link to={item.path}>
+                    <Button
+                      variant="ghost"
+                      className="w-full justify-start h-8 px-2 text-sm text-muted-foreground hover:text-foreground"
+                    >
+                      <item.icon className="size-4 mr-2" strokeWidth={2.5} />
+                      {item.label}
+                    </Button>
+                  </Link>
+                )}
+              </TooltipTrigger>
+              <TooltipContent side="top" sideOffset={8}>
                 {item.label}
-              </Button>
-            ) : (
-              <Link to={item.path}>
-                <Button
-                  variant="ghost"
-                  className="w-full justify-start h-8 px-2 text-sm text-muted-foreground hover:text-foreground"
-                >
-                  <item.icon className="size-4 mr-2" strokeWidth={2.5} />
-                  {item.label}
-                </Button>
-              </Link>
-            )}
+                {item.label === 'Settings' && (
+                  <span className="text-xs text-muted-foreground block mt-1">Open workspace settings</span>
+                )}
+                {item.path && (
+                  <span className="text-xs text-muted-foreground block mt-1">{item.path}</span>
+                )}
+              </TooltipContent>
+            </Tooltip>
           </div>
         ))}
       </div>

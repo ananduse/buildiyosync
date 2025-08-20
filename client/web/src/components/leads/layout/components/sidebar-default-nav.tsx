@@ -50,21 +50,20 @@ function MoreDropdownMenu({ item }: { item: NavItem }) {
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <div className="flex items-center gap-2 w-full cursor-pointer">
-          {sidebarCollapse ? (
-            <Tooltip delayDuration={500}>
-              <TooltipTrigger asChild>
-                <div>{item.icon && <item.icon className="h-4 w-4" />}</div>
-              </TooltipTrigger>
-              <TooltipContent align="center" side="right" sideOffset={28}>
-                {item.title}
-              </TooltipContent>
-            </Tooltip>
-          ) : (
-            <>
-              {item.icon && <item.icon className="h-4 w-4 flex-shrink-0" />}
-              <span className="flex-1 text-sm font-semibold">{item.title}</span>
-            </>
-          )}
+          <Tooltip delayDuration={300}>
+            <TooltipTrigger asChild>
+              <div className="flex items-center gap-2 w-full">
+                {item.icon && <item.icon className="h-4 w-4 flex-shrink-0" />}
+                {!sidebarCollapse && (
+                  <span className="flex-1 text-sm font-semibold">{item.title}</span>
+                )}
+              </div>
+            </TooltipTrigger>
+            <TooltipContent align="center" side={sidebarCollapse ? "right" : "top"} sideOffset={sidebarCollapse ? 28 : 8}>
+              More options
+              <span className="text-xs text-muted-foreground block mt-1">Click to see hidden items</span>
+            </TooltipContent>
+          </Tooltip>
         </div>
       </DropdownMenuTrigger>
       <DropdownMenuContent className="w-64" side="right" align="start" sideOffset={8}>
@@ -138,20 +137,19 @@ function NavMenuItem({ item }: { item: NavItem }) {
           onClick={() => setIsExpanded(!isExpanded)}
         >
           <div className="flex items-center gap-2 w-full">
-            {/* Icon */}
+            {/* Icon with Tooltip */}
             {item.icon && (
-              sidebarCollapse ? (
-                <Tooltip delayDuration={500}>
-                  <TooltipTrigger asChild>
-                    <div><item.icon className="h-4 w-4" strokeWidth={2.5} /></div>
-                  </TooltipTrigger>
-                  <TooltipContent align="center" side="right" sideOffset={28}>
-                    {item.title}
-                  </TooltipContent>
-                </Tooltip>
-              ) : (
-                <item.icon className="h-4 w-4 flex-shrink-0" strokeWidth={2.5} />
-              )
+              <Tooltip delayDuration={300}>
+                <TooltipTrigger asChild>
+                  <div><item.icon className="h-4 w-4" strokeWidth={2.5} /></div>
+                </TooltipTrigger>
+                <TooltipContent align="center" side={sidebarCollapse ? "right" : "top"} sideOffset={sidebarCollapse ? 28 : 8}>
+                  {item.title}
+                  {item.children && item.children.length > 0 && (
+                    <span className="text-xs text-muted-foreground block mt-1">{item.children.length} items</span>
+                  )}
+                </TooltipContent>
+              </Tooltip>
             )}
             
             {/* Title */}
@@ -213,33 +211,42 @@ function NavMenuItem({ item }: { item: NavItem }) {
         {isExpanded && !sidebarCollapse && (
           <div className="ms-2 mt-1 space-y-0.5">
             {item.children.map((child) => (
-              <Link
-                key={child.id}
-                to={child.path || '#'}
-                className={cn(
-                  "relative select-none flex w-full text-start items-center",
-                  "text-gray-700 dark:text-gray-300 rounded-lg px-2 ps-4 text-[13px]",
-                  "outline-hidden transition-all duration-200",
-                  "hover:bg-gray-100 hover:text-gray-900 dark:hover:bg-gray-800 dark:hover:text-gray-100",
-                  child.path && location.pathname === child.path && "bg-blue-50 text-blue-700 dark:bg-blue-950/30 dark:text-blue-400 font-medium",
-                  "disabled:opacity-50 disabled:bg-transparent",
-                  "focus-visible:bg-gray-100 focus-visible:text-gray-900",
-                  "group py-1.5 min-h-[32px]"
-                )}
-              >
-                {/* Submenu Icon */}
-                {child.icon && (
-                  <span className="flex-shrink-0 flex items-center justify-center w-4 mr-3">
-                    <child.icon className="h-3.5 w-3.5" strokeWidth={2.5} />
-                  </span>
-                )}
-                <span className="flex-1">{child.title}</span>
-                {child.badge && (
-                  <Badge variant="secondary" className="h-4 px-1 text-[10px]">
-                    {child.badge}
-                  </Badge>
-                )}
-              </Link>
+              <Tooltip key={child.id} delayDuration={300}>
+                <TooltipTrigger asChild>
+                  <Link
+                    to={child.path || '#'}
+                    className={cn(
+                      "relative select-none flex w-full text-start items-center",
+                      "text-gray-700 dark:text-gray-300 rounded-lg px-2 ps-4 text-[13px]",
+                      "outline-hidden transition-all duration-200",
+                      "hover:bg-gray-100 hover:text-gray-900 dark:hover:bg-gray-800 dark:hover:text-gray-100",
+                      child.path && location.pathname === child.path && "bg-blue-50 text-blue-700 dark:bg-blue-950/30 dark:text-blue-400 font-medium",
+                      "disabled:opacity-50 disabled:bg-transparent",
+                      "focus-visible:bg-gray-100 focus-visible:text-gray-900",
+                      "group py-1.5 min-h-[32px]"
+                    )}
+                  >
+                    {/* Submenu Icon */}
+                    {child.icon && (
+                      <span className="flex-shrink-0 flex items-center justify-center w-4 mr-3">
+                        <child.icon className="h-3.5 w-3.5" strokeWidth={2.5} />
+                      </span>
+                    )}
+                    <span className="flex-1">{child.title}</span>
+                    {child.badge && (
+                      <Badge variant="secondary" className="h-4 px-1 text-[10px]">
+                        {child.badge}
+                      </Badge>
+                    )}
+                  </Link>
+                </TooltipTrigger>
+                <TooltipContent side="right" sideOffset={8}>
+                  {child.title}
+                  {child.path && (
+                    <span className="text-xs text-muted-foreground block mt-1">{child.path}</span>
+                  )}
+                </TooltipContent>
+              </Tooltip>
             ))}
           </div>
         )}
@@ -263,20 +270,19 @@ function NavMenuItem({ item }: { item: NavItem }) {
       )}
     >
       <Link to={item.path || '#'} className="flex items-center gap-2 w-full">
-        {/* Icon */}
+        {/* Icon with Tooltip */}
         {item.icon && (
-          sidebarCollapse ? (
-            <Tooltip delayDuration={500}>
-              <TooltipTrigger asChild>
-                <div><item.icon className="h-4 w-4" strokeWidth={2.5} /></div>
-              </TooltipTrigger>
-              <TooltipContent align="center" side="right" sideOffset={28}>
-                {item.title}
-              </TooltipContent>
-            </Tooltip>
-          ) : (
-            <item.icon className="h-4 w-4 flex-shrink-0" />
-          )
+          <Tooltip delayDuration={300}>
+            <TooltipTrigger asChild>
+              <div><item.icon className="h-4 w-4" strokeWidth={2.5} /></div>
+            </TooltipTrigger>
+            <TooltipContent align="center" side={sidebarCollapse ? "right" : "top"} sideOffset={sidebarCollapse ? 28 : 8}>
+              {item.title}
+              {item.path && !sidebarCollapse && (
+                <span className="text-xs text-muted-foreground block mt-1">{item.path}</span>
+              )}
+            </TooltipContent>
+          </Tooltip>
         )}
         
         {/* Title */}

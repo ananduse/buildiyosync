@@ -50,7 +50,7 @@ interface WorkspaceMenuItem {
 const mockWorkspace: Workspace = {
   id: '1',
   name: 'Lead Management Hub',
-  logo: '/media/brand-logos/synclogo.svg',
+  logo: '/media/brand-logos/buildiyosync.svg',
   plan: 'pro',
   status: 'active',
   members: 42,
@@ -209,7 +209,7 @@ export function SidebarWorkspace({ onSwitchToDefault }: SidebarWorkspaceProps) {
           <Avatar className="size-8">
             <AvatarImage src={mockWorkspace.logo} alt={mockWorkspace.name} />
             <AvatarFallback className="text-sm font-semibold bg-gradient-to-br from-blue-500 to-blue-600 text-white">
-              LM
+              BS
             </AvatarFallback>
           </Avatar>
           <div className="flex-1 min-w-0 in-data-[sidebar-collapsed]:hidden">
