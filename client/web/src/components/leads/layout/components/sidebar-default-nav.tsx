@@ -11,7 +11,7 @@ import {
   DropdownMenuTrigger,
   DropdownMenuGroup
 } from '@/components/ui/dropdown-menu';
-import { Plus, Pin, PinOff, Ellipsis } from 'lucide-react';
+import { Plus, Pin, PinOff, Ellipsis, ChevronDown, ChevronRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import {
@@ -24,7 +24,7 @@ import { Link } from 'react-router-dom';
 import { useLayout } from './layout-context';
 import { cn } from '@/lib/utils';
 import { useLocation } from 'react-router-dom';
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 
 function MoreDropdownMenu({ item }: { item: NavItem }) {
   const { isSidebarNavItemPinned, unpinSidebarNavItem, pinSidebarNavItem, sidebarCollapse, getSidebarNavItems } = useLayout();
@@ -81,50 +81,120 @@ function MoreDropdownMenu({ item }: { item: NavItem }) {
   );
 }
 
-function NavItemComponent({ item }: { item: NavItem }) {
+function NavItemComponent({ item, isSubmenu = false }: { item: NavItem; isSubmenu?: boolean }) {
   const { sidebarCollapse } = useLayout();
   const location = useLocation();
+  const [isExpanded, setIsExpanded] = useState(false);
   
   const isActive = item.path && (location.pathname === item.path || location.pathname.startsWith(item.path + '/'));
+  const hasChildren = item.children && item.children.length > 0;
 
   if (item.dropdown) {
     return <MoreDropdownMenu item={item} />;
   }
 
   const content = (
-    <>
-      {sidebarCollapse ? (
-        <Tooltip delayDuration={500}>
-          <TooltipTrigger asChild>
-            <span>{item.icon && <item.icon />}</span>
-          </TooltipTrigger>
-          <TooltipContent align="center" side="right" sideOffset={28}>
-            {item.title}
-          </TooltipContent>
-        </Tooltip>
-      ) : (
-        <>
-          {item.icon && <item.icon />}
-          <span className={cn(sidebarCollapse && "hidden")}>{item.title}</span>
-        </>
+    <div className={cn(
+      "flex items-center w-full",
+      isSubmenu && "ps-6"
+    )}>
+      {/* Icon only for main menu items */}
+      {!isSubmenu && item.icon && (
+        sidebarCollapse ? (
+          <Tooltip delayDuration={500}>
+            <TooltipTrigger asChild>
+              <span className="flex-shrink-0"><item.icon className="h-4 w-4" /></span>
+            </TooltipTrigger>
+            <TooltipContent align="center" side="right" sideOffset={28}>
+              {item.title}
+            </TooltipContent>
+          </Tooltip>
+        ) : (
+          <item.icon className="h-4 w-4 flex-shrink-0" />
+        )
       )}
+      
+      {/* Title */}
+      <span className={cn(
+        sidebarCollapse && "hidden",
+        !isSubmenu && item.icon && "ms-2.5",
+        "flex-1"
+      )}>
+        {item.title}
+      </span>
+      
+      {/* Badge */}
       {item.badge && !sidebarCollapse && (
         <Badge variant="secondary" className="ms-auto h-5 px-1.5 text-xs">
           {item.badge}
         </Badge>
       )}
-    </>
+      
+      {/* Chevron for expandable items */}
+      {hasChildren && !sidebarCollapse && (
+        <ChevronRight className={cn(
+          "h-3 w-3 transition-transform ms-1",
+          isExpanded && "rotate-90"
+        )} />
+      )}
+    </div>
   );
+
+  if (hasChildren) {
+    return (
+      <>
+        <button
+          onClick={() => setIsExpanded(!isExpanded)}
+          className="flex items-center gap-2 w-full text-start"
+        >
+          {content}
+        </button>
+        {isExpanded && !sidebarCollapse && (
+          <div className="mt-1 space-y-0.5">
+            {item.children.map((child) => (
+              <NavMenuItem key={child.id} item={child} isSubmenu={true} />
+            ))}
+          </div>
+        )}
+      </>
+    );
+  }
 
   if (item.path) {
     return (
-      <Link to={item.path} className="flex items-center gap-2">
+      <Link to={item.path} className="flex items-center gap-2 w-full">
         {content}
       </Link>
     );
   }
 
-  return <div className="flex items-center gap-2">{content}</div>;
+  return content;
+}
+
+function NavMenuItem({ item, isSubmenu = false }: { item: NavItem; isSubmenu?: boolean }) {
+  const location = useLocation();
+  const isActive = item.path && (location.pathname === item.path || location.pathname.startsWith(item.path + '/'));
+  
+  return (
+    <AccordionMenuItem
+      value={item.id}
+      className={cn(
+        "relative select-none flex w-full text-start items-center",
+        "text-foreground rounded-lg gap-2 px-2 text-sm",
+        "outline-hidden transition-colors hover:bg-accent hover:text-accent-foreground",
+        isActive && "bg-accent text-accent-foreground",
+        "disabled:opacity-50 disabled:bg-transparent",
+        "focus-visible:bg-accent focus-visible:text-accent-foreground",
+        "[&_svg]:pointer-events-none [&_svg]:opacity-60 [&_svg:not([class*=size-])]:size-4 [&_svg]:shrink-0",
+        "[&_a]:flex [&>a]:w-full [&>a]:items-center [&>a]:gap-2",
+        "group py-0 h-8 justify-between",
+        isSubmenu && "h-7 text-[13px] ps-2"
+      )}
+      defaultOpen={false}
+    >
+      <NavItemComponent item={item} isSubmenu={isSubmenu} />
+    </AccordionMenuItem>
+  );
 }
 
 export function SidebarDefaultNav() {
@@ -139,61 +209,7 @@ export function SidebarDefaultNav() {
     <div className="px-(--sidebar-space-x)">
       <AccordionMenu className="w-full space-y-0.5">
         {navItems.map((item) => (
-          <AccordionMenuItem
-            key={item.id}
-            value={item.id}
-            className={cn(
-              "relative select-none flex w-full text-start items-center",
-              "text-foreground rounded-lg gap-2 px-2 text-sm",
-              "outline-hidden transition-colors hover:bg-accent hover:text-accent-foreground",
-              "data-[selected=true]:bg-accent data-[selected=true]:text-accent-foreground",
-              "disabled:opacity-50 disabled:bg-transparent",
-              "focus-visible:bg-accent focus-visible:text-accent-foreground",
-              "[&_svg]:pointer-events-none [&_svg]:opacity-60 [&_svg:not([class*=size-])]:size-4 [&_svg]:shrink-0",
-              "[&_a]:flex [&>a]:w-full [&>a]:items-center [&>a]:gap-2",
-              "group py-0 h-8 justify-between",
-              item.dropdown && "cursor-pointer"
-            )}
-            defaultOpen={false}
-          >
-            <NavItemComponent item={item} />
-            {item.new && !sidebarCollapse && (
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Link to={item.new.path}>
-                    <Button variant="ghost" size="icon" className="size-6 hover:bg-input">
-                      <Plus className="size-3.5"/>
-                    </Button>
-                  </Link>
-                </TooltipTrigger>
-                <TooltipContent>
-                  {item.new.tooltip}
-                </TooltipContent>
-              </Tooltip>
-            )}
-            {item.more && !sidebarCollapse && (
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" size="icon" className="size-6 hover:bg-input">
-                    <Ellipsis className="size-3.5"/>
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent className="w-56">
-                  <DropdownMenuGroup>
-                    <DropdownMenuItem>
-                      <Plus />
-                      <span>Add {item.title}</span>
-                    </DropdownMenuItem>
-                  </DropdownMenuGroup>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem onClick={() => unpinSidebarNavItem(item.id)}>
-                    <PinOff/>
-                    <span>Unpin from sidebar</span>
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
-            )}
-          </AccordionMenuItem>
+          <NavMenuItem key={item.id} item={item} isSubmenu={false} />
         ))}
       </AccordionMenu>
     </div>
