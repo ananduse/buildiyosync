@@ -27,55 +27,66 @@ import { useLocation } from 'react-router-dom';
 import { useMemo, useState } from 'react';
 
 function MoreDropdownMenu({ item }: { item: NavItem }) {
-  const { isSidebarNavItemPinned, unpinSidebarNavItem, pinSidebarNavItem, sidebarCollapse, getSidebarNavItems } = useLayout();
+  const { sidebarCollapse, getSidebarNavItems, pinnedNavItems, pinSidebarNavItem } = useLayout();
   
-  const pinnableNavItems = useMemo(() => {
-    const navItems = getSidebarNavItems();
-    return navItems.filter((item) => item.pinnable);
-  }, [getSidebarNavItems]);
-
-  const handlePin = (id: string, e: React.MouseEvent) => {
-    e.preventDefault();
-    if (isSidebarNavItemPinned(id)) {
-      unpinSidebarNavItem(id);
-    } else {
-      pinSidebarNavItem(id);
-    }
-  };
+  // Get all nav items that are not currently pinned
+  const unpinnedItems = useMemo(() => {
+    const items = getSidebarNavItems();
+    return items.filter(navItem => 
+      !navItem.pinned && 
+      !pinnedNavItems.includes(navItem.id) && 
+      navItem.id !== 'more' &&
+      navItem.pinnable !== false
+    );
+  }, [getSidebarNavItems, pinnedNavItems]);
 
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <div className="flex items-center grow gap-2.5 font-medium cursor-pointer">
+        <div className="flex items-center w-full cursor-pointer">
           {sidebarCollapse ? (
             <Tooltip delayDuration={500}>
               <TooltipTrigger asChild>
-                <span>{item.icon && <item.icon />}</span>
+                <span className="flex-shrink-0 flex items-center justify-center w-4">
+                  {item.icon && <item.icon className="h-4 w-4" />}
+                </span>
               </TooltipTrigger>
               <TooltipContent align="center" side="right" sideOffset={28}>
                 {item.title}
               </TooltipContent>
             </Tooltip>
           ) : (
-            item.icon && <item.icon />
+            <>
+              <span className="flex-shrink-0 flex items-center justify-center w-4">
+                {item.icon && <item.icon className="h-4 w-4" />}
+              </span>
+              <span className="ms-3 flex-1 text-sm text-left">{item.title}</span>
+            </>
           )}
-          <span className={cn(sidebarCollapse && "hidden")}>{item.title}</span>
         </div>
       </DropdownMenuTrigger>
-      <DropdownMenuContent className="w-56" side="right" align="start" sideOffset={18} alignOffset={-5}>
-        {pinnableNavItems.map((navItem) => (
-          <DropdownMenuItem className="cursor-pointer" key={navItem.id} onClick={(e) => handlePin(navItem.id, e)}>
-            <div className="flex items-center gap-2.5">
-              {navItem.icon && <navItem.icon />}
-              <span>{navItem.title}</span>
-            </div>
-            {isSidebarNavItemPinned(navItem.id) ? (
-              <Pin className={cn('ms-auto text-primary size-3.5')}/>
-            ) : (
-              <PinOff className={cn('ms-auto text-muted-foreground size-3.5')}/>
-            )}
+      <DropdownMenuContent className="w-64" side="right" align="start" sideOffset={8}>
+        <DropdownMenuLabel>Hidden Menu Items</DropdownMenuLabel>
+        <DropdownMenuSeparator />
+        {unpinnedItems.length > 0 ? (
+          unpinnedItems.map((navItem) => (
+            <DropdownMenuItem 
+              key={navItem.id} 
+              className="cursor-pointer"
+              onClick={() => pinSidebarNavItem(navItem.id)}
+            >
+              <div className="flex items-center gap-2 w-full">
+                {navItem.icon && <navItem.icon className="h-4 w-4" />}
+                <span className="flex-1">{navItem.title}</span>
+                <Pin className="h-3 w-3 text-muted-foreground" />
+              </div>
+            </DropdownMenuItem>
+          ))
+        ) : (
+          <DropdownMenuItem disabled>
+            <span className="text-muted-foreground">All items are visible</span>
           </DropdownMenuItem>
-        ))}
+        )}
       </DropdownMenuContent>
     </DropdownMenu>
   );
@@ -91,20 +102,17 @@ function NavMenuItem({ item }: { item: NavItem }) {
 
   if (item.dropdown) {
     return (
-      <AccordionMenuItem
-        value={item.id}
-        className={cn(
-          "relative select-none flex w-full text-start items-center",
-          "text-foreground rounded-lg gap-2 px-2 text-sm",
-          "outline-hidden transition-colors hover:bg-accent hover:text-accent-foreground",
-          "disabled:opacity-50 disabled:bg-transparent",
-          "focus-visible:bg-accent focus-visible:text-accent-foreground",
-          "[&_svg]:pointer-events-none [&_svg]:opacity-60 [&_svg:not([class*=size-])]:size-4 [&_svg]:shrink-0",
-          "group py-0 h-8 justify-between cursor-pointer"
-        )}
-      >
+      <div className={cn(
+        "relative select-none flex w-full text-start items-center",
+        "text-foreground rounded-lg px-2 text-sm",
+        "outline-hidden transition-colors hover:bg-accent hover:text-accent-foreground",
+        "disabled:opacity-50 disabled:bg-transparent",
+        "focus-visible:bg-accent focus-visible:text-accent-foreground",
+        "[&_svg]:pointer-events-none [&_svg]:opacity-60 [&_svg:not([class*=size-])]:size-4 [&_svg]:shrink-0",
+        "group py-0 h-8 justify-between cursor-pointer"
+      )}>
         <MoreDropdownMenu item={item} />
-      </AccordionMenuItem>
+      </div>
     );
   }
 
@@ -116,7 +124,7 @@ function NavMenuItem({ item }: { item: NavItem }) {
           value={item.id}
           className={cn(
             "relative select-none flex w-full text-start items-center",
-            "text-foreground rounded-lg gap-2 px-2 text-sm",
+            "text-foreground rounded-lg px-2 text-sm",
             "outline-hidden transition-colors hover:bg-accent hover:text-accent-foreground",
             isActive && "bg-accent text-accent-foreground",
             "disabled:opacity-50 disabled:bg-transparent",
@@ -148,8 +156,7 @@ function NavMenuItem({ item }: { item: NavItem }) {
             {/* Title */}
             <span className={cn(
               sidebarCollapse && "hidden",
-              item.icon && "ms-3",
-              "flex-1 text-sm"
+              "ms-3 flex-1 text-sm"
             )}>
               {item.title}
             </span>
@@ -208,13 +215,12 @@ function NavMenuItem({ item }: { item: NavItem }) {
       value={item.id}
       className={cn(
         "relative select-none flex w-full text-start items-center",
-        "text-foreground rounded-lg gap-2 px-2 text-sm",
+        "text-foreground rounded-lg px-2 text-sm",
         "outline-hidden transition-colors hover:bg-accent hover:text-accent-foreground",
         isActive && "bg-accent text-accent-foreground",
         "disabled:opacity-50 disabled:bg-transparent",
         "focus-visible:bg-accent focus-visible:text-accent-foreground",
         "[&_svg]:pointer-events-none [&_svg]:opacity-60 [&_svg:not([class*=size-])]:size-4 [&_svg]:shrink-0",
-        "[&_a]:flex [&>a]:w-full [&>a]:items-center [&>a]:gap-2",
         "group py-0 h-8 justify-between"
       )}
     >
@@ -240,8 +246,7 @@ function NavMenuItem({ item }: { item: NavItem }) {
         {/* Title */}
         <span className={cn(
           sidebarCollapse && "hidden",
-          item.icon && "ms-3",
-          "flex-1 text-sm"
+          "ms-3 flex-1 text-sm"
         )}>
           {item.title}
         </span>
@@ -275,4 +280,3 @@ export function SidebarDefaultNav() {
     </div>
   );
 }
-
