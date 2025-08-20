@@ -2,6 +2,7 @@ import { cn } from '@/lib/utils';
 import { Header } from './header';
 import { Sidebar } from './sidebar';
 import { ContentHeader } from './content-header';
+import { ContentTitle } from './content-title';
 import { SecondaryNav } from './secondary-nav';
 import { useLayout } from './layout-context';
 import { Outlet } from 'react-router-dom';
@@ -27,7 +28,9 @@ export function Layout({ children }: { children?: React.ReactNode }) {
       <div className="flex flex-1 overflow-hidden">
         {!isMobile && <Sidebar />}
         <main className="flex-1 flex flex-col mt-(--header-height) lg:mt-[calc(var(--header-height)+var(--content-header-height))] lg:ms-(--sidebar-width) lg:in-data-[sidebar-collapsed]:ms-(--sidebar-width-collapsed) transition-[margin] duration-200 ease-in-out bg-white overflow-hidden">
-          <ContentHeader />
+          <ContentHeader>
+            <ContentTitle />
+          </ContentHeader>
           <SecondaryNav />
           <div className="flex-1 p-4 bg-gray-50 overflow-y-auto">
             {children || <Outlet />}
