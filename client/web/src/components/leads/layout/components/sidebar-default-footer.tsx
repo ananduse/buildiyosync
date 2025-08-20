@@ -11,12 +11,12 @@ import {
 } from '@/components/ui/tooltip';
 
 export function SidebarDefaultFooter() {
-  const { sidebarCollapse } = useLayout();
+  const { sidebarCollapse, setIsWorkspaceMode } = useLayout();
 
   const footerItems = [
-    { icon: Star, label: 'Favorites', path: '/leads/favorites' },
-    { icon: Shield, label: 'Security', path: '/leads/security' },
-    { icon: Settings, label: 'Settings', path: '/leads/settings' },
+    { icon: Star, label: 'Favorites', path: '/leads/favorites', action: null },
+    { icon: Shield, label: 'Security', path: '/leads/security', action: null },
+    { icon: Settings, label: 'Settings', path: null, action: () => setIsWorkspaceMode(true) },
   ];
 
   if (sidebarCollapse) {
@@ -26,11 +26,22 @@ export function SidebarDefaultFooter() {
           <div key={item.label} className="px-2">
             <Tooltip>
               <TooltipTrigger asChild>
-                <Link to={item.path}>
-                  <Button variant="ghost" size="icon" className="w-full h-8">
-                    <item.icon className="size-4" />
+                {item.action ? (
+                  <Button 
+                    variant="ghost" 
+                    size="icon" 
+                    className="w-full h-8"
+                    onClick={item.action}
+                  >
+                    <item.icon className="size-4" strokeWidth={2.5} />
                   </Button>
-                </Link>
+                ) : (
+                  <Link to={item.path}>
+                    <Button variant="ghost" size="icon" className="w-full h-8">
+                      <item.icon className="size-4" strokeWidth={2.5} />
+                    </Button>
+                  </Link>
+                )}
               </TooltipTrigger>
               <TooltipContent side="right" sideOffset={20}>
                 {item.label}
@@ -47,15 +58,26 @@ export function SidebarDefaultFooter() {
       <div className="px-[var(--sidebar-space-x)] py-2 space-y-1">
         {footerItems.map((item, index) => (
           <div key={item.label}>
-            <Link to={item.path}>
+            {item.action ? (
               <Button
                 variant="ghost"
                 className="w-full justify-start h-8 px-2 text-sm text-muted-foreground hover:text-foreground"
+                onClick={item.action}
               >
-                <item.icon className="size-4 mr-2" />
+                <item.icon className="size-4 mr-2" strokeWidth={2.5} />
                 {item.label}
               </Button>
-            </Link>
+            ) : (
+              <Link to={item.path}>
+                <Button
+                  variant="ghost"
+                  className="w-full justify-start h-8 px-2 text-sm text-muted-foreground hover:text-foreground"
+                >
+                  <item.icon className="size-4 mr-2" strokeWidth={2.5} />
+                  {item.label}
+                </Button>
+              </Link>
+            )}
           </div>
         ))}
       </div>
