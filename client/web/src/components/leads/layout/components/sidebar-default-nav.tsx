@@ -56,7 +56,7 @@ function MoreDropdownMenu({ item }: { item: NavItem }) {
           ) : (
             <>
               {item.icon && <item.icon className="h-4 w-4 flex-shrink-0" />}
-              <span className="flex-1 text-sm">{item.title}</span>
+              <span className="flex-1 text-sm font-semibold">{item.title}</span>
             </>
           )}
         </div>
@@ -149,7 +149,7 @@ function NavMenuItem({ item }: { item: NavItem }) {
             
             {/* Title */}
             {!sidebarCollapse && (
-              <span className="flex-1 text-sm">
+              <span className="flex-1 text-sm font-semibold">
                 {item.title}
               </span>
             )}
@@ -236,7 +236,7 @@ function NavMenuItem({ item }: { item: NavItem }) {
         
         {/* Title */}
         {!sidebarCollapse && (
-          <span className="flex-1 text-sm">
+          <span className="flex-1 text-sm font-semibold">
             {item.title}
           </span>
         )}
