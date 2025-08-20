@@ -23,13 +23,13 @@ export function Layout({ children }: { children?: React.ReactNode }) {
   return (
     <div {...rootProps}>
       <Header />
-      <div className="flex flex-1">
+      <div className="flex flex-1 overflow-hidden">
         {!isMobile && <Sidebar />}
-        <main className="flex-1 flex flex-col mt-(--header-height) lg:mt-[calc(var(--header-height)+var(--content-header-height))] lg:ms-(--sidebar-width) lg:in-data-[sidebar-collapsed]:ms-(--sidebar-width-collapsed) transition-[margin] duration-200 ease-in-out bg-white">
+        <main className="flex-1 flex flex-col mt-(--header-height) lg:mt-[calc(var(--header-height)+var(--content-header-height))] lg:ms-(--sidebar-width) lg:in-data-[sidebar-collapsed]:ms-(--sidebar-width-collapsed) transition-[margin] duration-200 ease-in-out bg-white overflow-hidden">
           <ContentHeader>
             <h1 className="text-lg font-semibold">Lead Management</h1>
           </ContentHeader>
-          <div className="flex-1 p-4 bg-white">
+          <div className="flex-1 p-4 bg-white overflow-y-auto">
             {children || <Outlet />}
           </div>
         </main>

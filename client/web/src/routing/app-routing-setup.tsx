@@ -106,7 +106,12 @@ import {
 } from '@/pages/leads';
 import { LeadDetailView } from '@/pages/leads/detail/lead-detail-view';
 
-// Import all lead management components
+// Import placeholder components for missing screens
+import {
+  PlaceholderPage
+} from '@/pages/leads/placeholder';
+
+// Import all existing lead management components
 import LeadCalendarView from '@/pages/leads/calendar/lead-calendar-view';
 import LeadMapView from '@/pages/leads/map/lead-map-view';
 import LeadPipelineView from '@/pages/leads/pipeline/lead-pipeline-view';
@@ -142,6 +147,10 @@ import LocationMasters from '@/pages/leads/master-data/location-masters';
 import TeamManagement from '@/pages/leads/master-data/team-management';
 import AssignmentRules from '@/pages/leads/master-data/assignment-rules';
 import ScoringRules from '@/pages/leads/master-data/scoring-rules';
+import ServiceTypes from '@/pages/leads/master-data/service-types';
+
+// Conversion component
+import LeadConversionWizard from '@/pages/leads/conversion/lead-conversion-wizard';
 
 // Additional components
 import { ActivityManagement } from '@/pages/leads/additional/activity-management';
@@ -177,6 +186,7 @@ import ScheduledReports from '@/pages/leads/analytics/scheduled-reports';
 import ExportCenter from '@/pages/leads/analytics/export-center';
 import DataBackup from '@/pages/leads/analytics/data-backup';
 import APIAccess from '@/pages/leads/analytics/api-access';
+import LeadEnrichmentAnalytics from '@/pages/leads/analytics/lead-enrichment-analytics';
 
 // Data Quality components
 import DuplicateManagement from '@/pages/leads/data-quality/duplicate-management';
@@ -201,9 +211,6 @@ import SalesForecasting from '@/pages/leads/sales/sales-forecasting';
 import ProposalManagement from '@/pages/leads/sales/proposal-management';
 import ContractManagement from '@/pages/leads/sales/contract-management';
 
-// Conversion component
-import LeadConversionWizard from '@/pages/leads/conversion/lead-conversion-wizard';
-
 // Admin components
 import SystemConfiguration from '@/pages/leads/admin/system-configuration';
 import QualificationCriteria from '@/pages/leads/admin/qualification-criteria';
@@ -214,11 +221,18 @@ import SecuritySettings from '@/pages/leads/admin/security-settings';
 import SystemHealth from '@/pages/leads/admin/system-health';
 import PerformanceMonitoring from '@/pages/leads/admin/performance-monitoring';
 import SystemLogs from '@/pages/leads/admin/system-logs';
-import LeadManagementSettings from '@/pages/leads/settings/lead-management-settings';
-import LeadEnrichmentAnalytics from '@/pages/leads/analytics/lead-enrichment-analytics';
-import ServiceTypes from '@/pages/leads/master-data/service-types';
 import EmailConfiguration from '@/pages/leads/admin/email-configuration';
 import Integrations from '@/pages/leads/admin/integrations';
+
+
+
+
+
+
+
+
+// Settings component
+import LeadManagementSettings from '@/pages/leads/settings/lead-management-settings';
 
 // Project Management Components
 import ProjectDashboard from '@/pages/projects/dashboard/project-dashboard';
