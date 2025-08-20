@@ -132,22 +132,24 @@ function NavMenuItem({ item }: { item: NavItem }) {
               sidebarCollapse ? (
                 <Tooltip delayDuration={500}>
                   <TooltipTrigger asChild>
-                    <span className="flex-shrink-0"><item.icon className="h-4 w-4" /></span>
+                    <span className="flex-shrink-0 flex items-center justify-center w-4"><item.icon className="h-4 w-4" /></span>
                   </TooltipTrigger>
                   <TooltipContent align="center" side="right" sideOffset={28}>
                     {item.title}
                   </TooltipContent>
                 </Tooltip>
               ) : (
-                <item.icon className="h-4 w-4 flex-shrink-0" />
+                <span className="flex-shrink-0 flex items-center justify-center w-4">
+                  <item.icon className="h-4 w-4" />
+                </span>
               )
             )}
             
             {/* Title */}
             <span className={cn(
               sidebarCollapse && "hidden",
-              item.icon && "ms-2.5",
-              "flex-1"
+              item.icon && "ms-3",
+              "flex-1 text-sm"
             )}>
               {item.title}
             </span>
@@ -164,21 +166,28 @@ function NavMenuItem({ item }: { item: NavItem }) {
         
         {/* Submenu items */}
         {isExpanded && !sidebarCollapse && (
-          <div className="ms-4 space-y-0.5">
+          <div className="ms-2 mt-1 space-y-0.5">
             {item.children.map((child) => (
               <Link
                 key={child.id}
                 to={child.path || '#'}
                 className={cn(
                   "relative select-none flex w-full text-start items-center",
-                  "text-foreground rounded-lg gap-2 px-2 ps-7 text-[13px]",
-                  "outline-hidden transition-colors hover:bg-accent hover:text-accent-foreground",
-                  child.path && location.pathname === child.path && "bg-accent text-accent-foreground",
+                  "text-gray-700 dark:text-gray-300 rounded-lg px-2 ps-4 text-[13px]",
+                  "outline-hidden transition-all duration-200",
+                  "hover:bg-gray-100 hover:text-gray-900 dark:hover:bg-gray-800 dark:hover:text-gray-100",
+                  child.path && location.pathname === child.path && "bg-blue-50 text-blue-700 dark:bg-blue-950/30 dark:text-blue-400 font-medium",
                   "disabled:opacity-50 disabled:bg-transparent",
-                  "focus-visible:bg-accent focus-visible:text-accent-foreground",
-                  "group py-0 h-7 justify-between"
+                  "focus-visible:bg-gray-100 focus-visible:text-gray-900",
+                  "group py-1.5 min-h-[32px]"
                 )}
               >
+                {/* Submenu Icon */}
+                {child.icon && (
+                  <span className="flex-shrink-0 flex items-center justify-center w-4 mr-3">
+                    <child.icon className="h-3.5 w-3.5" />
+                  </span>
+                )}
                 <span className="flex-1">{child.title}</span>
                 {child.badge && (
                   <Badge variant="secondary" className="h-4 px-1 text-[10px]">
@@ -209,28 +218,30 @@ function NavMenuItem({ item }: { item: NavItem }) {
         "group py-0 h-8 justify-between"
       )}
     >
-      <Link to={item.path || '#'} className="flex items-center gap-2 w-full">
+      <Link to={item.path || '#'} className="flex items-center w-full">
         {/* Icon */}
         {item.icon && (
           sidebarCollapse ? (
             <Tooltip delayDuration={500}>
               <TooltipTrigger asChild>
-                <span className="flex-shrink-0"><item.icon className="h-4 w-4" /></span>
+                <span className="flex-shrink-0 flex items-center justify-center w-4"><item.icon className="h-4 w-4" /></span>
               </TooltipTrigger>
               <TooltipContent align="center" side="right" sideOffset={28}>
                 {item.title}
               </TooltipContent>
             </Tooltip>
           ) : (
-            <item.icon className="h-4 w-4 flex-shrink-0" />
+            <span className="flex-shrink-0 flex items-center justify-center w-4">
+              <item.icon className="h-4 w-4" />
+            </span>
           )
         )}
         
         {/* Title */}
         <span className={cn(
           sidebarCollapse && "hidden",
-          item.icon && "ms-2.5",
-          "flex-1"
+          item.icon && "ms-3",
+          "flex-1 text-sm"
         )}>
           {item.title}
         </span>
