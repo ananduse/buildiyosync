@@ -43,13 +43,11 @@ function MoreDropdownMenu({ item }: { item: NavItem }) {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <div className="flex items-center w-full cursor-pointer">
+        <div className="flex items-center gap-2 w-full cursor-pointer">
           {sidebarCollapse ? (
             <Tooltip delayDuration={500}>
               <TooltipTrigger asChild>
-                <span className="flex-shrink-0 flex items-center justify-center w-4">
-                  {item.icon && <item.icon className="h-4 w-4" />}
-                </span>
+                <div>{item.icon && <item.icon className="h-4 w-4" />}</div>
               </TooltipTrigger>
               <TooltipContent align="center" side="right" sideOffset={28}>
                 {item.title}
@@ -57,10 +55,8 @@ function MoreDropdownMenu({ item }: { item: NavItem }) {
             </Tooltip>
           ) : (
             <>
-              <span className="flex-shrink-0 flex items-center justify-center w-4">
-                {item.icon && <item.icon className="h-4 w-4" />}
-              </span>
-              <span className="ms-3 flex-1 text-sm text-left">{item.title}</span>
+              {item.icon && <item.icon className="h-4 w-4 flex-shrink-0" />}
+              <span className="flex-1 text-sm">{item.title}</span>
             </>
           )}
         </div>
@@ -134,32 +130,29 @@ function NavMenuItem({ item }: { item: NavItem }) {
           )}
           onClick={() => setIsExpanded(!isExpanded)}
         >
-          <div className="flex items-center w-full">
+          <div className="flex items-center gap-2 w-full">
             {/* Icon */}
             {item.icon && (
               sidebarCollapse ? (
                 <Tooltip delayDuration={500}>
                   <TooltipTrigger asChild>
-                    <span className="flex-shrink-0 flex items-center justify-center w-4"><item.icon className="h-4 w-4" /></span>
+                    <div><item.icon className="h-4 w-4" /></div>
                   </TooltipTrigger>
                   <TooltipContent align="center" side="right" sideOffset={28}>
                     {item.title}
                   </TooltipContent>
                 </Tooltip>
               ) : (
-                <span className="flex-shrink-0 flex items-center justify-center w-4">
-                  <item.icon className="h-4 w-4" />
-                </span>
+                <item.icon className="h-4 w-4 flex-shrink-0" />
               )
             )}
             
             {/* Title */}
-            <span className={cn(
-              sidebarCollapse && "hidden",
-              "ms-3 flex-1 text-sm"
-            )}>
-              {item.title}
-            </span>
+            {!sidebarCollapse && (
+              <span className="flex-1 text-sm">
+                {item.title}
+              </span>
+            )}
             
             {/* Chevron */}
             {!sidebarCollapse && (
@@ -224,32 +217,29 @@ function NavMenuItem({ item }: { item: NavItem }) {
         "group py-0 h-8 justify-between"
       )}
     >
-      <Link to={item.path || '#'} className="flex items-center w-full">
+      <Link to={item.path || '#'} className="flex items-center gap-2 w-full">
         {/* Icon */}
         {item.icon && (
           sidebarCollapse ? (
             <Tooltip delayDuration={500}>
               <TooltipTrigger asChild>
-                <span className="flex-shrink-0 flex items-center justify-center w-4"><item.icon className="h-4 w-4" /></span>
+                <div><item.icon className="h-4 w-4" /></div>
               </TooltipTrigger>
               <TooltipContent align="center" side="right" sideOffset={28}>
                 {item.title}
               </TooltipContent>
             </Tooltip>
           ) : (
-            <span className="flex-shrink-0 flex items-center justify-center w-4">
-              <item.icon className="h-4 w-4" />
-            </span>
+            <item.icon className="h-4 w-4 flex-shrink-0" />
           )
         )}
         
         {/* Title */}
-        <span className={cn(
-          sidebarCollapse && "hidden",
-          "ms-3 flex-1 text-sm"
-        )}>
-          {item.title}
-        </span>
+        {!sidebarCollapse && (
+          <span className="flex-1 text-sm">
+            {item.title}
+          </span>
+        )}
         
         {/* Badge */}
         {item.badge && !sidebarCollapse && (
