@@ -1,0 +1,104 @@
+import { Plus, Upload, Download, Filter } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import { useNavigate } from 'react-router-dom';
+
+export function HeaderQuickActions() {
+  const navigate = useNavigate();
+
+  return (
+    <div className="flex items-center gap-2">
+      <Button
+        variant="ghost"
+        size="sm"
+        className="h-8 text-zinc-300 hover:text-white hover:bg-zinc-800"
+        onClick={() => navigate('/leads/list')}
+      >
+        All Leads
+      </Button>
+      
+      <Button
+        variant="ghost"
+        size="sm"
+        className="h-8 text-zinc-300 hover:text-white hover:bg-zinc-800"
+        onClick={() => navigate('/leads/board')}
+      >
+        Pipeline
+      </Button>
+      
+      <Button
+        variant="ghost"
+        size="sm"
+        className="h-8 text-zinc-300 hover:text-white hover:bg-zinc-800"
+        onClick={() => navigate('/leads/analytics')}
+      >
+        Analytics
+      </Button>
+
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <Button
+            variant="ghost"
+            size="sm"
+            className="h-8 text-zinc-300 hover:text-white hover:bg-zinc-800"
+          >
+            <Filter className="h-4 w-4 mr-1" />
+            Filters
+          </Button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="end">
+          <DropdownMenuItem onClick={() => navigate('/leads/list?filter=new')}>
+            New Leads
+          </DropdownMenuItem>
+          <DropdownMenuItem onClick={() => navigate('/leads/list?filter=hot')}>
+            Hot Leads
+          </DropdownMenuItem>
+          <DropdownMenuItem onClick={() => navigate('/leads/list?filter=contacted')}>
+            Contacted
+          </DropdownMenuItem>
+          <DropdownMenuItem onClick={() => navigate('/leads/list?filter=qualified')}>
+            Qualified
+          </DropdownMenuItem>
+          <DropdownMenuItem onClick={() => navigate('/leads/list?filter=converted')}>
+            Converted
+          </DropdownMenuItem>
+        </DropdownMenuContent>
+      </DropdownMenu>
+
+      <div className="h-4 w-px bg-zinc-600 mx-1" />
+
+      <Button
+        variant="ghost"
+        size="sm"
+        className="h-8 text-zinc-300 hover:text-white hover:bg-zinc-800"
+        onClick={() => navigate('/leads/import')}
+      >
+        <Upload className="h-4 w-4 mr-1" />
+        Import
+      </Button>
+
+      <Button
+        variant="ghost"
+        size="sm"
+        className="h-8 text-zinc-300 hover:text-white hover:bg-zinc-800"
+      >
+        <Download className="h-4 w-4 mr-1" />
+        Export
+      </Button>
+
+      <Button
+        size="sm"
+        className="h-8 bg-blue-600 hover:bg-blue-700 text-white"
+        onClick={() => navigate('/leads/add')}
+      >
+        <Plus className="h-4 w-4 mr-1" />
+        Add Lead
+      </Button>
+    </div>
+  );
+}

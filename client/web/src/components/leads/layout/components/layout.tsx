@@ -2,6 +2,7 @@ import { cn } from '@/lib/utils';
 import { Header } from './header';
 import { Sidebar } from './sidebar';
 import { ContentHeader } from './content-header';
+import { SecondaryNav } from './secondary-nav';
 import { useLayout } from './layout-context';
 import { Outlet } from 'react-router-dom';
 import { useIsMobile } from '@/hooks/use-mobile';
@@ -29,7 +30,8 @@ export function Layout({ children }: { children?: React.ReactNode }) {
           <ContentHeader>
             <h1 className="text-lg font-semibold">Lead Management</h1>
           </ContentHeader>
-          <div className="flex-1 p-4 bg-white overflow-y-auto">
+          <SecondaryNav />
+          <div className="flex-1 p-4 bg-gray-50 overflow-y-auto">
             {children || <Outlet />}
           </div>
         </main>
