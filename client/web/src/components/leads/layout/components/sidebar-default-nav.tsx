@@ -81,100 +81,119 @@ function MoreDropdownMenu({ item }: { item: NavItem }) {
   );
 }
 
-function NavItemComponent({ item, isSubmenu = false }: { item: NavItem; isSubmenu?: boolean }) {
+function NavMenuItem({ item }: { item: NavItem }) {
   const { sidebarCollapse } = useLayout();
   const location = useLocation();
   const [isExpanded, setIsExpanded] = useState(false);
   
-  const isActive = item.path && (location.pathname === item.path || location.pathname.startsWith(item.path + '/'));
   const hasChildren = item.children && item.children.length > 0;
+  const isActive = item.path && (location.pathname === item.path || location.pathname.startsWith(item.path + '/'));
 
   if (item.dropdown) {
-    return <MoreDropdownMenu item={item} />;
+    return (
+      <AccordionMenuItem
+        value={item.id}
+        className={cn(
+          "relative select-none flex w-full text-start items-center",
+          "text-foreground rounded-lg gap-2 px-2 text-sm",
+          "outline-hidden transition-colors hover:bg-accent hover:text-accent-foreground",
+          "disabled:opacity-50 disabled:bg-transparent",
+          "focus-visible:bg-accent focus-visible:text-accent-foreground",
+          "[&_svg]:pointer-events-none [&_svg]:opacity-60 [&_svg:not([class*=size-])]:size-4 [&_svg]:shrink-0",
+          "group py-0 h-8 justify-between cursor-pointer"
+        )}
+      >
+        <MoreDropdownMenu item={item} />
+      </AccordionMenuItem>
+    );
   }
 
-  const content = (
-    <div className={cn(
-      "flex items-center w-full",
-      isSubmenu && "ps-6"
-    )}>
-      {/* Icon only for main menu items */}
-      {!isSubmenu && item.icon && (
-        sidebarCollapse ? (
-          <Tooltip delayDuration={500}>
-            <TooltipTrigger asChild>
-              <span className="flex-shrink-0"><item.icon className="h-4 w-4" /></span>
-            </TooltipTrigger>
-            <TooltipContent align="center" side="right" sideOffset={28}>
-              {item.title}
-            </TooltipContent>
-          </Tooltip>
-        ) : (
-          <item.icon className="h-4 w-4 flex-shrink-0" />
-        )
-      )}
-      
-      {/* Title */}
-      <span className={cn(
-        sidebarCollapse && "hidden",
-        !isSubmenu && item.icon && "ms-2.5",
-        "flex-1"
-      )}>
-        {item.title}
-      </span>
-      
-      {/* Badge */}
-      {item.badge && !sidebarCollapse && (
-        <Badge variant="secondary" className="ms-auto h-5 px-1.5 text-xs">
-          {item.badge}
-        </Badge>
-      )}
-      
-      {/* Chevron for expandable items */}
-      {hasChildren && !sidebarCollapse && (
-        <ChevronRight className={cn(
-          "h-3 w-3 transition-transform ms-1",
-          isExpanded && "rotate-90"
-        )} />
-      )}
-    </div>
-  );
-
+  // Main menu item with children
   if (hasChildren) {
     return (
-      <>
-        <button
+      <div className="space-y-0.5">
+        <AccordionMenuItem
+          value={item.id}
+          className={cn(
+            "relative select-none flex w-full text-start items-center",
+            "text-foreground rounded-lg gap-2 px-2 text-sm",
+            "outline-hidden transition-colors hover:bg-accent hover:text-accent-foreground",
+            isActive && "bg-accent text-accent-foreground",
+            "disabled:opacity-50 disabled:bg-transparent",
+            "focus-visible:bg-accent focus-visible:text-accent-foreground",
+            "[&_svg]:pointer-events-none [&_svg]:opacity-60 [&_svg:not([class*=size-])]:size-4 [&_svg]:shrink-0",
+            "group py-0 h-8 justify-between cursor-pointer"
+          )}
           onClick={() => setIsExpanded(!isExpanded)}
-          className="flex items-center gap-2 w-full text-start"
         >
-          {content}
-        </button>
+          <div className="flex items-center w-full">
+            {/* Icon */}
+            {item.icon && (
+              sidebarCollapse ? (
+                <Tooltip delayDuration={500}>
+                  <TooltipTrigger asChild>
+                    <span className="flex-shrink-0"><item.icon className="h-4 w-4" /></span>
+                  </TooltipTrigger>
+                  <TooltipContent align="center" side="right" sideOffset={28}>
+                    {item.title}
+                  </TooltipContent>
+                </Tooltip>
+              ) : (
+                <item.icon className="h-4 w-4 flex-shrink-0" />
+              )
+            )}
+            
+            {/* Title */}
+            <span className={cn(
+              sidebarCollapse && "hidden",
+              item.icon && "ms-2.5",
+              "flex-1"
+            )}>
+              {item.title}
+            </span>
+            
+            {/* Chevron */}
+            {!sidebarCollapse && (
+              <ChevronRight className={cn(
+                "h-3 w-3 transition-transform",
+                isExpanded && "rotate-90"
+              )} />
+            )}
+          </div>
+        </AccordionMenuItem>
+        
+        {/* Submenu items */}
         {isExpanded && !sidebarCollapse && (
-          <div className="mt-1 space-y-0.5">
+          <div className="ms-4 space-y-0.5">
             {item.children.map((child) => (
-              <NavMenuItem key={child.id} item={child} isSubmenu={true} />
+              <Link
+                key={child.id}
+                to={child.path || '#'}
+                className={cn(
+                  "relative select-none flex w-full text-start items-center",
+                  "text-foreground rounded-lg gap-2 px-2 ps-7 text-[13px]",
+                  "outline-hidden transition-colors hover:bg-accent hover:text-accent-foreground",
+                  child.path && location.pathname === child.path && "bg-accent text-accent-foreground",
+                  "disabled:opacity-50 disabled:bg-transparent",
+                  "focus-visible:bg-accent focus-visible:text-accent-foreground",
+                  "group py-0 h-7 justify-between"
+                )}
+              >
+                <span className="flex-1">{child.title}</span>
+                {child.badge && (
+                  <Badge variant="secondary" className="h-4 px-1 text-[10px]">
+                    {child.badge}
+                  </Badge>
+                )}
+              </Link>
             ))}
           </div>
         )}
-      </>
+      </div>
     );
   }
 
-  if (item.path) {
-    return (
-      <Link to={item.path} className="flex items-center gap-2 w-full">
-        {content}
-      </Link>
-    );
-  }
-
-  return content;
-}
-
-function NavMenuItem({ item, isSubmenu = false }: { item: NavItem; isSubmenu?: boolean }) {
-  const location = useLocation();
-  const isActive = item.path && (location.pathname === item.path || location.pathname.startsWith(item.path + '/'));
-  
+  // Simple menu item without children
   return (
     <AccordionMenuItem
       value={item.id}
@@ -187,12 +206,42 @@ function NavMenuItem({ item, isSubmenu = false }: { item: NavItem; isSubmenu?: b
         "focus-visible:bg-accent focus-visible:text-accent-foreground",
         "[&_svg]:pointer-events-none [&_svg]:opacity-60 [&_svg:not([class*=size-])]:size-4 [&_svg]:shrink-0",
         "[&_a]:flex [&>a]:w-full [&>a]:items-center [&>a]:gap-2",
-        "group py-0 h-8 justify-between",
-        isSubmenu && "h-7 text-[13px] ps-2"
+        "group py-0 h-8 justify-between"
       )}
-      defaultOpen={false}
     >
-      <NavItemComponent item={item} isSubmenu={isSubmenu} />
+      <Link to={item.path || '#'} className="flex items-center gap-2 w-full">
+        {/* Icon */}
+        {item.icon && (
+          sidebarCollapse ? (
+            <Tooltip delayDuration={500}>
+              <TooltipTrigger asChild>
+                <span className="flex-shrink-0"><item.icon className="h-4 w-4" /></span>
+              </TooltipTrigger>
+              <TooltipContent align="center" side="right" sideOffset={28}>
+                {item.title}
+              </TooltipContent>
+            </Tooltip>
+          ) : (
+            <item.icon className="h-4 w-4 flex-shrink-0" />
+          )
+        )}
+        
+        {/* Title */}
+        <span className={cn(
+          sidebarCollapse && "hidden",
+          item.icon && "ms-2.5",
+          "flex-1"
+        )}>
+          {item.title}
+        </span>
+        
+        {/* Badge */}
+        {item.badge && !sidebarCollapse && (
+          <Badge variant="secondary" className="ms-auto h-5 px-1.5 text-xs">
+            {item.badge}
+          </Badge>
+        )}
+      </Link>
     </AccordionMenuItem>
   );
 }
@@ -209,7 +258,7 @@ export function SidebarDefaultNav() {
     <div className="px-(--sidebar-space-x)">
       <AccordionMenu className="w-full space-y-0.5">
         {navItems.map((item) => (
-          <NavMenuItem key={item.id} item={item} isSubmenu={false} />
+          <NavMenuItem key={item.id} item={item} />
         ))}
       </AccordionMenu>
     </div>
