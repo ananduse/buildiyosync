@@ -2,7 +2,6 @@ import { Button } from '@/components/ui/button';
 import { useLayout } from './layout-context';
 import { PanelRightClose } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { HeaderBreadcrumb } from './header-breadcrumb';
 
 export function ContentHeader({ children, className }: { children?: React.ReactNode, className?: string }) {
   const { setSidebarCollapse } = useLayout();
@@ -13,10 +12,7 @@ export function ContentHeader({ children, className }: { children?: React.ReactN
           <PanelRightClose/>
         </Button>
         <div className={cn("flex items-center justify-between grow", className)}>
-          <div className="flex flex-col gap-1">
-            <HeaderBreadcrumb />
-            {children}
-          </div>
+          {children}
         </div>
       </div>
     </div>
