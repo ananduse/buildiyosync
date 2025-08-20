@@ -29,15 +29,21 @@ import { useMemo, useState } from 'react';
 function MoreDropdownMenu({ item }: { item: NavItem }) {
   const { sidebarCollapse, getSidebarNavItems, pinnedNavItems, pinSidebarNavItem } = useLayout();
   
-  // Get all nav items that are not currently pinned
+  // Get all nav items that are not currently visible
   const unpinnedItems = useMemo(() => {
     const items = getSidebarNavItems();
-    return items.filter(navItem => 
-      !navItem.pinned && 
-      !pinnedNavItems.includes(navItem.id) && 
-      navItem.id !== 'more' &&
-      navItem.pinnable !== false
-    );
+    return items.filter(navItem => {
+      // Don't show items that are:
+      // 1. Currently pinned (either in config or dynamically)
+      // 2. The "more" dropdown itself
+      // 3. Explicitly marked as not pinnable
+      const isPinnedInConfig = navItem.pinned === true;
+      const isDynamicallyPinned = pinnedNavItems.includes(navItem.id);
+      const isMoreMenu = navItem.id === 'more';
+      const isNotPinnable = navItem.pinnable === false;
+      
+      return !isPinnedInConfig && !isDynamicallyPinned && !isMoreMenu && !isNotPinnable;
+    });
   }, [getSidebarNavItems, pinnedNavItems]);
 
   return (
@@ -89,9 +95,10 @@ function MoreDropdownMenu({ item }: { item: NavItem }) {
 }
 
 function NavMenuItem({ item }: { item: NavItem }) {
-  const { sidebarCollapse } = useLayout();
+  const { sidebarCollapse, pinnedNavItems, pinSidebarNavItem } = useLayout();
   const location = useLocation();
   const [isExpanded, setIsExpanded] = useState(false);
+  const [showMenu, setShowMenu] = useState(false);
   
   const hasChildren = item.children && item.children.length > 0;
   const isActive = item.path && (location.pathname === item.path || location.pathname.startsWith(item.path + '/'));
@@ -154,12 +161,50 @@ function NavMenuItem({ item }: { item: NavItem }) {
               </span>
             )}
             
-            {/* Chevron */}
+            {/* Chevron and Pin/Unpin */}
             {!sidebarCollapse && (
-              <ChevronRight className={cn(
-                "h-3 w-3 transition-transform",
-                isExpanded && "rotate-90"
-              )} />
+              <div className="flex items-center gap-1">
+                {item.pinnable !== false && (
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                        }}
+                      >
+                        <Ellipsis className="h-3 w-3" />
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end" className="w-48">
+                      <DropdownMenuItem
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          pinSidebarNavItem(item.id);
+                        }}
+                      >
+                        {item.pinned || pinnedNavItems.includes(item.id) ? (
+                          <>
+                            <PinOff className="mr-2 h-4 w-4" />
+                            Unpin from sidebar
+                          </>
+                        ) : (
+                          <>
+                            <Pin className="mr-2 h-4 w-4" />
+                            Pin to sidebar
+                          </>
+                        )}
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                )}
+                <ChevronRight className={cn(
+                  "h-3 w-3 transition-transform",
+                  isExpanded && "rotate-90"
+                )} />
+              </div>
             )}
           </div>
         </AccordionMenuItem>
@@ -241,11 +286,53 @@ function NavMenuItem({ item }: { item: NavItem }) {
           </span>
         )}
         
-        {/* Badge */}
-        {item.badge && !sidebarCollapse && (
-          <Badge variant="secondary" className="ms-auto h-5 px-1.5 text-xs">
-            {item.badge}
-          </Badge>
+        {/* Badge and Pin/Unpin */}
+        {!sidebarCollapse && (
+          <div className="flex items-center gap-1">
+            {item.badge && (
+              <Badge variant="secondary" className="h-5 px-1.5 text-xs">
+                {item.badge}
+              </Badge>
+            )}
+            {item.pinnable !== false && (
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                    }}
+                  >
+                    <Ellipsis className="h-3 w-3" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-48">
+                  <DropdownMenuItem
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      pinSidebarNavItem(item.id);
+                    }}
+                  >
+                    {item.pinned || pinnedNavItems.includes(item.id) ? (
+                      <>
+                        <PinOff className="mr-2 h-4 w-4" />
+                        Unpin from sidebar
+                      </>
+                    ) : (
+                      <>
+                        <Pin className="mr-2 h-4 w-4" />
+                        Pin to sidebar
+                      </>
+                    )}
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            )}
+          </div>
         )}
       </Link>
     </AccordionMenuItem>
@@ -257,7 +344,18 @@ export function SidebarDefaultNav() {
   
   const navItems = useMemo(() => {
     const items = getSidebarNavItems();
-    return items.filter(item => item.pinned || pinnedNavItems.includes(item.id) || item.dropdown);
+    return items.filter(item => {
+      // Show item if:
+      // 1. It's marked as pinned in config (pinned: true)
+      // 2. It's in the pinnedNavItems array (dynamically pinned)
+      // 3. It's a dropdown menu (more menu)
+      // 4. If pinned is not explicitly false and it's in pinnedNavItems
+      const isPinnedInConfig = item.pinned === true;
+      const isDynamicallyPinned = pinnedNavItems.includes(item.id);
+      const isDropdown = item.dropdown === true;
+      
+      return isPinnedInConfig || isDynamicallyPinned || isDropdown;
+    });
   }, [pinnedNavItems, getSidebarNavItems]);
 
   return (

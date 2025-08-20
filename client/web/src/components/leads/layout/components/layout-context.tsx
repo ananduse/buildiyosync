@@ -13,7 +13,7 @@ interface LayoutProviderProps {
 export function LayoutProvider({ children, sidebarNavItems }: LayoutProviderProps) {
   const [sidebarCollapse, setSidebarCollapse] = useState(false);
   const [pinnedNavItems, setPinnedNavItems] = useState<string[]>(
-    sidebarNavItems.filter(item => item.pinned).map(item => item.id)
+    sidebarNavItems.filter(item => item.pinned === true).map(item => item.id)
   );
   const [isWorkspaceMode, setIsWorkspaceMode] = useState(false);
 
@@ -23,10 +23,13 @@ export function LayoutProvider({ children, sidebarNavItems }: LayoutProviderProp
 
   const pinSidebarNavItem = useCallback((id: string) => {
     setPinnedNavItems(prev => {
-      if (!prev.includes(id)) {
+      if (prev.includes(id)) {
+        // If item is already pinned, unpin it
+        return prev.filter(itemId => itemId !== id);
+      } else {
+        // If item is not pinned, pin it
         return [...prev, id];
       }
-      return prev;
     });
   }, []);
 
