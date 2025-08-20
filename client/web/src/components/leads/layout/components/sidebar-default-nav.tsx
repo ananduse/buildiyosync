@@ -143,14 +143,14 @@ function NavMenuItem({ item }: { item: NavItem }) {
               sidebarCollapse ? (
                 <Tooltip delayDuration={500}>
                   <TooltipTrigger asChild>
-                    <div><item.icon className="h-4 w-4" /></div>
+                    <div><item.icon className="h-4 w-4" strokeWidth={2.5} /></div>
                   </TooltipTrigger>
                   <TooltipContent align="center" side="right" sideOffset={28}>
                     {item.title}
                   </TooltipContent>
                 </Tooltip>
               ) : (
-                <item.icon className="h-4 w-4 flex-shrink-0" />
+                <item.icon className="h-4 w-4 flex-shrink-0" strokeWidth={2.5} />
               )
             )}
             
@@ -230,7 +230,7 @@ function NavMenuItem({ item }: { item: NavItem }) {
                 {/* Submenu Icon */}
                 {child.icon && (
                   <span className="flex-shrink-0 flex items-center justify-center w-4 mr-3">
-                    <child.icon className="h-3.5 w-3.5" />
+                    <child.icon className="h-3.5 w-3.5" strokeWidth={2.5} />
                   </span>
                 )}
                 <span className="flex-1">{child.title}</span>
@@ -268,7 +268,7 @@ function NavMenuItem({ item }: { item: NavItem }) {
           sidebarCollapse ? (
             <Tooltip delayDuration={500}>
               <TooltipTrigger asChild>
-                <div><item.icon className="h-4 w-4" /></div>
+                <div><item.icon className="h-4 w-4" strokeWidth={2.5} /></div>
               </TooltipTrigger>
               <TooltipContent align="center" side="right" sideOffset={28}>
                 {item.title}
