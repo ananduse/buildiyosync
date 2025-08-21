@@ -16,7 +16,7 @@ export function HeaderQuickActions() {
       <Button
         variant="ghost"
         size="sm"
-        className="h-8 text-zinc-300 hover:text-white hover:bg-zinc-800"
+        className="h-8 text-zinc-300 hover:text-white hover:bg-zinc-800 transition-colors"
         onClick={() => navigate('/leads/list')}
       >
         All Leads
@@ -25,7 +25,7 @@ export function HeaderQuickActions() {
       <Button
         variant="ghost"
         size="sm"
-        className="h-8 text-zinc-300 hover:text-white hover:bg-zinc-800"
+        className="h-8 text-zinc-300 hover:text-white hover:bg-zinc-800 transition-colors"
         onClick={() => navigate('/leads/board')}
       >
         Pipeline
@@ -34,7 +34,7 @@ export function HeaderQuickActions() {
       <Button
         variant="ghost"
         size="sm"
-        className="h-8 text-zinc-300 hover:text-white hover:bg-zinc-800"
+        className="h-8 text-zinc-300 hover:text-white hover:bg-zinc-800 transition-colors"
         onClick={() => navigate('/leads/analytics')}
       >
         Analytics
@@ -45,7 +45,7 @@ export function HeaderQuickActions() {
           <Button
             variant="ghost"
             size="sm"
-            className="h-8 text-zinc-300 hover:text-white hover:bg-zinc-800"
+            className="h-8 text-zinc-300 hover:text-white hover:bg-zinc-800 transition-colors"
           >
             <Filter className="h-4 w-4 mr-1" />
             Filters
@@ -75,7 +75,7 @@ export function HeaderQuickActions() {
       <Button
         variant="ghost"
         size="sm"
-        className="h-8 text-zinc-300 hover:text-white hover:bg-zinc-800"
+        className="h-8 text-zinc-300 hover:text-white hover:bg-zinc-800 transition-colors"
         onClick={() => navigate('/leads/import')}
       >
         <Upload className="h-4 w-4 mr-1" />
@@ -85,7 +85,7 @@ export function HeaderQuickActions() {
       <Button
         variant="ghost"
         size="sm"
-        className="h-8 text-zinc-300 hover:text-white hover:bg-zinc-800"
+        className="h-8 text-zinc-300 hover:text-white hover:bg-zinc-800 transition-colors"
       >
         <Download className="h-4 w-4 mr-1" />
         Export
@@ -93,7 +93,7 @@ export function HeaderQuickActions() {
 
       <Button
         size="sm"
-        className="h-8 bg-blue-600 hover:bg-blue-700 text-white"
+        className="h-8 bg-blue-600 hover:bg-blue-700 text-white transition-colors"
         onClick={() => navigate('/leads/add')}
       >
         <Plus className="h-4 w-4 mr-1" />

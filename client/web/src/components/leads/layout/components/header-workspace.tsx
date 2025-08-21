@@ -118,7 +118,7 @@ export function HeaderWorkspace() {
       <DropdownMenuTrigger asChild>
         <Button 
           variant="ghost" 
-          className="flex items-center gap-2 px-2 h-8 hover:bg-zinc-800 text-zinc-100"
+          className="flex items-center gap-2 px-2 h-8 text-zinc-100 hover:text-white hover:bg-zinc-800 transition-colors"
         >
           <span 
             className={cn(

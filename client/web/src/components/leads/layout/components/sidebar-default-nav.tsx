@@ -122,90 +122,94 @@ function NavMenuItem({ item }: { item: NavItem }) {
   if (hasChildren) {
     return (
       <div className="space-y-0.5">
-        <AccordionMenuItem
-          value={item.id}
-          className={cn(
-            "relative select-none flex w-full text-start items-center",
-            "text-foreground rounded-lg px-2 text-sm",
-            "outline-hidden transition-colors hover:bg-accent hover:text-accent-foreground",
-            isActive && "bg-accent text-accent-foreground",
-            "disabled:opacity-50 disabled:bg-transparent",
-            "focus-visible:bg-accent focus-visible:text-accent-foreground",
-            "[&_svg]:pointer-events-none [&_svg]:opacity-60 [&_svg:not([class*=size-])]:size-4 [&_svg]:shrink-0",
-            "group py-0 h-8 justify-between cursor-pointer"
-          )}
-          onClick={() => setIsExpanded(!isExpanded)}
-        >
-          <div className="flex items-center gap-2 w-full">
-            {/* Icon with Tooltip */}
-            {item.icon && (
-              <Tooltip delayDuration={300}>
-                <TooltipTrigger asChild>
-                  <div><item.icon className="h-4 w-4" strokeWidth={2.5} /></div>
-                </TooltipTrigger>
-                <TooltipContent align="center" side={sidebarCollapse ? "right" : "top"} sideOffset={sidebarCollapse ? 28 : 8}>
+        <div className="relative group">
+          <AccordionMenuItem
+            value={item.id}
+            className={cn(
+              "relative select-none flex w-full text-start items-center",
+              "text-foreground rounded-lg px-2 text-sm",
+              "outline-hidden transition-colors hover:bg-accent hover:text-accent-foreground",
+              isActive && "bg-accent text-accent-foreground",
+              "disabled:opacity-50 disabled:bg-transparent",
+              "focus-visible:bg-accent focus-visible:text-accent-foreground",
+              "[&_svg]:pointer-events-none [&_svg]:opacity-60 [&_svg:not([class*=size-])]:size-4 [&_svg]:shrink-0",
+              "py-0 h-8 justify-between cursor-pointer"
+            )}
+            onClick={() => setIsExpanded(!isExpanded)}
+          >
+            <div className="flex items-center gap-2 w-full">
+              {/* Icon with Tooltip */}
+              {item.icon && (
+                <Tooltip delayDuration={300}>
+                  <TooltipTrigger asChild>
+                    <div><item.icon className="h-4 w-4" strokeWidth={2.5} /></div>
+                  </TooltipTrigger>
+                  <TooltipContent align="center" side={sidebarCollapse ? "right" : "top"} sideOffset={sidebarCollapse ? 28 : 8}>
+                    {item.title}
+                    {item.children && item.children.length > 0 && (
+                      <span className="text-xs text-muted-foreground block mt-1">{item.children.length} items</span>
+                    )}
+                  </TooltipContent>
+                </Tooltip>
+              )}
+              
+              {/* Title */}
+              {!sidebarCollapse && (
+                <span className="flex-1 text-sm font-semibold">
                   {item.title}
-                  {item.children && item.children.length > 0 && (
-                    <span className="text-xs text-muted-foreground block mt-1">{item.children.length} items</span>
-                  )}
-                </TooltipContent>
-              </Tooltip>
-            )}
-            
-            {/* Title */}
-            {!sidebarCollapse && (
-              <span className="flex-1 text-sm font-semibold">
-                {item.title}
-              </span>
-            )}
-            
-            {/* Chevron and Pin/Unpin */}
-            {!sidebarCollapse && (
-              <div className="flex items-center gap-1">
-                {item.pinnable !== false && (
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                        }}
-                      >
-                        <Ellipsis className="h-3 w-3" />
-                      </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end" className="w-48">
-                      <DropdownMenuItem
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          pinSidebarNavItem(item.id);
-                        }}
-                      >
-                        {item.pinned || pinnedNavItems.includes(item.id) ? (
-                          <>
-                            <PinOff className="mr-2 h-4 w-4" />
-                            Unpin from sidebar
-                          </>
-                        ) : (
-                          <>
-                            <Pin className="mr-2 h-4 w-4" />
-                            Pin to sidebar
-                          </>
-                        )}
-                      </DropdownMenuItem>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-                )}
+                </span>
+              )}
+              
+              {/* Chevron */}
+              {!sidebarCollapse && (
                 <ChevronRight className={cn(
-                  "h-3 w-3 transition-transform",
+                  "h-3 w-3 transition-transform mr-1",
                   isExpanded && "rotate-90"
                 )} />
-              </div>
-            )}
-          </div>
-        </AccordionMenuItem>
+              )}
+            </div>
+          </AccordionMenuItem>
+          
+          {/* Pin/Unpin Menu - Outside of AccordionMenuItem */}
+          {!sidebarCollapse && item.pinnable !== false && (
+            <div className="absolute right-2 top-1/2 -translate-y-1/2 z-10">
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                    }}
+                  >
+                    <Ellipsis className="h-3 w-3" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-48">
+                  <DropdownMenuItem
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      pinSidebarNavItem(item.id);
+                    }}
+                  >
+                    {item.pinned || pinnedNavItems.includes(item.id) ? (
+                      <>
+                        <PinOff className="mr-2 h-4 w-4" />
+                        Unpin from sidebar
+                      </>
+                    ) : (
+                      <>
+                        <Pin className="mr-2 h-4 w-4" />
+                        Pin to sidebar
+                      </>
+                    )}
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </div>
+          )}
+        </div>
         
         {/* Submenu items */}
         {isExpanded && !sidebarCollapse && (
@@ -256,92 +260,94 @@ function NavMenuItem({ item }: { item: NavItem }) {
 
   // Simple menu item without children
   return (
-    <AccordionMenuItem
-      value={item.id}
-      className={cn(
-        "relative select-none flex w-full text-start items-center",
-        "text-foreground rounded-lg px-2 text-sm",
-        "outline-hidden transition-colors hover:bg-accent hover:text-accent-foreground",
-        isActive && "bg-accent text-accent-foreground",
-        "disabled:opacity-50 disabled:bg-transparent",
-        "focus-visible:bg-accent focus-visible:text-accent-foreground",
-        "[&_svg]:pointer-events-none [&_svg]:opacity-60 [&_svg:not([class*=size-])]:size-4 [&_svg]:shrink-0",
-        "group py-0 h-8 justify-between"
-      )}
-    >
-      <Link to={item.path || '#'} className="flex items-center gap-2 w-full">
-        {/* Icon with Tooltip */}
-        {item.icon && (
-          <Tooltip delayDuration={300}>
-            <TooltipTrigger asChild>
-              <div><item.icon className="h-4 w-4" strokeWidth={2.5} /></div>
-            </TooltipTrigger>
-            <TooltipContent align="center" side={sidebarCollapse ? "right" : "top"} sideOffset={sidebarCollapse ? 28 : 8}>
+    <div className="relative group">
+      <AccordionMenuItem
+        value={item.id}
+        className={cn(
+          "relative select-none flex w-full text-start items-center",
+          "text-foreground rounded-lg px-2 text-sm",
+          "outline-hidden transition-colors hover:bg-accent hover:text-accent-foreground",
+          isActive && "bg-accent text-accent-foreground",
+          "disabled:opacity-50 disabled:bg-transparent",
+          "focus-visible:bg-accent focus-visible:text-accent-foreground",
+          "[&_svg]:pointer-events-none [&_svg]:opacity-60 [&_svg:not([class*=size-])]:size-4 [&_svg]:shrink-0",
+          "py-0 h-8 justify-between"
+        )}
+      >
+        <Link to={item.path || '#'} className="flex items-center gap-2 w-full">
+          {/* Icon with Tooltip */}
+          {item.icon && (
+            <Tooltip delayDuration={300}>
+              <TooltipTrigger asChild>
+                <div><item.icon className="h-4 w-4" strokeWidth={2.5} /></div>
+              </TooltipTrigger>
+              <TooltipContent align="center" side={sidebarCollapse ? "right" : "top"} sideOffset={sidebarCollapse ? 28 : 8}>
+                {item.title}
+                {item.path && !sidebarCollapse && (
+                  <span className="text-xs text-muted-foreground block mt-1">{item.path}</span>
+                )}
+              </TooltipContent>
+            </Tooltip>
+          )}
+          
+          {/* Title */}
+          {!sidebarCollapse && (
+            <span className="flex-1 text-sm font-semibold">
               {item.title}
-              {item.path && !sidebarCollapse && (
-                <span className="text-xs text-muted-foreground block mt-1">{item.path}</span>
-              )}
-            </TooltipContent>
-          </Tooltip>
-        )}
-        
-        {/* Title */}
-        {!sidebarCollapse && (
-          <span className="flex-1 text-sm font-semibold">
-            {item.title}
-          </span>
-        )}
-        
-        {/* Badge and Pin/Unpin */}
-        {!sidebarCollapse && (
-          <div className="flex items-center gap-1">
-            {item.badge && (
-              <Badge variant="secondary" className="h-5 px-1.5 text-xs">
-                {item.badge}
-              </Badge>
-            )}
-            {item.pinnable !== false && (
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity"
-                    onClick={(e) => {
-                      e.preventDefault();
-                      e.stopPropagation();
-                    }}
-                  >
-                    <Ellipsis className="h-3 w-3" />
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="w-48">
-                  <DropdownMenuItem
-                    onClick={(e) => {
-                      e.preventDefault();
-                      e.stopPropagation();
-                      pinSidebarNavItem(item.id);
-                    }}
-                  >
-                    {item.pinned || pinnedNavItems.includes(item.id) ? (
-                      <>
-                        <PinOff className="mr-2 h-4 w-4" />
-                        Unpin from sidebar
-                      </>
-                    ) : (
-                      <>
-                        <Pin className="mr-2 h-4 w-4" />
-                        Pin to sidebar
-                      </>
-                    )}
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
-            )}
-          </div>
-        )}
-      </Link>
-    </AccordionMenuItem>
+            </span>
+          )}
+          
+          {/* Badge */}
+          {!sidebarCollapse && item.badge && (
+            <Badge variant="secondary" className="h-5 px-1.5 text-xs mr-1">
+              {item.badge}
+            </Badge>
+          )}
+        </Link>
+      </AccordionMenuItem>
+      
+      {/* Pin/Unpin Menu - Outside of AccordionMenuItem */}
+      {!sidebarCollapse && item.pinnable !== false && (
+        <div className="absolute right-2 top-1/2 -translate-y-1/2 z-10">
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity"
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                }}
+              >
+                <Ellipsis className="h-3 w-3" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-48">
+              <DropdownMenuItem
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  pinSidebarNavItem(item.id);
+                }}
+              >
+                {item.pinned || pinnedNavItems.includes(item.id) ? (
+                  <>
+                    <PinOff className="mr-2 h-4 w-4" />
+                    Unpin from sidebar
+                  </>
+                ) : (
+                  <>
+                    <Pin className="mr-2 h-4 w-4" />
+                    Pin to sidebar
+                  </>
+                )}
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
+      )}
+    </div>
   );
 }
 

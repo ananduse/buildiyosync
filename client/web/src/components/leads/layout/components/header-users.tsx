@@ -28,7 +28,7 @@ export function HeaderUsers() {
         <Button
           variant="ghost"
           size="sm"
-          className="text-zinc-300 hover:bg-zinc-800 h-8 px-2"
+          className="text-zinc-300 hover:text-white hover:bg-zinc-800 h-8 px-2 transition-colors"
         >
           <Avatar className="h-6 w-6 mr-2">
             <AvatarImage src={user.avatar} />
@@ -65,7 +65,7 @@ export function HeaderUsers() {
           Team Management
         </DropdownMenuItem>
         <DropdownMenuSeparator />
-        <DropdownMenuItem className="text-red-600 hover:text-red-600">
+        <DropdownMenuItem className="text-red-600 hover:text-red-700 hover:bg-red-50 focus:bg-red-50 focus:text-red-700">
           <LogOut className="mr-2 h-4 w-4" />
           Log out
         </DropdownMenuItem>
