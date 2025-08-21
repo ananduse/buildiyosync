@@ -137,7 +137,7 @@ function NavMenuItem({ item }: { item: NavItem }) {
             )}
             onClick={() => setIsExpanded(!isExpanded)}
           >
-            <div className="flex items-center gap-2 w-full">
+            <div className="flex items-center gap-2 w-full pr-8">
               {/* Icon with Tooltip */}
               {item.icon && (
                 <Tooltip delayDuration={300}>
@@ -163,7 +163,7 @@ function NavMenuItem({ item }: { item: NavItem }) {
               {/* Chevron */}
               {!sidebarCollapse && (
                 <ChevronRight className={cn(
-                  "h-3 w-3 transition-transform mr-1",
+                  "h-3 w-3 transition-transform",
                   isExpanded && "rotate-90"
                 )} />
               )}
@@ -172,7 +172,7 @@ function NavMenuItem({ item }: { item: NavItem }) {
           
           {/* Pin/Unpin Menu - Outside of AccordionMenuItem */}
           {!sidebarCollapse && item.pinnable !== false && (
-            <div className="absolute right-2 top-1/2 -translate-y-1/2 z-10">
+            <div className="absolute right-1 top-1/2 -translate-y-1/2 z-10">
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button
@@ -274,7 +274,7 @@ function NavMenuItem({ item }: { item: NavItem }) {
           "py-0 h-8 justify-between"
         )}
       >
-        <Link to={item.path || '#'} className="flex items-center gap-2 w-full">
+        <Link to={item.path || '#'} className="flex items-center gap-2 w-full pr-8">
           {/* Icon with Tooltip */}
           {item.icon && (
             <Tooltip delayDuration={300}>
@@ -299,7 +299,7 @@ function NavMenuItem({ item }: { item: NavItem }) {
           
           {/* Badge */}
           {!sidebarCollapse && item.badge && (
-            <Badge variant="secondary" className="h-5 px-1.5 text-xs mr-1">
+            <Badge variant="secondary" className="h-5 px-1.5 text-xs">
               {item.badge}
             </Badge>
           )}
@@ -308,7 +308,7 @@ function NavMenuItem({ item }: { item: NavItem }) {
       
       {/* Pin/Unpin Menu - Outside of AccordionMenuItem */}
       {!sidebarCollapse && item.pinnable !== false && (
-        <div className="absolute right-2 top-1/2 -translate-y-1/2 z-10">
+        <div className="absolute right-1 top-1/2 -translate-y-1/2 z-10">
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button

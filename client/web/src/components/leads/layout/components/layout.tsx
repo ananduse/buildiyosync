@@ -32,7 +32,7 @@ export function Layout({ children }: { children?: React.ReactNode }) {
             <ContentTitle />
           </ContentHeader>
           <SecondaryNav />
-          <div className="flex-1 px-4 lg:px-6 py-4 bg-gray-50 overflow-y-auto">
+          <div className="flex-1 px-4 lg:px-6 py-4 bg-white overflow-y-auto">
             {children || <Outlet />}
           </div>
         </main>
