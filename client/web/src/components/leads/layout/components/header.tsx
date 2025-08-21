@@ -5,6 +5,7 @@ import { HeaderHelp } from './header-help';
 import { HeaderUsers } from './header-users';
 import { HeaderNotifications } from './header-notifications';
 import { HeaderSearch } from './header-search';
+import { HeaderMainNav } from './header-main-nav';
 import { HeaderQuickActions } from './header-quick-actions';
 import { Separator } from '@/components/ui/separator';
 
@@ -15,10 +16,13 @@ export function Header() {
         <div className="flex items-center gap-4">
           <HeaderBrand />
           <Separator orientation="vertical" className="bg-zinc-600 h-4" />
+          <HeaderMainNav />
+          <Separator orientation="vertical" className="bg-zinc-600 h-4" />
           <HeaderSearch />
-          <HeaderQuickActions />
         </div>
         <div className="flex items-center gap-2">
+          <HeaderQuickActions />
+          <Separator orientation="vertical" className="bg-zinc-600 h-4 mx-1" />
           <HeaderUpgrade />
           <HeaderNew />
           <Separator orientation="vertical" className="bg-zinc-600 h-4 mx-1" />
