@@ -235,12 +235,12 @@ import Integrations from '@/pages/leads/admin/integrations';
 import LeadManagementSettings from '@/pages/leads/settings/lead-management-settings';
 
 // Project Management Components
-import ProjectDashboard from '@/pages/projects/dashboard/project-dashboard';
+import ProjectDashboard from '@/pages/projects/dashboard';
 import ProjectList from '@/pages/projects/list/project-list';
 import ProjectKanban from '@/pages/projects/kanban/project-kanban';
 import ProjectEnterprise from '@/pages/projects/enterprise/project-enterprise';
 import EnterpriseProjectDashboard from '@/pages/projects/enterprise/enterprise-dashboard';
-import ProjectLayout from '@/components/projects/layout/ProjectLayout';
+import { ProjectLayoutWithProvider } from '@/components/projects/layout';
 
 // Forms Management Components
 import FormsOverview from '@/pages/leads/forms/forms-overview';
@@ -440,17 +440,17 @@ export function AppRoutingSetup() {
         <Route path="/leads/:id/communications" element={<LeadCommunicationsPage />} />
         <Route path="/leads/:id/convert" element={<ConvertLeadPage />} />
         <Route path="/leads/reports" element={<LeadReportsPage />} />
-        
-        {/* Project Management Routes */}
-        <Route path="/projects" element={<ProjectLayout />}>
-          <Route index element={<EnterpriseProjectDashboard />} />
-          <Route path="dashboard" element={<ProjectDashboard />} />
-          <Route path="list" element={<ProjectList />} />
-          <Route path="kanban" element={<ProjectKanban />} />
-          <Route path="enterprise" element={<EnterpriseProjectDashboard />} />
-          <Route path=":id" element={<ProjectDashboard />} />
-          <Route path=":id/dashboard" element={<ProjectDashboard />} />
-        </Route>
+      </Route>
+      
+      {/* Project Management Routes - Outside Demo3Layout to have its own layout */}
+      <Route path="/projects" element={<ProjectLayoutWithProvider />}>
+        <Route index element={<EnterpriseProjectDashboard />} />
+        <Route path="dashboard" element={<ProjectDashboard />} />
+        <Route path="list" element={<ProjectList />} />
+        <Route path="kanban" element={<ProjectKanban />} />
+        <Route path="enterprise" element={<EnterpriseProjectDashboard />} />
+        <Route path=":id" element={<ProjectDashboard />} />
+        <Route path=":id/dashboard" element={<ProjectDashboard />} />
       </Route>
       
       <Route element={<RequireAuth />}>
