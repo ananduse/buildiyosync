@@ -391,7 +391,7 @@ export default function EnterpriseDashboard() {
   };
 
   return (
-    <div className="p-6 space-y-6 bg-gray-50 dark:bg-gray-900 min-h-screen">
+    <div className="p-6 space-y-6 min-h-screen">
       {/* Header Section */}
       <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm">
         <div>

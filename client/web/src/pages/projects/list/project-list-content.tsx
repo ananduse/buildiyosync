@@ -74,13 +74,18 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/comp
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import { HoverCard, HoverCardContent, HoverCardTrigger } from '@/components/ui/hover-card';
 import { DataGrid } from '@/components/ui/data-grid';
+import { DataGridTable } from '@/components/ui/data-grid-table';
+import { DataGridPagination } from '@/components/ui/data-grid-pagination';
 import { DataGridColumnHeader } from '@/components/ui/data-grid-column-header';
+import { DataGridColumnVisibility } from '@/components/ui/data-grid-column-visibility';
 import { SimpleFilter, SimpleFilterRule } from '@/components/filters/simple-filter';
 import {
   DataGridTableRowSelect,
   DataGridTableRowSelectAll,
 } from '@/components/ui/data-grid-table';
 import { Progress } from '@/components/ui/progress';
+import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
+import { CardTable, CardFooter } from '@/components/ui/card';
 
 interface Project {
   id: string;
@@ -1265,6 +1270,8 @@ export function ProjectListContent() {
           <Button variant="outline" size="icon">
             <Filter className="h-4 w-4" />
           </Button>
+
+          <DataGridColumnVisibility table={table} trigger={<Button variant="outline" size="sm">Columns</Button>} />
         </div>
 
         {/* Bulk Actions Bar */}
@@ -1316,14 +1323,29 @@ export function ProjectListContent() {
           table={table}
           recordCount={filteredData.length}
           tableLayout={{
+            dense: true,
             cellBorder: false,
             rowBorder: true,
-            stripped: true,
+            stripped: false,
             headerBorder: true,
             headerBackground: true,
             columnsResizable: true,
+            columnsVisibility: true,
+            columnsPinnable: true,
           }}
-        />
+        >
+          <Card className="border-none shadow-none">
+            <CardTable>
+              <ScrollArea>
+                <DataGridTable />
+                <ScrollBar orientation="horizontal" />
+              </ScrollArea>
+            </CardTable>
+            <CardFooter className="px-4 py-0">
+              <DataGridPagination className="py-1" />
+            </CardFooter>
+          </Card>
+        </DataGrid>
       ) : view === 'grid' ? (
         <>
           <GridView />
