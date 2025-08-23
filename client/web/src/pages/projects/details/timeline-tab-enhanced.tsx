@@ -1,7 +1,7 @@
 import { useState, useMemo } from 'react';
 import { format, addDays, differenceInDays, startOfMonth, endOfMonth, eachDayOfInterval, isSameMonth, isToday, isBefore, isAfter } from 'date-fns';
 import {
-  Calendar,
+  Calendar as CalendarIcon,
   Clock,
   Target,
   Briefcase,
@@ -110,7 +110,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from '@/components/ui/popover';
-import { Calendar as CalendarComponent } from '@/components/ui/calendar';
+import { Calendar } from '@/components/ui/calendar';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -162,9 +162,11 @@ export function TimelineTabEnhanced({ project }: TimelineTabEnhancedProps) {
     to: new Date(project.timeline.endDate)
   });
   const [selectedMilestone, setSelectedMilestone] = useState<string | null>(null);
-  const [zoomLevel, setZoomLevel] = useState<'day' | 'week' | 'month' | 'quarter'>('month');
+  const [zoomLevel, setZoomLevel] = useState<'week' | 'month' | 'quarter' | 'year'>('month');
   const [filterStatus, setFilterStatus] = useState<'all' | 'completed' | 'in-progress' | 'pending'>('all');
   const [showCriticalPath, setShowCriticalPath] = useState(true);
+  const [editingMilestone, setEditingMilestone] = useState<any>(null);
+  const [showEditDialog, setShowEditDialog] = useState(false);
 
   // Enhanced milestones with dependencies and resources
   const enhancedMilestones = [
@@ -360,8 +362,71 @@ export function TimelineTabEnhanced({ project }: TimelineTabEnhancedProps) {
     const [resizeStart, setResizeStart] = useState({ x: 0, width: 0 });
     
     const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-    const totalMonths = 24; // 2 years
-    const pixelsPerMonth = 60; // Width of each month column
+    
+    // Calculate timeline units based on zoom level and date range
+    const startDate = dateRange.from || new Date('2024-01-01');
+    const endDate = dateRange.to || new Date('2025-12-31');
+    const totalDays = differenceInDays(endDate, startDate);
+    
+    // Zoom level configurations
+    const zoomConfig = {
+      week: { pixelsPerUnit: 100, unitsPerMonth: 4.3, label: 'Week', format: (date: Date) => `W${format(date, 'w')} ${format(date, 'MMM')}` },
+      month: { pixelsPerUnit: 60, unitsPerMonth: 1, label: 'Month', format: (date: Date) => format(date, 'MMM yyyy') },
+      quarter: { pixelsPerUnit: 180, unitsPerMonth: 0.33, label: 'Quarter', format: (date: Date) => `Q${Math.ceil((date.getMonth() + 1) / 3)} ${format(date, 'yyyy')}` },
+      year: { pixelsPerUnit: 240, unitsPerMonth: 0.083, label: 'Year', format: (date: Date) => format(date, 'yyyy') }
+    };
+    
+    const currentZoom = zoomConfig[zoomLevel];
+    const totalMonths = totalDays / 30;
+    const totalUnits = totalMonths * currentZoom.unitsPerMonth;
+    const pixelsPerDay = currentZoom.pixelsPerUnit / (zoomLevel === 'week' ? 7 : zoomLevel === 'month' ? 30 : zoomLevel === 'quarter' ? 90 : 365);
+    
+    // Generate timeline headers based on zoom level
+    const getTimelineHeaders = () => {
+      const headers = [];
+      let currentDate = new Date(startDate);
+      
+      if (zoomLevel === 'week') {
+        while (currentDate <= endDate) {
+          headers.push({ date: new Date(currentDate), label: currentZoom.format(currentDate) });
+          currentDate = addDays(currentDate, 7);
+        }
+      } else if (zoomLevel === 'month') {
+        while (currentDate <= endDate) {
+          headers.push({ date: new Date(currentDate), label: currentZoom.format(currentDate) });
+          currentDate = addDays(currentDate, 30);
+        }
+      } else if (zoomLevel === 'quarter') {
+        while (currentDate <= endDate) {
+          headers.push({ date: new Date(currentDate), label: currentZoom.format(currentDate) });
+          currentDate = addDays(currentDate, 90);
+        }
+      } else if (zoomLevel === 'year') {
+        while (currentDate <= endDate) {
+          headers.push({ date: new Date(currentDate), label: currentZoom.format(currentDate) });
+          currentDate = addDays(currentDate, 365);
+        }
+      }
+      
+      return headers;
+    };
+    
+    const timelineHeaders = getTimelineHeaders();
+    
+    // Filter milestones based on date range and status
+    const filteredMilestones = milestones.filter(m => {
+      const mStart = new Date(m.startDate);
+      const mEnd = new Date(m.endDate);
+      const inDateRange = (!dateRange.from || mEnd >= dateRange.from) && (!dateRange.to || mStart <= dateRange.to);
+      const matchesStatus = filterStatus === 'all' || m.status === filterStatus;
+      return inDateRange && matchesStatus;
+    });
+    
+    // Handle edit milestone
+    const handleEditMilestone = (milestone: any) => {
+      setEditingMilestone(milestone);
+      setShowEditDialog(true);
+    };
 
     // Handle drag start
     const handleDragStart = (e: React.MouseEvent, milestone: any) => {
@@ -381,12 +446,12 @@ export function TimelineTabEnhanced({ project }: TimelineTabEnhancedProps) {
       const container = e.currentTarget;
       const rect = container.getBoundingClientRect();
       const x = e.clientX - rect.left - dragOffset.x - 264; // Subtract sidebar width
-      const monthPosition = Math.max(0, Math.min(totalMonths - 1, x / pixelsPerMonth));
+      const dayPosition = Math.max(0, x / pixelsPerDay);
       
       setMilestones(prev => prev.map(m => {
         if (m.id === draggedItem.id) {
           const duration = differenceInDays(new Date(m.endDate), new Date(m.startDate));
-          const newStartDate = addDays(new Date('2024-01-01'), monthPosition * 30);
+          const newStartDate = addDays(startDate, dayPosition);
           const newEndDate = addDays(newStartDate, duration);
           
           return {
@@ -412,12 +477,12 @@ export function TimelineTabEnhanced({ project }: TimelineTabEnhancedProps) {
       if (!isResizing) return;
 
       const deltaX = e.clientX - resizeStart.x;
-      const newWidth = Math.max(pixelsPerMonth, resizeStart.width + deltaX);
-      const newDuration = Math.round(newWidth / pixelsPerMonth);
+      const newWidth = Math.max(pixelsPerDay * 7, resizeStart.width + deltaX); // Min 1 week
+      const newDuration = Math.round(newWidth / pixelsPerDay);
       
       setMilestones(prev => prev.map(m => {
         if (m.id.toString() === isResizing) {
-          const newEndDate = addDays(new Date(m.startDate), newDuration * 30);
+          const newEndDate = addDays(new Date(m.startDate), newDuration);
           return {
             ...m,
             endDate: format(newEndDate, 'yyyy-MM-dd')
@@ -440,21 +505,88 @@ export function TimelineTabEnhanced({ project }: TimelineTabEnhancedProps) {
             <div>
               <CardTitle>Interactive Gantt Chart</CardTitle>
               <p className="text-xs text-muted-foreground mt-1">
-                Drag milestones to reschedule • Drag edges to resize • Avatars show assignees
+                Drag to reschedule • Resize edges • Double-click to edit • Filter by date/status
               </p>
             </div>
-            <div className="flex items-center gap-2">
-              <Button variant="outline" size="sm" onClick={() => setZoomLevel('week')}>
-                <ZoomIn className="h-4 w-4 mr-1" />
-                Week
-              </Button>
-              <Button variant="outline" size="sm" onClick={() => setZoomLevel('month')}>
-                Month
-              </Button>
-              <Button variant="outline" size="sm" onClick={() => setZoomLevel('quarter')}>
-                <ZoomOut className="h-4 w-4 mr-1" />
-                Quarter
-              </Button>
+            <div className="flex items-center gap-4">
+              {/* Date Range Filter */}
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button variant="outline" size="sm" className="justify-start text-left font-normal">
+                    <CalendarRange className="mr-2 h-4 w-4" />
+                    {dateRange.from ? (
+                      dateRange.to ? (
+                        <>
+                          {format(dateRange.from, "LLL dd, y")} - {format(dateRange.to, "LLL dd, y")}
+                        </>
+                      ) : (
+                        format(dateRange.from, "LLL dd, y")
+                      )
+                    ) : (
+                      <span>Pick a date range</span>
+                    )}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0" align="end">
+                  <Calendar
+                    initialFocus
+                    mode="range"
+                    defaultMonth={dateRange.from}
+                    selected={{ from: dateRange.from, to: dateRange.to }}
+                    onSelect={(range: any) => setDateRange(range || { from: undefined, to: undefined })}
+                    numberOfMonths={2}
+                  />
+                </PopoverContent>
+              </Popover>
+              
+              {/* Status Filter */}
+              <Select value={filterStatus} onValueChange={(value: any) => setFilterStatus(value)}>
+                <SelectTrigger className="w-[130px]">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Status</SelectItem>
+                  <SelectItem value="completed">Completed</SelectItem>
+                  <SelectItem value="in-progress">In Progress</SelectItem>
+                  <SelectItem value="pending">Pending</SelectItem>
+                </SelectContent>
+              </Select>
+              
+              {/* Zoom Controls */}
+              <div className="flex items-center gap-1 border rounded-md">
+                <Button 
+                  variant={zoomLevel === 'week' ? 'secondary' : 'ghost'} 
+                  size="sm" 
+                  className="rounded-none rounded-l-md h-8"
+                  onClick={() => setZoomLevel('week')}
+                >
+                  Week
+                </Button>
+                <Button 
+                  variant={zoomLevel === 'month' ? 'secondary' : 'ghost'} 
+                  size="sm" 
+                  className="rounded-none h-8"
+                  onClick={() => setZoomLevel('month')}
+                >
+                  Month
+                </Button>
+                <Button 
+                  variant={zoomLevel === 'quarter' ? 'secondary' : 'ghost'} 
+                  size="sm" 
+                  className="rounded-none h-8"
+                  onClick={() => setZoomLevel('quarter')}
+                >
+                  Quarter
+                </Button>
+                <Button 
+                  variant={zoomLevel === 'year' ? 'secondary' : 'ghost'} 
+                  size="sm" 
+                  className="rounded-none rounded-r-md h-8"
+                  onClick={() => setZoomLevel('year')}
+                >
+                  Year
+                </Button>
+              </div>
             </div>
           </div>
         </CardHeader>
@@ -473,23 +605,26 @@ export function TimelineTabEnhanced({ project }: TimelineTabEnhancedProps) {
               <div className="flex border-b bg-muted/30 sticky top-0 z-10">
                 <div className="w-64 p-3 font-semibold border-r bg-background">Milestone</div>
                 <div className="flex flex-1">
-                  {Array.from({ length: totalMonths }).map((_, i) => (
+                  {timelineHeaders.map((header, i) => (
                     <div 
                       key={i} 
-                      className="border-r p-2 text-xs text-center bg-background"
-                      style={{ width: pixelsPerMonth }}
+                      className="border-r p-2 text-xs text-center bg-background font-medium"
+                      style={{ width: currentZoom.pixelsPerUnit }}
                     >
-                      {months[i % 12]} {Math.floor(i / 12) + 2024}
+                      {header.label}
                     </div>
                   ))}
                 </div>
               </div>
 
               {/* Gantt rows */}
-              {milestones.map((milestone, index) => {
-                const startMonth = differenceInDays(new Date(milestone.startDate), new Date('2024-01-01')) / 30;
-                const duration = differenceInDays(new Date(milestone.endDate), new Date(milestone.startDate)) / 30;
-                const barWidth = duration * pixelsPerMonth;
+              {filteredMilestones.map((milestone, index) => {
+                const mStartDate = new Date(milestone.startDate);
+                const mEndDate = new Date(milestone.endDate);
+                const startOffset = differenceInDays(mStartDate, startDate);
+                const duration = differenceInDays(mEndDate, mStartDate);
+                const barLeft = startOffset * pixelsPerDay;
+                const barWidth = duration * pixelsPerDay;
                 
                 return (
                   <div key={milestone.id} className="flex border-b hover:bg-muted/50 group relative">
@@ -513,13 +648,13 @@ export function TimelineTabEnhanced({ project }: TimelineTabEnhancedProps) {
                         </div>
                       </div>
                     </div>
-                    <div className="relative flex-1" style={{ width: totalMonths * pixelsPerMonth }}>
+                    <div className="relative flex-1" style={{ width: timelineHeaders.length * currentZoom.pixelsPerUnit }}>
                       {/* Dependency lines */}
                       {milestone.dependencies.map(depId => {
                         const dep = milestones.find(m => m.id === depId);
                         if (!dep) return null;
-                        const depEnd = differenceInDays(new Date(dep.endDate), new Date('2024-01-01')) / 30;
-                        const depIndex = milestones.findIndex(m => m.id === depId);
+                        const depEndOffset = differenceInDays(new Date(dep.endDate), startDate);
+                        const depIndex = filteredMilestones.findIndex(m => m.id === depId);
                         const verticalOffset = (index - depIndex) * 60;
                         
                         return (
@@ -530,9 +665,9 @@ export function TimelineTabEnhanced({ project }: TimelineTabEnhancedProps) {
                               </marker>
                             </defs>
                             <path
-                              d={`M ${depEnd * pixelsPerMonth} ${30 - verticalOffset} 
-                                 Q ${(depEnd * pixelsPerMonth + startMonth * pixelsPerMonth) / 2} ${30 - verticalOffset / 2},
-                                   ${startMonth * pixelsPerMonth - 5} 30`}
+                              d={`M ${depEndOffset * pixelsPerDay} ${30 - verticalOffset} 
+                                 Q ${(depEndOffset * pixelsPerDay + barLeft) / 2} ${30 - verticalOffset / 2},
+                                   ${barLeft - 5} 30`}
                               stroke="#94a3b8"
                               strokeWidth="1.5"
                               fill="none"
@@ -556,11 +691,12 @@ export function TimelineTabEnhanced({ project }: TimelineTabEnhancedProps) {
                           draggedItem?.id === milestone.id && 'opacity-70 shadow-2xl'
                         )}
                         style={{
-                          left: startMonth * pixelsPerMonth,
+                          left: Math.max(0, barLeft),
                           width: barWidth,
                           zIndex: draggedItem?.id === milestone.id ? 10 : 1
                         }}
                         onMouseDown={(e) => handleDragStart(e, milestone)}
+                        onDoubleClick={() => handleEditMilestone(milestone)}
                       >
                         {/* Progress fill */}
                         <div 
@@ -588,7 +724,7 @@ export function TimelineTabEnhanced({ project }: TimelineTabEnhancedProps) {
               <div 
                 className="absolute top-0 bottom-0 w-0.5 bg-red-500 pointer-events-none"
                 style={{ 
-                  left: 264 + (differenceInDays(new Date(), new Date('2024-01-01')) / 30) * pixelsPerMonth,
+                  left: 264 + (differenceInDays(new Date(), startDate) * pixelsPerDay),
                   zIndex: 20
                 }}
               >
@@ -626,7 +762,7 @@ export function TimelineTabEnhanced({ project }: TimelineTabEnhancedProps) {
                 </div>
               </div>
               <div className="text-xs text-muted-foreground">
-                {milestones.length} milestones • {milestones.filter(m => m.status === 'completed').length} completed
+                Showing {filteredMilestones.length} of {milestones.length} milestones • {filteredMilestones.filter(m => m.status === 'completed').length} completed
               </div>
             </div>
           </div>
@@ -812,7 +948,7 @@ export function TimelineTabEnhanced({ project }: TimelineTabEnhancedProps) {
               Gantt Chart
             </TabsTrigger>
             <TabsTrigger value="calendar">
-              <Calendar className="h-4 w-4 mr-2" />
+              <CalendarIcon className="h-4 w-4 mr-2" />
               Calendar
             </TabsTrigger>
             <TabsTrigger value="list">
@@ -869,7 +1005,7 @@ export function TimelineTabEnhanced({ project }: TimelineTabEnhancedProps) {
                 <p className="text-xs text-muted-foreground">Days Remaining</p>
                 <p className="text-2xl font-bold">{timelineStats.remainingDays}</p>
               </div>
-              <Calendar className="h-8 w-8 text-muted-foreground" />
+              <CalendarIcon className="h-8 w-8 text-muted-foreground" />
             </div>
           </CardContent>
         </Card>
@@ -1237,6 +1373,182 @@ export function TimelineTabEnhanced({ project }: TimelineTabEnhancedProps) {
           </CardContent>
         </Card>
       )}
+
+      {/* Edit Milestone Dialog */}
+      <Dialog open={showEditDialog} onOpenChange={setShowEditDialog}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>Edit Milestone</DialogTitle>
+            <DialogDescription>
+              Update milestone details, dates, and assignments
+            </DialogDescription>
+          </DialogHeader>
+          {editingMilestone && (
+            <div className="space-y-4 py-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="name">Milestone Name</Label>
+                  <Input 
+                    id="name" 
+                    value={editingMilestone.name} 
+                    onChange={(e) => setEditingMilestone({...editingMilestone, name: e.target.value})}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="status">Status</Label>
+                  <Select 
+                    value={editingMilestone.status} 
+                    onValueChange={(value) => setEditingMilestone({...editingMilestone, status: value})}
+                  >
+                    <SelectTrigger id="status">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="pending">Pending</SelectItem>
+                      <SelectItem value="in-progress">In Progress</SelectItem>
+                      <SelectItem value="completed">Completed</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="startDate">Start Date</Label>
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <Button variant="outline" className="w-full justify-start text-left font-normal">
+                        <CalendarDays className="mr-2 h-4 w-4" />
+                        {format(new Date(editingMilestone.startDate), 'PPP')}
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-auto p-0" align="start">
+                      <Calendar
+                        mode="single"
+                        selected={new Date(editingMilestone.startDate)}
+                        onSelect={(date) => date && setEditingMilestone({
+                          ...editingMilestone, 
+                          startDate: format(date, 'yyyy-MM-dd')
+                        })}
+                        initialFocus
+                      />
+                    </PopoverContent>
+                  </Popover>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="endDate">End Date</Label>
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <Button variant="outline" className="w-full justify-start text-left font-normal">
+                        <CalendarDays className="mr-2 h-4 w-4" />
+                        {format(new Date(editingMilestone.endDate), 'PPP')}
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-auto p-0" align="start">
+                      <Calendar
+                        mode="single"
+                        selected={new Date(editingMilestone.endDate)}
+                        onSelect={(date) => date && setEditingMilestone({
+                          ...editingMilestone, 
+                          endDate: format(date, 'yyyy-MM-dd')
+                        })}
+                        initialFocus
+                      />
+                    </PopoverContent>
+                  </Popover>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="assignee">Assignee</Label>
+                  <Input 
+                    id="assignee" 
+                    value={editingMilestone.assignee} 
+                    onChange={(e) => setEditingMilestone({...editingMilestone, assignee: e.target.value})}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="progress">Progress (%)</Label>
+                  <div className="flex items-center gap-2">
+                    <Input 
+                      id="progress" 
+                      type="number" 
+                      min="0" 
+                      max="100"
+                      value={editingMilestone.progress} 
+                      onChange={(e) => setEditingMilestone({...editingMilestone, progress: parseInt(e.target.value)})}
+                      className="flex-1"
+                    />
+                    <Progress value={editingMilestone.progress} className="w-20" />
+                  </div>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="budget">Budget ($)</Label>
+                  <Input 
+                    id="budget" 
+                    type="number"
+                    value={editingMilestone.budget} 
+                    onChange={(e) => setEditingMilestone({...editingMilestone, budget: parseInt(e.target.value)})}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="risk">Risk Level</Label>
+                  <Select 
+                    value={editingMilestone.risk} 
+                    onValueChange={(value) => setEditingMilestone({...editingMilestone, risk: value})}
+                  >
+                    <SelectTrigger id="risk">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="low">Low</SelectItem>
+                      <SelectItem value="medium">Medium</SelectItem>
+                      <SelectItem value="high">High</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="description">Description</Label>
+                <Textarea 
+                  id="description" 
+                  rows={3}
+                  value={editingMilestone.description} 
+                  onChange={(e) => setEditingMilestone({...editingMilestone, description: e.target.value})}
+                />
+              </div>
+
+              <div className="flex items-center space-x-2">
+                <Checkbox 
+                  id="criticalPath"
+                  checked={editingMilestone.criticalPath}
+                  onCheckedChange={(checked) => setEditingMilestone({...editingMilestone, criticalPath: checked})}
+                />
+                <Label htmlFor="criticalPath" className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+                  This milestone is on the critical path
+                </Label>
+              </div>
+            </div>
+          )}
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowEditDialog(false)}>
+              Cancel
+            </Button>
+            <Button onClick={() => {
+              // Here you would normally save to backend
+              console.log('Saving milestone:', editingMilestone);
+              setShowEditDialog(false);
+            }}>
+              Save Changes
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
