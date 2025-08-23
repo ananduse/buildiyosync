@@ -44,6 +44,7 @@ import {
   ArrowUp,
   ArrowDown,
   Layers,
+  FileText,
 } from 'lucide-react';
 
 import { cn } from '@/lib/utils';
