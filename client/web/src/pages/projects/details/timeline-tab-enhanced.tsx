@@ -351,22 +351,101 @@ export function TimelineTabEnhanced({ project }: TimelineTabEnhancedProps) {
     }
   };
 
-  // Gantt chart view component
+  // Gantt chart view component with drag-and-drop
   const GanttView = () => {
+    const [milestones, setMilestones] = useState(enhancedMilestones);
+    const [draggedItem, setDraggedItem] = useState<any>(null);
+    const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
+    const [isResizing, setIsResizing] = useState<string | null>(null);
+    const [resizeStart, setResizeStart] = useState({ x: 0, width: 0 });
+    
     const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
     const totalMonths = 24; // 2 years
+    const pixelsPerMonth = 60; // Width of each month column
+
+    // Handle drag start
+    const handleDragStart = (e: React.MouseEvent, milestone: any) => {
+      const rect = (e.target as HTMLElement).getBoundingClientRect();
+      setDragOffset({
+        x: e.clientX - rect.left,
+        y: e.clientY - rect.top
+      });
+      setDraggedItem(milestone);
+      e.preventDefault();
+    };
+
+    // Handle drag
+    const handleDrag = (e: React.MouseEvent) => {
+      if (!draggedItem) return;
+
+      const container = e.currentTarget;
+      const rect = container.getBoundingClientRect();
+      const x = e.clientX - rect.left - dragOffset.x - 264; // Subtract sidebar width
+      const monthPosition = Math.max(0, Math.min(totalMonths - 1, x / pixelsPerMonth));
+      
+      setMilestones(prev => prev.map(m => {
+        if (m.id === draggedItem.id) {
+          const duration = differenceInDays(new Date(m.endDate), new Date(m.startDate));
+          const newStartDate = addDays(new Date('2024-01-01'), monthPosition * 30);
+          const newEndDate = addDays(newStartDate, duration);
+          
+          return {
+            ...m,
+            startDate: format(newStartDate, 'yyyy-MM-dd'),
+            endDate: format(newEndDate, 'yyyy-MM-dd')
+          };
+        }
+        return m;
+      }));
+    };
+
+    // Handle resize start
+    const handleResizeStart = (e: React.MouseEvent, milestoneId: string, currentWidth: number) => {
+      e.stopPropagation();
+      setIsResizing(milestoneId);
+      setResizeStart({ x: e.clientX, width: currentWidth });
+      e.preventDefault();
+    };
+
+    // Handle resize
+    const handleResize = (e: React.MouseEvent) => {
+      if (!isResizing) return;
+
+      const deltaX = e.clientX - resizeStart.x;
+      const newWidth = Math.max(pixelsPerMonth, resizeStart.width + deltaX);
+      const newDuration = Math.round(newWidth / pixelsPerMonth);
+      
+      setMilestones(prev => prev.map(m => {
+        if (m.id.toString() === isResizing) {
+          const newEndDate = addDays(new Date(m.startDate), newDuration * 30);
+          return {
+            ...m,
+            endDate: format(newEndDate, 'yyyy-MM-dd')
+          };
+        }
+        return m;
+      }));
+    };
+
+    // Handle mouse up
+    const handleMouseUp = () => {
+      setDraggedItem(null);
+      setIsResizing(null);
+    };
 
     return (
       <Card>
         <CardHeader>
           <div className="flex items-center justify-between">
-            <CardTitle>Gantt Chart View</CardTitle>
+            <div>
+              <CardTitle>Interactive Gantt Chart</CardTitle>
+              <p className="text-xs text-muted-foreground mt-1">
+                Drag milestones to reschedule • Drag edges to resize • Avatars show assignees
+              </p>
+            </div>
             <div className="flex items-center gap-2">
-              <Button variant="outline" size="sm" onClick={() => setZoomLevel('day')}>
-                <ZoomIn className="h-4 w-4 mr-1" />
-                Day
-              </Button>
               <Button variant="outline" size="sm" onClick={() => setZoomLevel('week')}>
+                <ZoomIn className="h-4 w-4 mr-1" />
                 Week
               </Button>
               <Button variant="outline" size="sm" onClick={() => setZoomLevel('month')}>
@@ -379,15 +458,27 @@ export function TimelineTabEnhanced({ project }: TimelineTabEnhancedProps) {
             </div>
           </div>
         </CardHeader>
-        <CardContent>
+        <CardContent 
+          className="p-0"
+          onMouseMove={(e) => {
+            if (draggedItem) handleDrag(e);
+            if (isResizing) handleResize(e);
+          }}
+          onMouseUp={handleMouseUp}
+          onMouseLeave={handleMouseUp}
+        >
           <ScrollArea className="w-full">
-            <div className="min-w-[1200px]">
+            <div className="min-w-[1200px] select-none">
               {/* Timeline header */}
-              <div className="flex border-b">
-                <div className="w-64 p-2 font-semibold border-r">Milestone</div>
+              <div className="flex border-b bg-muted/30 sticky top-0 z-10">
+                <div className="w-64 p-3 font-semibold border-r bg-background">Milestone</div>
                 <div className="flex flex-1">
                   {Array.from({ length: totalMonths }).map((_, i) => (
-                    <div key={i} className="flex-1 min-w-[50px] p-2 text-xs text-center border-r">
+                    <div 
+                      key={i} 
+                      className="border-r p-2 text-xs text-center bg-background"
+                      style={{ width: pixelsPerMonth }}
+                    >
                       {months[i % 12]} {Math.floor(i / 12) + 2024}
                     </div>
                   ))}
@@ -395,61 +486,150 @@ export function TimelineTabEnhanced({ project }: TimelineTabEnhancedProps) {
               </div>
 
               {/* Gantt rows */}
-              {enhancedMilestones.map((milestone) => {
+              {milestones.map((milestone, index) => {
                 const startMonth = differenceInDays(new Date(milestone.startDate), new Date('2024-01-01')) / 30;
                 const duration = differenceInDays(new Date(milestone.endDate), new Date(milestone.startDate)) / 30;
+                const barWidth = duration * pixelsPerMonth;
                 
                 return (
-                  <div key={milestone.id} className="flex border-b hover:bg-muted/50">
-                    <div className="w-64 p-3 border-r">
+                  <div key={milestone.id} className="flex border-b hover:bg-muted/50 group relative">
+                    <div className="w-64 p-3 border-r bg-background">
                       <div className="flex items-center gap-2">
-                        {getMilestoneIcon(milestone.status) === CheckCircle2 && <CheckCircle2 className="h-4 w-4 text-green-600" />}
-                        {getMilestoneIcon(milestone.status) === Timer && <Timer className="h-4 w-4 text-blue-600" />}
-                        {getMilestoneIcon(milestone.status) === Circle && <Circle className="h-4 w-4 text-gray-400" />}
-                        <span className="text-sm font-medium truncate">{milestone.name}</span>
-                      </div>
-                      <div className="flex items-center gap-2 mt-1">
-                        <Badge variant="outline" className="text-xs">
-                          {milestone.progress}%
-                        </Badge>
-                        {milestone.criticalPath && (
-                          <Badge variant="destructive" className="text-xs">
-                            Critical
-                          </Badge>
-                        )}
+                        <Avatar className="h-7 w-7">
+                          <AvatarFallback className={cn(getAvatarColor(milestone.id + milestone.assignee), 'text-white text-xs font-semibold')}>
+                            {milestone.assignee.split(' ').map(n => n[0]).join('')}
+                          </AvatarFallback>
+                        </Avatar>
+                        <div className="flex-1">
+                          <span className="text-sm font-medium truncate block">{milestone.name}</span>
+                          <div className="flex items-center gap-2 mt-0.5">
+                            <span className="text-xs text-muted-foreground">{milestone.assignee}</span>
+                            {milestone.criticalPath && (
+                              <Badge variant="destructive" className="text-xs h-4 px-1">
+                                Critical
+                              </Badge>
+                            )}
+                          </div>
+                        </div>
                       </div>
                     </div>
-                    <div className="relative flex flex-1">
-                      {/* Progress bar */}
+                    <div className="relative flex-1" style={{ width: totalMonths * pixelsPerMonth }}>
+                      {/* Dependency lines */}
+                      {milestone.dependencies.map(depId => {
+                        const dep = milestones.find(m => m.id === depId);
+                        if (!dep) return null;
+                        const depEnd = differenceInDays(new Date(dep.endDate), new Date('2024-01-01')) / 30;
+                        const depIndex = milestones.findIndex(m => m.id === depId);
+                        const verticalOffset = (index - depIndex) * 60;
+                        
+                        return (
+                          <svg key={depId} className="absolute inset-0 pointer-events-none" style={{ zIndex: 0 }}>
+                            <defs>
+                              <marker id={`arrow-${depId}`} markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+                                <polygon points="0 0, 10 3.5, 0 7" fill="#94a3b8" />
+                              </marker>
+                            </defs>
+                            <path
+                              d={`M ${depEnd * pixelsPerMonth} ${30 - verticalOffset} 
+                                 Q ${(depEnd * pixelsPerMonth + startMonth * pixelsPerMonth) / 2} ${30 - verticalOffset / 2},
+                                   ${startMonth * pixelsPerMonth - 5} 30`}
+                              stroke="#94a3b8"
+                              strokeWidth="1.5"
+                              fill="none"
+                              strokeDasharray="4 2"
+                              markerEnd={`url(#arrow-${depId})`}
+                              opacity="0.5"
+                            />
+                          </svg>
+                        );
+                      })}
+                      
+                      {/* Milestone bar */}
                       <div 
-                        className="absolute top-1/2 -translate-y-1/2 h-8 rounded"
+                        className={cn(
+                          "absolute top-1/2 -translate-y-1/2 h-10 rounded-md cursor-move transition-all hover:shadow-lg",
+                          "flex items-center justify-between px-2",
+                          milestone.status === 'completed' ? 'bg-green-600' :
+                          milestone.status === 'in-progress' ? 'bg-blue-600' :
+                          'bg-gray-400',
+                          milestone.criticalPath && 'ring-2 ring-red-500 ring-offset-1',
+                          draggedItem?.id === milestone.id && 'opacity-70 shadow-2xl'
+                        )}
                         style={{
-                          left: `${(startMonth / totalMonths) * 100}%`,
-                          width: `${(duration / totalMonths) * 100}%`,
-                          background: milestone.status === 'completed' ? '#10b981' : 
-                                     milestone.status === 'in-progress' ? '#3b82f6' : '#e5e7eb'
+                          left: startMonth * pixelsPerMonth,
+                          width: barWidth,
+                          zIndex: draggedItem?.id === milestone.id ? 10 : 1
                         }}
+                        onMouseDown={(e) => handleDragStart(e, milestone)}
                       >
+                        {/* Progress fill */}
                         <div 
-                          className="h-full bg-opacity-50 rounded flex items-center px-2"
-                          style={{
-                            width: `${milestone.progress}%`,
-                            background: milestone.status === 'completed' ? '#10b981' : 
-                                       milestone.status === 'in-progress' ? '#60a5fa' : '#9ca3af'
-                          }}
-                        >
-                          <span className="text-xs text-white font-medium">
-                            {milestone.progress > 20 && `${milestone.progress}%`}
-                          </span>
-                        </div>
+                          className="absolute inset-0 bg-black/20 rounded-md"
+                          style={{ width: `${milestone.progress}%` }}
+                        />
+                        
+                        {/* Content */}
+                        <span className="relative text-xs text-white font-medium z-10">
+                          {milestone.progress}%
+                        </span>
+                        
+                        {/* Resize handle */}
+                        <div 
+                          className="absolute right-0 top-0 bottom-0 w-2 cursor-ew-resize hover:bg-white/30 group-hover:opacity-100 opacity-0 transition-opacity"
+                          onMouseDown={(e) => handleResizeStart(e, milestone.id.toString(), barWidth)}
+                        />
                       </div>
                     </div>
                   </div>
                 );
               })}
+              
+              {/* Today line */}
+              <div 
+                className="absolute top-0 bottom-0 w-0.5 bg-red-500 pointer-events-none"
+                style={{ 
+                  left: 264 + (differenceInDays(new Date(), new Date('2024-01-01')) / 30) * pixelsPerMonth,
+                  zIndex: 20
+                }}
+              >
+                <div className="absolute -top-6 -left-6 text-xs font-semibold text-red-500 bg-background px-1 rounded">
+                  Today
+                </div>
+              </div>
             </div>
             <ScrollBar orientation="horizontal" />
           </ScrollArea>
+          
+          {/* Legend */}
+          <div className="p-4 border-t bg-muted/30">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-6 text-xs">
+                <div className="flex items-center gap-2">
+                  <div className="w-3 h-3 bg-green-600 rounded" />
+                  <span>Completed</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <div className="w-3 h-3 bg-blue-600 rounded" />
+                  <span>In Progress</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <div className="w-3 h-3 bg-gray-400 rounded" />
+                  <span>Pending</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <div className="w-3 h-3 border-2 border-red-500 rounded" />
+                  <span>Critical Path</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <div className="w-8 h-0 border-t-2 border-dashed border-gray-500" />
+                  <span>Dependencies</span>
+                </div>
+              </div>
+              <div className="text-xs text-muted-foreground">
+                {milestones.length} milestones • {milestones.filter(m => m.status === 'completed').length} completed
+              </div>
+            </div>
+          </div>
         </CardContent>
       </Card>
     );
