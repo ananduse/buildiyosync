@@ -898,7 +898,7 @@ export function TimelineTabEnhanced({ project }: TimelineTabEnhancedProps) {
                 </Button>
               </PopoverTrigger>
               <PopoverContent className="w-auto p-0" align="end">
-                <CalendarComponent
+                <Calendar
                   mode="range"
                   selected={dateRange}
                   onSelect={(range: any) => setDateRange(range)}
