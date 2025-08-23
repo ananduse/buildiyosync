@@ -240,6 +240,7 @@ import ProjectList from '@/pages/projects/list/project-list';
 import EnterpriseProjectList from '@/pages/projects/list/enterprise-project-list';
 import ProjectListPage from '@/pages/projects/list/project-list-page';
 import ProjectDetails from '@/pages/projects/details/project-details';
+import ProjectDetailsView from '@/pages/projects/details/project-details-view';
 import ProjectTeamManagement from '@/pages/projects/team/team-management';
 import ProjectTaskManagement from '@/pages/projects/tasks/task-management';
 import AnalyticsDashboard from '@/pages/projects/reports/analytics-dashboard';
@@ -464,8 +465,8 @@ export function AppRoutingSetup() {
         <Route path="tasks/all" element={<ProjectTaskManagement />} />
         <Route path="reports" element={<AnalyticsDashboard />} />
         <Route path="analytics" element={<AnalyticsDashboard />} />
-        <Route path=":id" element={<ProjectDetails />} />
-        <Route path=":id/details" element={<ProjectDetails />} />
+        <Route path=":id" element={<ProjectDetailsView />} />
+        <Route path=":id/details" element={<ProjectDetailsView />} />
         <Route path=":id/dashboard" element={<ProjectDashboard />} />
         <Route path=":id/customer-view" element={<ProjectDetails />} />
         <Route path=":id/team" element={<ProjectTeamManagement />} />
