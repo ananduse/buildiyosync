@@ -511,7 +511,7 @@ export function ProjectListContent() {
   const [filters, setFilters] = useState<SimpleFilterRule[]>([]);
   const [pagination, setPagination] = useState<PaginationState>({
     pageIndex: 0,
-    pageSize: 25,
+    pageSize: 10,
   });
   const [sorting, setSorting] = useState<SortingState>([
     { id: 'project', desc: false },
@@ -624,7 +624,7 @@ export function ProjectListContent() {
               <HoverCardTrigger asChild>
                 <div className="flex items-center gap-3 cursor-pointer">
                   <div className="relative">
-                    <Avatar className="h-10 w-10 ring-1 ring-border shadow-sm">
+                    <Avatar className="h-10 w-10">
                       <AvatarImage src="" />
                       <AvatarFallback
                         className="text-xs font-semibold text-white"
@@ -662,7 +662,7 @@ export function ProjectListContent() {
               <HoverCardContent className="w-96">
                 <div className="space-y-3">
                   <div className="flex gap-3">
-                    <Avatar className="h-12 w-12 ring-1 ring-border shadow">
+                    <Avatar className="h-12 w-12">
                       <AvatarImage src="" />
                       <AvatarFallback
                         className="text-sm font-semibold text-white"
@@ -834,7 +834,7 @@ export function ProjectListContent() {
           const bg = stringToHslColor(row.original.projectManager.name, 60, 50);
           return (
             <div className="flex items-center gap-2">
-              <Avatar className="h-7 w-7 ring-1 ring-border shadow-sm">
+              <Avatar className="h-7 w-7">
                 <AvatarImage src={row.original.projectManager.avatar} />
                 <AvatarFallback
                   className="text-[10px] font-semibold text-white"
@@ -996,15 +996,24 @@ export function ProjectListContent() {
         const project = row.original;
         const avgCompliance = (project.compliance.safety + project.compliance.regulatory) / 2;
         const budgetPercentage = (project.budget.spent / project.budget.total) * 100;
+        const isOverBudget = project.budget.spent > project.budget.allocated;
+        const initials = getInitials(project.name);
+        const bg = stringToHslColor(project.name);
         
         return (
           <Card key={project.id} className="hover:shadow-lg transition-shadow cursor-pointer">
             <CardHeader className="pb-3">
               <div className="flex items-start justify-between">
-                <div className="flex items-center gap-2">
-                  <div className="p-2 rounded-lg bg-primary/10">
-                    {getProjectTypeIcon(project.projectType)}
-                  </div>
+                <div className="flex items-center gap-3">
+                  <Avatar className="h-10 w-10">
+                    <AvatarImage src="" />
+                    <AvatarFallback
+                      className="text-xs font-semibold text-white"
+                      style={{ backgroundColor: bg }}
+                    >
+                      {getProjectTypeIcon(project.projectType)}
+                    </AvatarFallback>
+                  </Avatar>
                   <div>
                     <CardTitle className="text-base">{project.name}</CardTitle>
                     <p className="text-xs text-muted-foreground">{project.customer.name}</p>
@@ -1117,9 +1126,9 @@ export function ProjectListContent() {
   );
 
   return (
-    <div className="space-y-6 p-4">
+    <div>
       {/* Enhanced Header */}
-      <div className="flex flex-col space-y-4">
+      <div className="flex flex-col space-y-4 px-6 py-4">
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
           <div className="flex items-center space-x-4">
             <h1 className="text-2xl font-bold tracking-tight">Projects</h1>
@@ -1215,7 +1224,7 @@ export function ProjectListContent() {
         </div>
 
         {/* Search and Filters */}
-        <div className="flex flex-col sm:flex-row gap-3">
+        <div className="flex flex-col sm:flex-row gap-3 px-6 pb-4">
           <div className="relative flex-1 max-w-md">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
             <Input
@@ -1276,7 +1285,7 @@ export function ProjectListContent() {
 
         {/* Bulk Actions Bar */}
         {table.getFilteredSelectedRowModel().rows.length > 0 && (
-          <div className="flex items-center gap-2 p-3 bg-muted/50 rounded-lg">
+          <div className="flex items-center gap-2 p-3 mx-6 mb-4 bg-muted/50 rounded-lg">
             <span className="text-sm font-medium">
               {table.getFilteredSelectedRowModel().rows.length} selected
             </span>
@@ -1334,7 +1343,7 @@ export function ProjectListContent() {
             columnsPinnable: true,
           }}
         >
-          <Card className="border-none shadow-none">
+          <Card className="shadow-none border-t border-l-0 border-r-0 border-b-0 rounded-none">
             <CardTable>
               <ScrollArea>
                 <DataGridTable />
@@ -1342,12 +1351,15 @@ export function ProjectListContent() {
               </ScrollArea>
             </CardTable>
             <CardFooter className="px-4 py-0">
-              <DataGridPagination className="py-1" />
+              <DataGridPagination 
+                className="py-1" 
+                sizes={[10, 20, 50, 100, 200]}
+              />
             </CardFooter>
           </Card>
         </DataGrid>
       ) : view === 'grid' ? (
-        <>
+        <div className="px-6">
           <GridView />
           <div className="flex justify-center mt-4">
             <div className="flex items-center gap-2">
@@ -1372,7 +1384,7 @@ export function ProjectListContent() {
               </Button>
             </div>
           </div>
-        </>
+        </div>
       ) : null}
 
       {/* Delete Confirmation Dialog */}
