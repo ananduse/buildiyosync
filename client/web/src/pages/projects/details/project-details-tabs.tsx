@@ -72,6 +72,7 @@ import {
 } from 'lucide-react';
 
 import { cn } from '@/lib/utils';
+import { ProjectCalendar } from './project-calendar';
 
 // Helper function to generate random avatar colors
 const getRandomAvatarColor = () => {
@@ -991,6 +992,14 @@ export function ReportsTab({ project }: { project: any }) {
           </CardContent>
         </Card>
       </div>
+    </div>
+  );
+}
+
+export function CalendarTab({ project }: { project: any }) {
+  return (
+    <div className="h-full">
+      <ProjectCalendar project={project} />
     </div>
   );
 }

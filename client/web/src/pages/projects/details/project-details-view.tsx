@@ -280,7 +280,8 @@ import {
   BudgetTab, 
   TasksTab, 
   DocumentsTab, 
-  ReportsTab, 
+  ReportsTab,
+  CalendarTab,
   ActivityTab 
 } from './project-details-tabs';
 import { TimelineTabEnhanced } from './timeline-tab-enhanced';
@@ -916,6 +917,13 @@ export default function ProjectDetailsView() {
                 Reports
               </TabsTrigger>
               <TabsTrigger 
+                value="calendar" 
+                className="data-[state=active]:border-b-2 data-[state=active]:border-primary rounded-none px-4"
+              >
+                <CalendarDays className="h-4 w-4 mr-2" />
+                Calendar
+              </TabsTrigger>
+              <TabsTrigger 
                 value="activity" 
                 className="data-[state=active]:border-b-2 data-[state=active]:border-primary rounded-none px-4"
               >
@@ -1379,6 +1387,7 @@ export default function ProjectDetailsView() {
         {activeTab === 'tasks' && <TasksTab project={project} />}
         {activeTab === 'documents' && <DocumentsTab project={project} />}
         {activeTab === 'reports' && <ReportsTab project={project} />}
+        {activeTab === 'calendar' && <CalendarTab project={project} />}
         {activeTab === 'activity' && <ActivityTab project={project} />}
       </div>
     </div>
