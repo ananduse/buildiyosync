@@ -23,7 +23,7 @@ import { useLayout } from './layout-context';
 import { cn } from '@/lib/utils';
 import { useLocation } from 'react-router-dom';
 import { useState } from 'react';
-import { ChevronRight, MoreHorizontal, Pin, PinOff, Copy, Edit, Trash2 } from 'lucide-react';
+import { ChevronRight, MoreHorizontal, Pin, PinOff, Copy, Edit, Trash2, Ellipsis } from 'lucide-react';
 import { useMemo } from 'react';
 
 // More Dropdown Menu Component for showing unpinned items
@@ -110,12 +110,12 @@ function NavMenuItem({ item }: { item: NavItem }) {
     return (
       <div className={cn(
         "relative select-none flex w-full text-start items-center",
-        "text-foreground rounded-md px-2 text-sm",
+        "text-foreground rounded-lg px-2 text-sm",
         "outline-hidden transition-colors hover:bg-accent hover:text-accent-foreground",
         "disabled:opacity-50 disabled:bg-transparent",
         "focus-visible:bg-accent focus-visible:text-accent-foreground",
         "[&_svg]:pointer-events-none [&_svg]:opacity-60 [&_svg:not([class*=size-])]:size-4 [&_svg]:shrink-0",
-        "group h-8 cursor-pointer"
+        "group py-0 h-8 justify-between cursor-pointer"
       )}>
         <MoreDropdownMenu item={item} />
       </div>
@@ -131,22 +131,22 @@ function NavMenuItem({ item }: { item: NavItem }) {
             value={item.id}
             className={cn(
               "relative select-none flex w-full text-start items-center",
-              "text-foreground rounded-md px-2 text-sm",
+              "text-foreground rounded-lg px-2 text-sm",
               "outline-hidden transition-colors hover:bg-accent hover:text-accent-foreground",
               isActive && "bg-accent text-accent-foreground",
               "disabled:opacity-50 disabled:bg-transparent",
               "focus-visible:bg-accent focus-visible:text-accent-foreground",
               "[&_svg]:pointer-events-none [&_svg]:opacity-60 [&_svg:not([class*=size-])]:size-4 [&_svg]:shrink-0",
-              "h-8 cursor-pointer"
+              "py-0 h-8 justify-between cursor-pointer"
             )}
             onClick={() => setIsExpanded(!isExpanded)}
           >
-            <div className="flex items-center gap-2 flex-1 min-w-0">
+            <div className="flex items-center gap-2 w-full">
               {/* Icon with Tooltip */}
               {item.icon && (
                 <Tooltip delayDuration={300}>
                   <TooltipTrigger asChild>
-                    <div className="flex-shrink-0"><item.icon className="h-4 w-4" strokeWidth={2.5} /></div>
+                    <div><item.icon className="h-4 w-4" strokeWidth={2.5} /></div>
                   </TooltipTrigger>
                   <TooltipContent align="center" side={sidebarCollapse ? "right" : "top"} sideOffset={sidebarCollapse ? 28 : 8}>
                     {item.title}
@@ -159,62 +159,56 @@ function NavMenuItem({ item }: { item: NavItem }) {
               
               {/* Title */}
               {!sidebarCollapse && (
-                <span className="flex-1 text-sm font-semibold truncate">
+                <span className="flex-1 text-sm font-semibold">
                   {item.title}
                 </span>
               )}
+              
+              {/* Pin/Unpin Menu - Inline before chevron */}
+              {!sidebarCollapse && item.pinnable !== false && (
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <div
+                      className="h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity inline-flex items-center justify-center rounded-md hover:bg-accent hover:text-accent-foreground cursor-pointer"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                      }}
+                    >
+                      <Ellipsis className="h-3 w-3" />
+                    </div>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end" className="w-48">
+                    <DropdownMenuItem
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        pinSidebarNavItem(item.id);
+                      }}
+                    >
+                      {isPinned ? (
+                        <>
+                          <PinOff className="mr-2 h-4 w-4" />
+                          Unpin from sidebar
+                        </>
+                      ) : (
+                        <>
+                          <Pin className="mr-2 h-4 w-4" />
+                          Pin to sidebar
+                        </>
+                      )}
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              )}
+              
+              {/* Chevron - After ellipsis */}
+              {!sidebarCollapse && (
+                <ChevronRight className={cn(
+                  "h-3 w-3 transition-transform",
+                  isExpanded && "rotate-90"
+                )} />
+              )}
             </div>
-            
-            {/* Badge */}
-            {!sidebarCollapse && item.badge && (
-              <Badge variant="secondary" className="h-5 px-1.5 text-xs mr-8">
-                {item.badge}
-              </Badge>
-            )}
           </AccordionMenuItem>
-          
-          {/* Pin/Unpin Menu - Outside AccordionMenuItem */}
-          {!sidebarCollapse && item.pinnable !== false && (
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="absolute right-7 top-1/2 -translate-y-1/2 h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity z-10"
-                  onClick={(e) => e.stopPropagation()}
-                >
-                  <MoreHorizontal className="h-3 w-3" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
-                <DropdownMenuItem onClick={() => pinSidebarNavItem(item.id)}>
-                  {isPinned ? <PinOff className="h-4 w-4 mr-2" /> : <Pin className="h-4 w-4 mr-2" />}
-                  {isPinned ? 'Unpin' : 'Pin to sidebar'}
-                </DropdownMenuItem>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem>
-                  <Copy className="h-4 w-4 mr-2" />
-                  Duplicate
-                </DropdownMenuItem>
-                <DropdownMenuItem>
-                  <Edit className="h-4 w-4 mr-2" />
-                  Edit
-                </DropdownMenuItem>
-                <DropdownMenuItem className="text-red-600">
-                  <Trash2 className="h-4 w-4 mr-2" />
-                  Remove
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-          )}
-          
-          {/* Chevron */}
-          {!sidebarCollapse && (
-            <ChevronRight className={cn(
-              "absolute right-1 top-1/2 -translate-y-1/2 h-3 w-3 transition-transform pointer-events-none",
-              isExpanded && "rotate-90"
-            )} />
-          )}
         </div>
         
         {/* Submenu items */}
@@ -230,7 +224,7 @@ function NavMenuItem({ item }: { item: NavItem }) {
                       "text-gray-700 dark:text-gray-300 rounded-lg px-2 ps-4 text-[13px]",
                       "outline-hidden transition-all duration-200",
                       "hover:bg-gray-100 hover:text-gray-900 dark:hover:bg-gray-800 dark:hover:text-gray-100",
-                      child.path && location.pathname === child.path && "bg-purple-50 text-purple-700 dark:bg-purple-950/30 dark:text-purple-400 font-medium",
+                      child.path && location.pathname === child.path && "bg-blue-50 text-blue-700 dark:bg-blue-950/30 dark:text-blue-400 font-medium",
                       "disabled:opacity-50 disabled:bg-transparent",
                       "focus-visible:bg-gray-100 focus-visible:text-gray-900",
                       "group py-1.5 min-h-[32px]"
@@ -267,87 +261,88 @@ function NavMenuItem({ item }: { item: NavItem }) {
   // Simple menu item without children
   return (
     <div className="relative group">
-      <Link to={item.path || '#'} className="block">
-        <AccordionMenuItem
-          value={item.id}
-          className={cn(
-            "relative select-none flex w-full text-start items-center",
-            "text-foreground rounded-md px-2 text-sm",
-            "outline-hidden transition-colors hover:bg-accent hover:text-accent-foreground",
-            isActive && "bg-accent text-accent-foreground",
-            "disabled:opacity-50 disabled:bg-transparent",
-            "focus-visible:bg-accent focus-visible:text-accent-foreground",
-            "[&_svg]:pointer-events-none [&_svg]:opacity-60 [&_svg:not([class*=size-])]:size-4 [&_svg]:shrink-0",
-            "h-8"
-          )}
-        >
-          <div className="flex items-center gap-2 flex-1 min-w-0">
-            {/* Icon with Tooltip */}
-            {item.icon && (
-              <Tooltip delayDuration={300}>
-                <TooltipTrigger asChild>
-                  <div className="flex-shrink-0"><item.icon className="h-4 w-4" strokeWidth={2.5} /></div>
-                </TooltipTrigger>
-                <TooltipContent align="center" side={sidebarCollapse ? "right" : "top"} sideOffset={sidebarCollapse ? 28 : 8}>
-                  {item.title}
-                  {item.path && !sidebarCollapse && (
-                    <span className="text-xs text-muted-foreground block mt-1">{item.path}</span>
-                  )}
-                </TooltipContent>
-              </Tooltip>
-            )}
-            
-            {/* Title */}
-            {!sidebarCollapse && (
-              <span className="flex-1 text-sm font-semibold truncate">
+      <AccordionMenuItem
+        value={item.id}
+        className={cn(
+          "relative select-none flex w-full text-start items-center",
+          "text-foreground rounded-lg px-2 text-sm",
+          "outline-hidden transition-colors hover:bg-accent hover:text-accent-foreground",
+          isActive && "bg-accent text-accent-foreground",
+          "disabled:opacity-50 disabled:bg-transparent",
+          "focus-visible:bg-accent focus-visible:text-accent-foreground",
+          "[&_svg]:pointer-events-none [&_svg]:opacity-60 [&_svg:not([class*=size-])]:size-4 [&_svg]:shrink-0",
+          "py-0 h-8 justify-between"
+        )}
+      >
+        <Link to={item.path || '#'} className="flex items-center gap-2 w-full">
+          {/* Icon with Tooltip */}
+          {item.icon && (
+            <Tooltip delayDuration={300}>
+              <TooltipTrigger asChild>
+                <div><item.icon className="h-4 w-4" strokeWidth={2.5} /></div>
+              </TooltipTrigger>
+              <TooltipContent align="center" side={sidebarCollapse ? "right" : "top"} sideOffset={sidebarCollapse ? 28 : 8}>
                 {item.title}
-              </span>
-            )}
-          </div>
+                {item.path && !sidebarCollapse && (
+                  <span className="text-xs text-muted-foreground block mt-1">{item.path}</span>
+                )}
+              </TooltipContent>
+            </Tooltip>
+          )}
           
-          {/* Badge */}
+          {/* Title */}
+          {!sidebarCollapse && (
+            <span className="flex-1 text-sm font-semibold">
+              {item.title}
+            </span>
+          )}
+          
+          {/* Pin/Unpin Menu - Inline */}
+          {!sidebarCollapse && item.pinnable !== false && (
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <div
+                  className="h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity inline-flex items-center justify-center rounded-md hover:bg-accent hover:text-accent-foreground cursor-pointer"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                  }}
+                >
+                  <Ellipsis className="h-3 w-3" />
+                </div>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-48">
+                <DropdownMenuItem
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    pinSidebarNavItem(item.id);
+                  }}
+                >
+                  {isPinned ? (
+                    <>
+                      <PinOff className="mr-2 h-4 w-4" />
+                      Unpin from sidebar
+                    </>
+                  ) : (
+                    <>
+                      <Pin className="mr-2 h-4 w-4" />
+                      Pin to sidebar
+                    </>
+                  )}
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          )}
+          
+          {/* Badge - After ellipsis */}
           {!sidebarCollapse && item.badge && (
-            <Badge variant="secondary" className="h-5 px-1.5 text-xs mr-6">
+            <Badge variant="secondary" className="h-5 px-1.5 text-xs">
               {item.badge}
             </Badge>
           )}
-        </AccordionMenuItem>
-      </Link>
-      
-      {/* Pin/Unpin Menu - Outside Link */}
-      {!sidebarCollapse && item.pinnable !== false && (
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button
-              variant="ghost"
-              size="icon"
-              className="absolute right-1 top-1/2 -translate-y-1/2 h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity z-10"
-              onClick={(e) => e.stopPropagation()}
-            >
-              <MoreHorizontal className="h-3 w-3" />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
-            <DropdownMenuItem onClick={() => pinSidebarNavItem(item.id)}>
-              {isPinned ? <PinOff className="h-4 w-4 mr-2" /> : <Pin className="h-4 w-4 mr-2" />}
-              {isPinned ? 'Unpin' : 'Pin to sidebar'}
-            </DropdownMenuItem>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem>
-              <Copy className="h-4 w-4 mr-2" />
-              Duplicate
-            </DropdownMenuItem>
-            <DropdownMenuItem>
-              <Edit className="h-4 w-4 mr-2" />
-              Edit
-            </DropdownMenuItem>
-            <DropdownMenuItem className="text-red-600">
-              <Trash2 className="h-4 w-4 mr-2" />
-              Remove
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
-      )}
+        </Link>
+      </AccordionMenuItem>
     </div>
   );
 }
@@ -370,8 +365,9 @@ export function SidebarDefaultNav() {
     });
   }, [pinnedNavItems, getSidebarNavItems]);
 
+  // Use the same accordion menu for all pages
   return (
-    <div className="px-3">
+    <div className="px-[var(--sidebar-space-x)]">
       <AccordionMenu className="w-full space-y-0.5">
         {navItems.map((item) => (
           <NavMenuItem key={item.id} item={item} />

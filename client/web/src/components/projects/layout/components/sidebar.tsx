@@ -8,7 +8,7 @@ export function Sidebar() {
   return (
     <aside className={cn(
       "flex flex-col fixed z-[10] start-0 top-[var(--header-height)] bottom-0 bg-background border-e border-border",
-      "[--sidebar-space-x:0.75rem]",
+      "[--sidebar-space-x:calc(var(--spacing)*2.5)]",
       "transition-[width] duration-200 ease-in-out",
       sidebarCollapse ? "w-[var(--sidebar-width-collapsed)]" : "w-[var(--sidebar-width)]"
     )}>

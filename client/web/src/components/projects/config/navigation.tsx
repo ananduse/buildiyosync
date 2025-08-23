@@ -37,6 +37,7 @@ export const projectNavItems: NavItem[] = [
     path: '/projects/dashboard',
     icon: LayoutGrid,
     pinned: true,
+    badge: 'Live',
   },
   {
     id: 'projects',
@@ -45,9 +46,22 @@ export const projectNavItems: NavItem[] = [
     pinned: true,
     children: [
       {
-        id: 'all-projects',
+        id: 'project-list',
         title: 'All Projects',
         path: '/projects/list',
+        icon: FolderOpen,
+        badge: 'CRM Style',
+      },
+      {
+        id: 'enterprise-projects',
+        title: 'Enterprise View',
+        path: '/projects/enterprise-list',
+        icon: Briefcase,
+      },
+      {
+        id: 'basic-projects',
+        title: 'Basic List',
+        path: '/projects/basic-list',
         icon: FolderOpen,
       },
       {
@@ -81,6 +95,7 @@ export const projectNavItems: NavItem[] = [
         title: 'All Tasks',
         path: '/projects/tasks',
         icon: CheckSquare,
+        badge: '156',
       },
       {
         id: 'my-tasks',
