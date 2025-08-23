@@ -285,6 +285,40 @@ import {
 } from './project-details-tabs';
 import { TimelineTabEnhanced } from './timeline-tab-enhanced';
 
+// Helper function to generate random avatar colors
+const getRandomAvatarColor = () => {
+  const colors = [
+    'bg-red-500',
+    'bg-blue-500',
+    'bg-green-500',
+    'bg-yellow-500',
+    'bg-purple-500',
+    'bg-pink-500',
+    'bg-indigo-500',
+    'bg-teal-500',
+    'bg-orange-500',
+    'bg-cyan-500',
+    'bg-emerald-500',
+    'bg-violet-500',
+    'bg-fuchsia-500',
+    'bg-rose-500',
+    'bg-sky-500',
+    'bg-amber-500',
+    'bg-lime-500',
+  ];
+  return colors[Math.floor(Math.random() * colors.length)];
+};
+
+// Store avatar colors to maintain consistency for the same user
+const avatarColors = new Map<string, string>();
+
+const getAvatarColor = (id: string) => {
+  if (!avatarColors.has(id)) {
+    avatarColors.set(id, getRandomAvatarColor());
+  }
+  return avatarColors.get(id) || 'bg-gray-500';
+};
+
 // Mock project data - in real app, this would come from API
 const generateMockProjectDetails = () => {
   return {
@@ -1233,7 +1267,7 @@ export default function ProjectDetailsView() {
                       <div className="flex items-center gap-3">
                         <Avatar>
                           <AvatarImage src={project.team.projectManager.avatar} />
-                          <AvatarFallback>
+                          <AvatarFallback className={cn(getAvatarColor(project.team.projectManager.id), 'text-white')}>
                             {project.team.projectManager.name.split(' ').map(n => n[0]).join('')}
                           </AvatarFallback>
                         </Avatar>
@@ -1254,7 +1288,7 @@ export default function ProjectDetailsView() {
                       <div className="flex items-center gap-3">
                         <Avatar>
                           <AvatarImage src={project.team.siteManager.avatar} />
-                          <AvatarFallback>
+                          <AvatarFallback className={cn(getAvatarColor(project.team.siteManager.id), 'text-white')}>
                             {project.team.siteManager.name.split(' ').map(n => n[0]).join('')}
                           </AvatarFallback>
                         </Avatar>
@@ -1275,7 +1309,7 @@ export default function ProjectDetailsView() {
                       <div className="flex items-center gap-3">
                         <Avatar>
                           <AvatarImage src="" />
-                          <AvatarFallback>
+                          <AvatarFallback className={cn(getAvatarColor(project.customer.id), 'text-white')}>
                             {project.customer.contact.name.split(' ').map(n => n[0]).join('')}
                           </AvatarFallback>
                         </Avatar>

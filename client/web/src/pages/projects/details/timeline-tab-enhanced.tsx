@@ -48,6 +48,41 @@ import {
 } from 'lucide-react';
 
 import { cn } from '@/lib/utils';
+
+// Helper function to generate random avatar colors
+const getRandomAvatarColor = () => {
+  const colors = [
+    'bg-red-500',
+    'bg-blue-500',
+    'bg-green-500',
+    'bg-yellow-500',
+    'bg-purple-500',
+    'bg-pink-500',
+    'bg-indigo-500',
+    'bg-teal-500',
+    'bg-orange-500',
+    'bg-cyan-500',
+    'bg-emerald-500',
+    'bg-violet-500',
+    'bg-fuchsia-500',
+    'bg-rose-500',
+    'bg-sky-500',
+    'bg-amber-500',
+    'bg-lime-500',
+  ];
+  return colors[Math.floor(Math.random() * colors.length)];
+};
+
+// Store avatar colors to maintain consistency for the same user
+const avatarColors = new Map<string, string>();
+
+const getAvatarColor = (id: string) => {
+  if (!avatarColors.has(id)) {
+    avatarColors.set(id, getRandomAvatarColor());
+  }
+  return avatarColors.get(id) || 'bg-gray-500';
+};
+
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -843,7 +878,7 @@ export function TimelineTabEnhanced({ project }: TimelineTabEnhancedProps) {
                               <div className="flex items-center justify-between">
                                 <div className="flex items-center gap-2">
                                   <Avatar className="h-6 w-6">
-                                    <AvatarFallback className="text-xs">
+                                    <AvatarFallback className={cn(getAvatarColor(milestone.id + milestone.assignee), 'text-white text-xs')}>
                                       {milestone.assignee.split(' ').map(n => n[0]).join('')}
                                     </AvatarFallback>
                                   </Avatar>
@@ -966,7 +1001,7 @@ export function TimelineTabEnhanced({ project }: TimelineTabEnhancedProps) {
                     <TableCell>
                       <div className="flex items-center gap-2">
                         <Avatar className="h-6 w-6">
-                          <AvatarFallback className="text-xs">
+                          <AvatarFallback className={cn(getAvatarColor(milestone.id + milestone.assignee), 'text-white text-xs')}>
                             {milestone.assignee.split(' ').map(n => n[0]).join('')}
                           </AvatarFallback>
                         </Avatar>
