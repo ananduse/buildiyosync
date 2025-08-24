@@ -1,5 +1,6 @@
 import { useState, useMemo } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { format, differenceInDays, addDays, subDays } from 'date-fns';
 import {
   Building2,
@@ -34,11 +35,6 @@ import {
   HardHat,
   Truck,
   ClipboardCheck,
-  LayoutDashboard,
-  FolderKanban,
-  Columns3,
-  Flag,
-  CalendarRange,
   FileCheck,
   AlertCircle,
   CheckCircle2,
@@ -125,6 +121,11 @@ import {
   FilePlus,
   FileX,
   FolderX,
+  LayoutGrid,
+  ListTodo,
+  FolderOpenIcon,
+  BarChart2,
+  ActivityIcon,
 } from 'lucide-react';
 
 import { cn } from '@/lib/utils';
@@ -132,7 +133,6 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Separator } from '@/components/ui/separator';
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
@@ -381,7 +381,17 @@ const generateMockProjectDetails = () => {
       delayDays: 0,
       workingDays: 520,
       holidays: 45,
-      weatherDays: 15
+      weatherDays: 15,
+      milestones: [
+        { id: 'M1', name: 'Site Preparation', status: 'completed', date: '2024-02-15' },
+        { id: 'M2', name: 'Foundation Complete', status: 'completed', date: '2024-04-30' },
+        { id: 'M3', name: 'Structural Frame 50%', status: 'in-progress', date: '2024-08-15' },
+        { id: 'M4', name: 'Structural Frame Complete', status: 'pending', date: '2024-11-30' },
+        { id: 'M5', name: 'MEP Installation', status: 'pending', date: '2025-03-15' },
+        { id: 'M6', name: 'Interior Finishing', status: 'pending', date: '2025-07-30' },
+        { id: 'M7', name: 'Final Inspection', status: 'pending', date: '2025-11-15' },
+        { id: 'M8', name: 'Project Handover', status: 'pending', date: '2025-12-31' }
+      ]
     },
 
     milestones: [
@@ -473,6 +483,7 @@ const generateMockProjectDetails = () => {
       low: 7,
       mitigated: 12,
       active: 6,
+      level: 'medium',
       categories: [
         { name: 'Weather', count: 3 },
         { name: 'Supply Chain', count: 5 },
@@ -674,7 +685,6 @@ const generateMockProjectDetails = () => {
 export default function ProjectDetailsView() {
   const { id } = useParams();
   const navigate = useNavigate();
-  const [activeTab, setActiveTab] = useState('dashboard');
   const [selectedView, setSelectedView] = useState('details');
   const [showFilters, setShowFilters] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
@@ -725,6 +735,15 @@ export default function ProjectDetailsView() {
     return TrendingDown;
   };
 
+  const getRiskColor = (level: string) => {
+    const colors: Record<string, string> = {
+      high: 'bg-red-100 text-red-700',
+      medium: 'bg-yellow-100 text-yellow-700',
+      low: 'bg-green-100 text-green-700'
+    };
+    return colors[level] || 'bg-gray-100 text-gray-700';
+  };
+
   const HealthIcon = getHealthIcon(project.performance.overallHealth);
 
   // Chart data
@@ -752,81 +771,9 @@ export default function ProjectDetailsView() {
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Top Navigation Tabs */}
-      <div className="border-b bg-white sticky top-0 z-40 shadow-sm">
-        <div className="container mx-auto max-w-[1600px] px-6">
-          <Tabs value={activeTab} onValueChange={setActiveTab}>
-            <TabsList className="h-12 p-0 bg-transparent border-0 w-full justify-start rounded-none gap-0 flex overflow-x-auto scrollbar-hide">
-              <TabsTrigger 
-                value="dashboard" 
-                className="relative h-full px-6 rounded-none bg-transparent border-b-2 border-transparent text-sm font-medium text-gray-600 transition-all duration-200 hover:text-gray-900 hover:bg-gray-50/50 data-[state=active]:text-primary data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:font-semibold flex items-center gap-2"
-              >
-                <LayoutDashboard className="h-4 w-4" />
-                Dashboard
-              </TabsTrigger>
-              <TabsTrigger 
-                value="overview" 
-                className="relative h-full px-6 rounded-none bg-transparent border-b-2 border-transparent text-sm font-medium text-gray-600 transition-all duration-200 hover:text-gray-900 hover:bg-gray-50/50 data-[state=active]:text-primary data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:font-semibold flex items-center gap-2"
-              >
-                <FolderKanban className="h-4 w-4" />
-                Projects
-              </TabsTrigger>
-              <TabsTrigger 
-                value="tasks" 
-                className="relative h-full px-6 rounded-none bg-transparent border-b-2 border-transparent text-sm font-medium text-gray-600 transition-all duration-200 hover:text-gray-900 hover:bg-gray-50/50 data-[state=active]:text-primary data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:font-semibold flex items-center gap-2"
-              >
-                <CheckSquare className="h-4 w-4" />
-                Tasks
-              </TabsTrigger>
-              <TabsTrigger 
-                value="kanban" 
-                className="relative h-full px-6 rounded-none bg-transparent border-b-2 border-transparent text-sm font-medium text-gray-600 transition-all duration-200 hover:text-gray-900 hover:bg-gray-50/50 data-[state=active]:text-primary data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:font-semibold flex items-center gap-2"
-              >
-                <Columns3 className="h-4 w-4" />
-                Kanban
-              </TabsTrigger>
-              <TabsTrigger 
-                value="milestones" 
-                className="relative h-full px-6 rounded-none bg-transparent border-b-2 border-transparent text-sm font-medium text-gray-600 transition-all duration-200 hover:text-gray-900 hover:bg-gray-50/50 data-[state=active]:text-primary data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:font-semibold flex items-center gap-2"
-              >
-                <Flag className="h-4 w-4" />
-                Milestones
-              </TabsTrigger>
-              <TabsTrigger 
-                value="timeline" 
-                className="relative h-full px-6 rounded-none bg-transparent border-b-2 border-transparent text-sm font-medium text-gray-600 transition-all duration-200 hover:text-gray-900 hover:bg-gray-50/50 data-[state=active]:text-primary data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:font-semibold flex items-center gap-2"
-              >
-                <CalendarRange className="h-4 w-4" />
-                Timeline
-              </TabsTrigger>
-              <TabsTrigger 
-                value="team" 
-                className="relative h-full px-6 rounded-none bg-transparent border-b-2 border-transparent text-sm font-medium text-gray-600 transition-all duration-200 hover:text-gray-900 hover:bg-gray-50/50 data-[state=active]:text-primary data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:font-semibold flex items-center gap-2"
-              >
-                <Users className="h-4 w-4" />
-                Team
-              </TabsTrigger>
-              <TabsTrigger 
-                value="documents" 
-                className="relative h-full px-6 rounded-none bg-transparent border-b-2 border-transparent text-sm font-medium text-gray-600 transition-all duration-200 hover:text-gray-900 hover:bg-gray-50/50 data-[state=active]:text-primary data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:font-semibold flex items-center gap-2"
-              >
-                <FileText className="h-4 w-4" />
-                Documents
-              </TabsTrigger>
-              <TabsTrigger 
-                value="reports" 
-                className="relative h-full px-6 rounded-none bg-transparent border-b-2 border-transparent text-sm font-medium text-gray-600 transition-all duration-200 hover:text-gray-900 hover:bg-gray-50/50 data-[state=active]:text-primary data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:font-semibold flex items-center gap-2"
-              >
-                <BarChart3 className="h-4 w-4" />
-                Reports
-              </TabsTrigger>
-            </TabsList>
-          </Tabs>
-        </div>
-      </div>
       {/* Header */}
       <div className="border-b bg-white">
-        <div className={cn("container mx-auto py-4 max-w-[1600px]", activeTab === 'timeline' ? "px-4" : "px-6")}>
+        <div className="container mx-auto py-4 max-w-[1600px] px-4">
           {/* Breadcrumb */}
           <Breadcrumb className="mb-4">
             <BreadcrumbList>
@@ -945,633 +892,205 @@ export default function ProjectDetailsView() {
         </div>
       </div>
 
-      {/* Content */}
-      <div className={cn("container mx-auto max-w-[1600px]", activeTab === 'timeline' ? "p-3" : "p-6")}>
-        {false && activeTab === 'overview' && (
-          <div className="space-y-6">
-            {/* Key Metrics */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+      {/* Content with Tabs */}
+      <div className="container mx-auto max-w-[1600px] p-3">
+        <Tabs defaultValue="overview" className="w-full">
+          <TabsList className="grid w-full grid-cols-9 mb-6">
+            <TabsTrigger value="overview" className="flex items-center gap-2">
+              <LayoutGrid className="h-4 w-4" />
+              Overview
+            </TabsTrigger>
+            <TabsTrigger value="timeline" className="flex items-center gap-2">
+              <Calendar className="h-4 w-4" />
+              Timeline
+            </TabsTrigger>
+            <TabsTrigger value="team" className="flex items-center gap-2">
+              <Users className="h-4 w-4" />
+              Team
+            </TabsTrigger>
+            <TabsTrigger value="budget" className="flex items-center gap-2">
+              <DollarSign className="h-4 w-4" />
+              Budget
+            </TabsTrigger>
+            <TabsTrigger value="tasks" className="flex items-center gap-2">
+              <ListTodo className="h-4 w-4" />
+              Tasks
+            </TabsTrigger>
+            <TabsTrigger value="documents" className="flex items-center gap-2">
+              <FolderOpenIcon className="h-4 w-4" />
+              Documents
+            </TabsTrigger>
+            <TabsTrigger value="reports" className="flex items-center gap-2">
+              <BarChart2 className="h-4 w-4" />
+              Reports
+            </TabsTrigger>
+            <TabsTrigger value="calendar" className="flex items-center gap-2">
+              <CalendarDays className="h-4 w-4" />
+              Calendar
+            </TabsTrigger>
+            <TabsTrigger value="activity" className="flex items-center gap-2">
+              <ActivityIcon className="h-4 w-4" />
+              Activity
+            </TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="overview" className="space-y-4">
+            <div className="grid gap-4 md:grid-cols-4">
               <Card>
-                <CardHeader className="pb-2">
-                  <CardTitle className="text-sm font-medium text-muted-foreground">Project Progress</CardTitle>
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-sm font-medium">Progress</CardTitle>
+                  <Target className="h-4 w-4 text-muted-foreground" />
                 </CardHeader>
                 <CardContent>
                   <div className="text-2xl font-bold">{project.timeline.progress}%</div>
                   <Progress value={project.timeline.progress} className="mt-2" />
-                  <p className="text-xs text-muted-foreground mt-2">
+                  <p className="text-xs text-muted-foreground mt-1">
                     {project.timeline.daysElapsed} of {project.timeline.duration} days
                   </p>
                 </CardContent>
               </Card>
 
               <Card>
-                <CardHeader className="pb-2">
-                  <CardTitle className="text-sm font-medium text-muted-foreground">Budget Status</CardTitle>
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-sm font-medium">Budget Used</CardTitle>
+                  <CircleDollarSign className="h-4 w-4 text-muted-foreground" />
                 </CardHeader>
                 <CardContent>
                   <div className="text-2xl font-bold">
                     ${(project.budget.spent / 1000000).toFixed(1)}M
                   </div>
-                  <Progress 
-                    value={budgetUtilization} 
-                    className={cn("mt-2", budgetUtilization > 90 && "[&>div]:bg-red-500")}
-                  />
-                  <p className="text-xs text-muted-foreground mt-2">
-                    {budgetUtilization.toFixed(1)}% of ${(project.budget.total / 1000000).toFixed(1)}M
+                  <Progress value={budgetUtilization} className="mt-2" />
+                  <p className="text-xs text-muted-foreground mt-1">
+                    of ${(project.budget.total / 1000000).toFixed(0)}M total
                   </p>
                 </CardContent>
               </Card>
 
               <Card>
-                <CardHeader className="pb-2">
-                  <CardTitle className="text-sm font-medium text-muted-foreground">Schedule Performance</CardTitle>
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-sm font-medium">Tasks</CardTitle>
+                  <CheckSquare className="h-4 w-4 text-muted-foreground" />
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-bold flex items-center gap-2">
-                    {project.performance.spi}
-                    {project.performance.spi >= 1 ? (
-                      <ArrowUp className="h-4 w-4 text-green-600" />
-                    ) : (
-                      <ArrowDown className="h-4 w-4 text-red-600" />
-                    )}
+                  <div className="text-2xl font-bold">
+                    {project.tasks.completed}/{project.tasks.total}
                   </div>
-                  <div className="mt-2">
-                    <Badge variant={project.timeline.isDelayed ? "destructive" : "success"}>
-                      {project.timeline.isDelayed ? `${project.timeline.delayDays} days delayed` : 'On Schedule'}
-                    </Badge>
-                  </div>
-                  <p className="text-xs text-muted-foreground mt-2">
-                    {project.timeline.daysRemaining} days remaining
+                  <Progress value={(project.tasks.completed / project.tasks.total) * 100} className="mt-2" />
+                  <p className="text-xs text-muted-foreground mt-1">
+                    {project.tasks.inProgress} in progress
                   </p>
                 </CardContent>
               </Card>
 
               <Card>
-                <CardHeader className="pb-2">
-                  <CardTitle className="text-sm font-medium text-muted-foreground">Team Size</CardTitle>
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-sm font-medium">Team</CardTitle>
+                  <Users className="h-4 w-4 text-muted-foreground" />
                 </CardHeader>
                 <CardContent>
                   <div className="text-2xl font-bold">{project.team.totalMembers}</div>
-                  <div className="flex gap-4 mt-2 text-xs">
-                    <div>
-                      <span className="text-muted-foreground">Employees:</span>
-                      <span className="ml-1 font-medium">{project.team.employees}</span>
-                    </div>
-                    <div>
-                      <span className="text-muted-foreground">Contractors:</span>
-                      <span className="ml-1 font-medium">{project.team.contractors}</span>
-                    </div>
+                  <div className="flex items-center gap-4 mt-2">
+                    <span className="text-xs text-muted-foreground">
+                      {project.team.employees} employees
+                    </span>
+                    <span className="text-xs text-muted-foreground">
+                      {project.team.contractors} contractors
+                    </span>
                   </div>
-                  <p className="text-xs text-muted-foreground mt-2">
-                    {project.team.departments.length} departments
-                  </p>
                 </CardContent>
               </Card>
             </div>
 
-            {/* Main Content Grid */}
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-              {/* Left Column - 2 cols */}
-              <div className="lg:col-span-2 space-y-6">
-                {/* Progress Overview */}
-                <Card>
-                  <CardHeader>
-                    <CardTitle>Progress Overview</CardTitle>
-                    <CardDescription>Planned vs Actual progress comparison</CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <ResponsiveContainer width="100%" height={300}>
-                      <LineChart data={progressChartData}>
-                        <CartesianGrid strokeDasharray="3 3" />
-                        <XAxis dataKey="month" />
-                        <YAxis />
-                        <RechartsTooltip />
-                        <Legend />
-                        <Line 
-                          type="monotone" 
-                          dataKey="planned" 
-                          stroke="#3b82f6" 
-                          strokeWidth={2}
-                          name="Planned"
-                        />
-                        <Line 
-                          type="monotone" 
-                          dataKey="actual" 
-                          stroke="#10b981" 
-                          strokeWidth={2}
-                          name="Actual"
-                        />
-                      </LineChart>
-                    </ResponsiveContainer>
-                  </CardContent>
-                </Card>
-
-                {/* Milestones */}
-                <Card>
-                  <CardHeader>
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <CardTitle>Milestones</CardTitle>
-                        <CardDescription>Key project milestones and deliverables</CardDescription>
-                      </div>
-                      <Button variant="outline" size="sm">
-                        <Plus className="h-4 w-4 mr-2" />
-                        Add Milestone
-                      </Button>
-                    </div>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="space-y-4">
-                      {project.milestones.map((milestone) => (
-                        <div key={milestone.id} className="flex items-center gap-4">
-                          <div className={cn(
-                            "h-10 w-10 rounded-full flex items-center justify-center",
-                            milestone.status === 'completed' ? "bg-green-100" :
-                            milestone.status === 'in-progress' ? "bg-blue-100" :
-                            "bg-gray-100"
-                          )}>
-                            {milestone.status === 'completed' ? (
-                              <CheckCircle2 className="h-5 w-5 text-green-600" />
-                            ) : milestone.status === 'in-progress' ? (
-                              <Timer className="h-5 w-5 text-blue-600" />
-                            ) : (
-                              <Circle className="h-5 w-5 text-gray-400" />
-                            )}
-                          </div>
-                          
-                          <div className="flex-1">
-                            <div className="flex items-center gap-2">
-                              <p className="font-medium">{milestone.name}</p>
-                              {milestone.status === 'in-progress' && milestone.progress && (
-                                <Badge variant="outline" className="text-xs">
-                                  {milestone.progress}%
-                                </Badge>
-                              )}
-                            </div>
-                            <p className="text-sm text-muted-foreground">
-                              {milestone.status === 'completed' && milestone.completedDate
-                                ? `Completed on ${format(new Date(milestone.completedDate), 'MMM dd, yyyy')}`
-                                : `Due ${format(new Date(milestone.date), 'MMM dd, yyyy')}`}
-                            </p>
-                          </div>
-
-                          {milestone.status === 'in-progress' && milestone.progress && (
-                            <Progress value={milestone.progress} className="w-24" />
-                          )}
-                        </div>
-                      ))}
-                    </div>
-                  </CardContent>
-                </Card>
-
-                {/* Recent Activities */}
-                <Card>
-                  <CardHeader>
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <CardTitle>Recent Activities</CardTitle>
-                        <CardDescription>Latest project updates and changes</CardDescription>
-                      </div>
-                      <Button variant="ghost" size="sm">
-                        View All
-                        <ChevronRight className="h-4 w-4 ml-1" />
-                      </Button>
-                    </div>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="space-y-4">
-                      {project.activities.map((activity) => {
-                        const Icon = activity.icon;
-                        return (
-                          <div key={activity.id} className="flex gap-3">
-                            <div className={cn(
-                              "h-8 w-8 rounded-full flex items-center justify-center bg-gray-100"
-                            )}>
-                              <Icon className={cn("h-4 w-4", activity.color)} />
-                            </div>
-                            <div className="flex-1">
-                              <p className="text-sm font-medium">{activity.title}</p>
-                              <p className="text-sm text-muted-foreground">{activity.description}</p>
-                              <div className="flex items-center gap-4 mt-1">
-                                <p className="text-xs text-muted-foreground">{activity.user}</p>
-                                <p className="text-xs text-muted-foreground">{activity.timestamp}</p>
-                              </div>
-                            </div>
-                          </div>
-                        );
-                      })}
-                    </div>
-                  </CardContent>
-                </Card>
-              </div>
-
-              {/* Right Column - 1 col */}
-              <div className="space-y-6">
-                {/* Project Health */}
-                <Card>
-                  <CardHeader>
-                    <CardTitle>Project Health</CardTitle>
-                  </CardHeader>
-                  <CardContent className="space-y-4">
-                    <div className="space-y-3">
-                      <div className="flex items-center justify-between">
-                        <span className="text-sm">Schedule</span>
-                        <div className="flex items-center gap-2">
-                          <Progress value={project.performance.spi * 100} className="w-24" />
-                          <span className="text-sm font-medium">{(project.performance.spi * 100).toFixed(0)}%</span>
-                        </div>
-                      </div>
-                      <div className="flex items-center justify-between">
-                        <span className="text-sm">Budget</span>
-                        <div className="flex items-center gap-2">
-                          <Progress value={project.performance.cpi * 100} className="w-24" />
-                          <span className="text-sm font-medium">{(project.performance.cpi * 100).toFixed(0)}%</span>
-                        </div>
-                      </div>
-                      <div className="flex items-center justify-between">
-                        <span className="text-sm">Quality</span>
-                        <div className="flex items-center gap-2">
-                          <Progress value={project.quality.score} className="w-24" />
-                          <span className="text-sm font-medium">{project.quality.score}%</span>
-                        </div>
-                      </div>
-                      <div className="flex items-center justify-between">
-                        <span className="text-sm">Safety</span>
-                        <div className="flex items-center gap-2">
-                          <Progress value={project.safety.score} className="w-24" />
-                          <span className="text-sm font-medium">{project.safety.score}%</span>
-                        </div>
-                      </div>
-                      <div className="flex items-center justify-between">
-                        <span className="text-sm">Compliance</span>
-                        <div className="flex items-center gap-2">
-                          <Progress value={project.compliance.overall} className="w-24" />
-                          <span className="text-sm font-medium">{project.compliance.overall.toFixed(0)}%</span>
-                        </div>
-                      </div>
-                    </div>
-                    
-                    <Separator />
-                    
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm font-medium">Overall Health</span>
-                      <Badge className={cn(
-                        "capitalize",
-                        project.performance.overallHealth === 'excellent' && "bg-green-100 text-green-700",
-                        project.performance.overallHealth === 'good' && "bg-blue-100 text-blue-700",
-                        project.performance.overallHealth === 'fair' && "bg-yellow-100 text-yellow-700",
-                        project.performance.overallHealth === 'poor' && "bg-orange-100 text-orange-700",
-                        project.performance.overallHealth === 'critical' && "bg-red-100 text-red-700"
-                      )}>
-                        {project.performance.overallHealth}
-                      </Badge>
-                    </div>
-                  </CardContent>
-                </Card>
-
-                {/* Budget Breakdown */}
-                <Card>
-                  <CardHeader>
-                    <CardTitle>Budget Breakdown</CardTitle>
-                    <CardDescription>
-                      Total: ${(project.budget.total / 1000000).toFixed(1)}M
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <ResponsiveContainer width="100%" height={200}>
-                      <PieChart>
-                        <Pie
-                          data={budgetChartData}
-                          cx="50%"
-                          cy="50%"
-                          innerRadius={60}
-                          outerRadius={80}
-                          paddingAngle={2}
-                          dataKey="value"
-                        >
-                          {budgetChartData.map((entry, index) => (
-                            <Cell key={`cell-${index}`} fill={entry.fill} />
-                          ))}
-                        </Pie>
-                        <RechartsTooltip 
-                          formatter={(value: number) => `$${(value / 1000000).toFixed(1)}M`}
-                        />
-                      </PieChart>
-                    </ResponsiveContainer>
-                    
-                    <div className="space-y-2 mt-4">
-                      {budgetChartData.map((item) => (
-                        <div key={item.name} className="flex items-center justify-between text-sm">
-                          <div className="flex items-center gap-2">
-                            <div className="h-3 w-3 rounded" style={{ backgroundColor: item.fill }} />
-                            <span>{item.name}</span>
-                          </div>
-                          <span className="font-medium">
-                            ${(item.value / 1000000).toFixed(1)}M
-                          </span>
-                        </div>
-                      ))}
-                    </div>
-                  </CardContent>
-                </Card>
-
-                {/* Key Contacts */}
-                <Card>
-                  <CardHeader>
-                    <CardTitle>Key Contacts</CardTitle>
-                  </CardHeader>
-                  <CardContent className="space-y-4">
-                    <div className="space-y-3">
-                      <div className="flex items-center gap-3">
-                        <Avatar>
-                          <AvatarImage src={project.team.projectManager.avatar} />
-                          <AvatarFallback className={cn(getAvatarColor(project.team.projectManager.id), 'text-white font-bold text-sm')}>
-                            {project.team.projectManager.name.split(' ').map(n => n[0]).join('')}
-                          </AvatarFallback>
-                        </Avatar>
-                        <div className="flex-1">
-                          <p className="text-sm font-medium">{project.team.projectManager.name}</p>
-                          <p className="text-xs text-muted-foreground">Project Manager</p>
-                        </div>
-                        <div className="flex gap-1">
-                          <Button variant="ghost" size="icon" className="h-8 w-8">
-                            <Phone className="h-3 w-3" />
-                          </Button>
-                          <Button variant="ghost" size="icon" className="h-8 w-8">
-                            <Mail className="h-3 w-3" />
-                          </Button>
-                        </div>
-                      </div>
-
-                      <div className="flex items-center gap-3">
-                        <Avatar>
-                          <AvatarImage src={project.team.siteManager.avatar} />
-                          <AvatarFallback className={cn(getAvatarColor(project.team.siteManager.id), 'text-white font-bold text-sm')}>
-                            {project.team.siteManager.name.split(' ').map(n => n[0]).join('')}
-                          </AvatarFallback>
-                        </Avatar>
-                        <div className="flex-1">
-                          <p className="text-sm font-medium">{project.team.siteManager.name}</p>
-                          <p className="text-xs text-muted-foreground">Site Manager</p>
-                        </div>
-                        <div className="flex gap-1">
-                          <Button variant="ghost" size="icon" className="h-8 w-8">
-                            <Phone className="h-3 w-3" />
-                          </Button>
-                          <Button variant="ghost" size="icon" className="h-8 w-8">
-                            <Mail className="h-3 w-3" />
-                          </Button>
-                        </div>
-                      </div>
-
-                      <div className="flex items-center gap-3">
-                        <Avatar>
-                          <AvatarImage src="" />
-                          <AvatarFallback className={cn(getAvatarColor(project.customer.id), 'text-white font-bold text-sm')}>
-                            {project.customer.contact.name.split(' ').map(n => n[0]).join('')}
-                          </AvatarFallback>
-                        </Avatar>
-                        <div className="flex-1">
-                          <p className="text-sm font-medium">{project.customer.contact.name}</p>
-                          <p className="text-xs text-muted-foreground">Client Representative</p>
-                        </div>
-                        <div className="flex gap-1">
-                          <Button variant="ghost" size="icon" className="h-8 w-8">
-                            <Phone className="h-3 w-3" />
-                          </Button>
-                          <Button variant="ghost" size="icon" className="h-8 w-8">
-                            <Mail className="h-3 w-3" />
-                          </Button>
-                        </div>
-                      </div>
-                    </div>
-                    
-                    <Button variant="outline" className="w-full" size="sm">
-                      View All Contacts
-                    </Button>
-                  </CardContent>
-                </Card>
-
-                {/* Quick Actions */}
-                <Card>
-                  <CardHeader>
-                    <CardTitle>Quick Actions</CardTitle>
-                  </CardHeader>
-                  <CardContent className="grid grid-cols-2 gap-2">
-                    <Button variant="outline" size="sm" className="justify-start">
-                      <FileText className="h-4 w-4 mr-2" />
-                      New Report
-                    </Button>
-                    <Button variant="outline" size="sm" className="justify-start">
-                      <Users className="h-4 w-4 mr-2" />
-                      Add Member
-                    </Button>
-                    <Button variant="outline" size="sm" className="justify-start">
-                      <Calendar className="h-4 w-4 mr-2" />
-                      Schedule Meeting
-                    </Button>
-                    <Button variant="outline" size="sm" className="justify-start">
-                      <ClipboardCheck className="h-4 w-4 mr-2" />
-                      Create Task
-                    </Button>
-                    <Button variant="outline" size="sm" className="justify-start">
-                      <Upload className="h-4 w-4 mr-2" />
-                      Upload File
-                    </Button>
-                    <Button variant="outline" size="sm" className="justify-start">
-                      <AlertTriangle className="h-4 w-4 mr-2" />
-                      Report Issue
-                    </Button>
-                  </CardContent>
-                </Card>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* Timeline Tab */}
-        {/* Dashboard Tab */}
-        {activeTab === 'dashboard' && (
-          <div className="space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-              <Card>
-                <CardHeader className="pb-3">
-                  <CardTitle className="text-base font-medium">Total Tasks</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold">124</div>
-                  <p className="text-xs text-muted-foreground mt-1">+12% from last month</p>
-                </CardContent>
-              </Card>
-              <Card>
-                <CardHeader className="pb-3">
-                  <CardTitle className="text-base font-medium">In Progress</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold">42</div>
-                  <p className="text-xs text-muted-foreground mt-1">28 completed this week</p>
-                </CardContent>
-              </Card>
-              <Card>
-                <CardHeader className="pb-3">
-                  <CardTitle className="text-base font-medium">Team Members</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold">16</div>
-                  <p className="text-xs text-muted-foreground mt-1">2 new this month</p>
-                </CardContent>
-              </Card>
-              <Card>
-                <CardHeader className="pb-3">
-                  <CardTitle className="text-base font-medium">Completion</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold">68%</div>
-                  <Progress value={68} className="mt-2" />
-                </CardContent>
-              </Card>
-            </div>
-          </div>
-        )}
-
-        {/* Projects Tab (was Overview) */}
-        {activeTab === 'overview' && (
-          <div className="space-y-6">
-            {/* Previous overview content */}
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-              {/* Left Column - 2 cols */}
-              <div className="lg:col-span-2 space-y-6">
-                {/* Project Description */}
-                <Card>
-                  <CardHeader>
-                    <CardTitle>Project Overview</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <p className="text-sm text-muted-foreground mb-4">
-                      {project.description}
-                    </p>
-                    <div className="grid grid-cols-2 gap-4">
-                      <div>
-                        <p className="text-xs text-muted-foreground mb-1">Project Type</p>
-                        <p className="text-sm font-medium">{project.type}</p>
-                      </div>
-                      <div>
-                        <p className="text-xs text-muted-foreground mb-1">Contract Value</p>
-                        <p className="text-sm font-medium">${project.budget.allocated.toLocaleString()}</p>
-                      </div>
-                      <div>
-                        <p className="text-xs text-muted-foreground mb-1">Completion</p>
-                        <div className="flex items-center gap-2">
-                          <Progress value={project.timeline.progress} className="flex-1" />
-                          <span className="text-sm font-medium">{project.timeline.progress}%</span>
-                        </div>
-                      </div>
-                      <div>
-                        <p className="text-xs text-muted-foreground mb-1">Risk Level</p>
-                        <Badge className={getRiskColor(project.risks.level)}>
-                          {project.risks.level} Risk
-                        </Badge>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* Tasks Tab */}
-        {activeTab === 'tasks' && <TasksTab project={project} />}
-
-        {/* Kanban Tab */}
-        {activeTab === 'kanban' && (
-          <div className="space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-4">
-              <div className="space-y-3">
-                <div className="flex items-center justify-between p-2 bg-muted rounded-lg">
-                  <h3 className="font-medium text-sm">To Do</h3>
-                  <Badge variant="secondary">8</Badge>
-                </div>
-                <div className="space-y-2">
-                  <Card className="p-3 cursor-move hover:shadow-md transition-shadow">
-                    <h4 className="text-sm font-medium mb-2">Update project timeline</h4>
-                    <div className="flex items-center justify-between">
-                      <Badge variant="outline" className="text-xs">High</Badge>
-                      <Avatar className="h-6 w-6">
-                        <AvatarFallback className="text-xs">JD</AvatarFallback>
-                      </Avatar>
-                    </div>
-                  </Card>
-                </div>
-              </div>
-              <div className="space-y-3">
-                <div className="flex items-center justify-between p-2 bg-muted rounded-lg">
-                  <h3 className="font-medium text-sm">In Progress</h3>
-                  <Badge variant="secondary">5</Badge>
-                </div>
-              </div>
-              <div className="space-y-3">
-                <div className="flex items-center justify-between p-2 bg-muted rounded-lg">
-                  <h3 className="font-medium text-sm">Review</h3>
-                  <Badge variant="secondary">3</Badge>
-                </div>
-              </div>
-              <div className="space-y-3">
-                <div className="flex items-center justify-between p-2 bg-muted rounded-lg">
-                  <h3 className="font-medium text-sm">Done</h3>
-                  <Badge variant="secondary">12</Badge>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* Milestones Tab */}
-        {activeTab === 'milestones' && (
-          <div className="space-y-4">
+            {/* Project Description */}
             <Card>
               <CardHeader>
-                <CardTitle>Project Milestones</CardTitle>
-                <CardDescription>Key deliverables and checkpoints</CardDescription>
+                <CardTitle>Project Description</CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="space-y-4">
-                  {project.timeline.milestones.map((milestone) => (
-                    <div key={milestone.id} className="flex items-center gap-4 p-4 border rounded-lg">
-                      <div className={cn(
-                        "w-3 h-3 rounded-full",
-                        milestone.status === 'completed' ? 'bg-green-500' :
-                        milestone.status === 'in-progress' ? 'bg-blue-500' :
-                        'bg-gray-300'
-                      )} />
-                      <div className="flex-1">
-                        <h4 className="font-medium">{milestone.name}</h4>
-                        <p className="text-sm text-muted-foreground">
-                          {format(new Date(milestone.date), 'MMM dd, yyyy')}
-                        </p>
-                      </div>
-                      <Badge variant={milestone.status === 'completed' ? 'default' : 'outline'}>
-                        {milestone.status}
-                      </Badge>
-                    </div>
-                  ))}
-                </div>
+                <p className="text-muted-foreground">{project.description}</p>
               </CardContent>
             </Card>
-          </div>
-        )}
 
-        {/* Timeline Tab */}
-        {activeTab === 'timeline' && <TimelineTabEnhanced project={project} />}
+            {/* Key Metrics */}
+            <div className="grid gap-4 md:grid-cols-2">
+              <Card>
+                <CardHeader>
+                  <CardTitle>Schedule Performance</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <ResponsiveContainer width="100%" height={200}>
+                    <LineChart data={progressChartData}>
+                      <CartesianGrid strokeDasharray="3 3" />
+                      <XAxis dataKey="month" />
+                      <YAxis />
+                      <RechartsTooltip />
+                      <Line type="monotone" dataKey="planned" stroke="#94a3b8" strokeWidth={2} />
+                      <Line type="monotone" dataKey="actual" stroke="#3b82f6" strokeWidth={2} />
+                    </LineChart>
+                  </ResponsiveContainer>
+                </CardContent>
+              </Card>
 
-        {/* Team Tab */}
-        {activeTab === 'team' && <TeamTab project={project} />}
+              <Card>
+                <CardHeader>
+                  <CardTitle>Budget Distribution</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <ResponsiveContainer width="100%" height={200}>
+                    <PieChart>
+                      <Pie
+                        data={budgetChartData}
+                        cx="50%"
+                        cy="50%"
+                        innerRadius={60}
+                        outerRadius={80}
+                        paddingAngle={2}
+                        dataKey="value"
+                      >
+                        {budgetChartData.map((entry, index) => (
+                          <Cell key={`cell-${index}`} fill={entry.fill} />
+                        ))}
+                      </Pie>
+                      <RechartsTooltip />
+                    </PieChart>
+                  </ResponsiveContainer>
+                </CardContent>
+              </Card>
+            </div>
+          </TabsContent>
 
-        {/* Documents Tab */}
-        {activeTab === 'documents' && <DocumentsTab project={project} />}
+          <TabsContent value="timeline">
+            <TimelineTabEnhanced project={project} />
+          </TabsContent>
 
-        {/* Reports Tab */}
-        {activeTab === 'reports' && <ReportsTab project={project} />}
+          <TabsContent value="team">
+            <TeamTab project={project} />
+          </TabsContent>
+
+          <TabsContent value="budget">
+            <BudgetTab project={project} />
+          </TabsContent>
+
+          <TabsContent value="tasks">
+            <TasksTab project={project} />
+          </TabsContent>
+
+          <TabsContent value="documents">
+            <DocumentsTab project={project} />
+          </TabsContent>
+
+          <TabsContent value="reports">
+            <ReportsTab project={project} />
+          </TabsContent>
+
+          <TabsContent value="calendar">
+            <CalendarTab project={project} />
+          </TabsContent>
+
+          <TabsContent value="activity">
+            <ActivityTab project={project} />
+          </TabsContent>
+        </Tabs>
       </div>
     </div>
   );

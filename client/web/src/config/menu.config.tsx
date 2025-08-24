@@ -68,6 +68,43 @@ export const MENU_SIDEBAR: MenuConfig = [
       { title: 'Dark Sidebar', path: '/dark-sidebar' },
     ],
   },
+  { heading: 'Project Management' },
+  {
+    title: 'Project Dashboard',
+    icon: LayoutGrid,
+    path: '/projects/dashboard',
+  },
+  {
+    title: 'All Projects',
+    icon: Briefcase,
+    children: [
+      { title: 'Project List', path: '/projects/list' },
+      { title: 'Project Grid', path: '/projects/grid' },
+      { title: 'Project Timeline', path: '/projects/timeline' },
+    ],
+  },
+  {
+    title: 'Project Views',
+    icon: Eye,
+    children: [
+      { title: 'Kanban Board', path: '/projects/kanban' },
+      { title: 'Task Management', path: '/projects/tasks' },
+      { title: 'Milestones', path: '/projects/milestones' },
+      { title: 'Team Management', path: '/projects/team' },
+      { title: 'Documents', path: '/projects/documents' },
+      { title: 'Reports', path: '/projects/reports' },
+    ],
+  },
+  {
+    title: 'Project Operations',
+    icon: Settings,
+    children: [
+      { title: 'Create Project', path: '/projects/create' },
+      { title: 'Project Templates', path: '/projects/templates' },
+      { title: 'Resource Management', path: '/projects/resources' },
+      { title: 'Budget Planning', path: '/projects/budget' },
+    ],
+  },
   { heading: 'Lead Management' },
   {
     title: 'Leads Overview',
