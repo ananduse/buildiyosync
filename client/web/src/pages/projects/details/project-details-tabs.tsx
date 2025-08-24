@@ -74,26 +74,31 @@ import {
 import { cn } from '@/lib/utils';
 import { ProjectCalendar } from './project-calendar';
 
-// Helper function to generate random avatar colors
+// Helper function to generate random avatar colors matching the team reference
 const getRandomAvatarColor = () => {
   const colors = [
-    'bg-red-500',
-    'bg-blue-500',
-    'bg-green-500',
-    'bg-yellow-500',
-    'bg-purple-500',
-    'bg-pink-500',
-    'bg-indigo-500',
-    'bg-teal-500',
-    'bg-orange-500',
-    'bg-cyan-500',
-    'bg-emerald-500',
-    'bg-violet-500',
-    'bg-fuchsia-500',
-    'bg-rose-500',
-    'bg-sky-500',
-    'bg-amber-500',
-    'bg-lime-500',
+    'bg-red-600',      // Red
+    'bg-orange-600',   // Orange  
+    'bg-amber-600',    // Amber
+    'bg-yellow-600',   // Yellow
+    'bg-lime-600',     // Lime
+    'bg-green-600',    // Green
+    'bg-emerald-600',  // Emerald
+    'bg-teal-600',     // Teal
+    'bg-cyan-600',     // Cyan
+    'bg-sky-600',      // Sky
+    'bg-blue-600',     // Blue
+    'bg-indigo-600',   // Indigo
+    'bg-violet-600',   // Violet
+    'bg-purple-600',   // Purple
+    'bg-fuchsia-600',  // Fuchsia
+    'bg-pink-600',     // Pink
+    'bg-rose-600',     // Rose
+    'bg-stone-600',    // Stone
+    'bg-neutral-600',  // Neutral
+    'bg-zinc-600',     // Zinc
+    'bg-gray-700',     // Gray (darker)
+    'bg-slate-700',    // Slate (darker)
   ];
   return colors[Math.floor(Math.random() * colors.length)];
 };
@@ -362,7 +367,7 @@ export function TeamTab({ project }: { project: any }) {
                     <div className="flex items-center gap-3">
                       <Avatar>
                         <AvatarImage src={member.avatar} />
-                        <AvatarFallback className={cn(getAvatarColor(member.id), 'text-white')}>
+                        <AvatarFallback className={cn(getAvatarColor(member.id), 'text-white font-bold text-sm')}>
                           {member.name.split(' ').map(n => n[0]).join('')}
                         </AvatarFallback>
                       </Avatar>
@@ -740,7 +745,7 @@ export function TasksTab({ project }: { project: any }) {
                   <TableCell>
                     <div className="flex items-center gap-2">
                       <Avatar className="h-6 w-6">
-                        <AvatarFallback className={cn(getAvatarColor(task.id + task.assignee), 'text-white text-xs')}>
+                        <AvatarFallback className={cn(getAvatarColor(task.id + task.assignee), 'text-white font-bold text-xs')}>
                           {task.assignee.split(' ').map(n => n[0]).join('')}
                         </AvatarFallback>
                       </Avatar>

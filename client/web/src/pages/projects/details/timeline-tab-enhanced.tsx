@@ -10,6 +10,7 @@ import {
   Download,
   ChevronLeft,
   ChevronRight,
+  ChevronDown,
   CalendarDays,
   Timer,
   CheckCircle2,
@@ -49,26 +50,31 @@ import {
 
 import { cn } from '@/lib/utils';
 
-// Helper function to generate random avatar colors
+// Helper function to generate random avatar colors matching the team reference
 const getRandomAvatarColor = () => {
   const colors = [
-    'bg-red-500',
-    'bg-blue-500',
-    'bg-green-500',
-    'bg-yellow-500',
-    'bg-purple-500',
-    'bg-pink-500',
-    'bg-indigo-500',
-    'bg-teal-500',
-    'bg-orange-500',
-    'bg-cyan-500',
-    'bg-emerald-500',
-    'bg-violet-500',
-    'bg-fuchsia-500',
-    'bg-rose-500',
-    'bg-sky-500',
-    'bg-amber-500',
-    'bg-lime-500',
+    'bg-red-600',      // Red
+    'bg-orange-600',   // Orange  
+    'bg-amber-600',    // Amber
+    'bg-yellow-600',   // Yellow
+    'bg-lime-600',     // Lime
+    'bg-green-600',    // Green
+    'bg-emerald-600',  // Emerald
+    'bg-teal-600',     // Teal
+    'bg-cyan-600',     // Cyan
+    'bg-sky-600',      // Sky
+    'bg-blue-600',     // Blue
+    'bg-indigo-600',   // Indigo
+    'bg-violet-600',   // Violet
+    'bg-purple-600',   // Purple
+    'bg-fuchsia-600',  // Fuchsia
+    'bg-pink-600',     // Pink
+    'bg-rose-600',     // Rose
+    'bg-stone-600',    // Stone
+    'bg-neutral-600',  // Neutral
+    'bg-zinc-600',     // Zinc
+    'bg-gray-700',     // Gray (darker)
+    'bg-slate-700',    // Slate (darker)
   ];
   return colors[Math.floor(Math.random() * colors.length)];
 };
@@ -168,152 +174,347 @@ export function TimelineTabEnhanced({ project }: TimelineTabEnhancedProps) {
   const [editingMilestone, setEditingMilestone] = useState<any>(null);
   const [showEditDialog, setShowEditDialog] = useState(false);
 
-  // Enhanced milestones with dependencies and resources
+  // Enhanced milestones with sub-tasks and dependencies
   const enhancedMilestones = [
     {
       id: 1,
-      name: 'Site Preparation',
-      status: 'completed',
-      startDate: '2024-01-20',
-      endDate: '2024-02-15',
-      actualEndDate: '2024-02-10',
-      progress: 100,
-      assignee: 'Mike Chen',
-      budget: 5000000,
+      name: 'Real Estate Project Management',
+      type: 'project',
+      status: 'in-progress',
+      startDate: '2024-08-06',
+      endDate: '2025-05-01',
+      progress: 16.67,
+      assignee: '',
+      budget: 100000000,
       dependencies: [],
-      tasks: 15,
-      completedTasks: 15,
+      expanded: true,
+      risk: 'medium',
       criticalPath: true,
-      risk: 'low',
-      description: 'Site clearing, grading, and preparation for construction'
+      tasks: 11,
+      completedTasks: 2,
+      description: 'Complete real estate development project',
+      subtasks: [
+        {
+          id: 11,
+          parentId: 1,
+          name: 'Awarding of the construction contract',
+          type: 'task',
+          status: 'completed',
+          startDate: '2024-08-06',
+          endDate: '2024-08-12',
+          progress: 100,
+          assignee: 'Sarah Johnson',
+          dependencies: []
+        },
+        {
+          id: 12,
+          parentId: 1,
+          name: 'Site visit and evaluation',
+          type: 'task',
+          status: 'completed',
+          startDate: '2024-08-07',
+          endDate: '2024-08-09',
+          progress: 100,
+          assignee: 'John Smith',
+          dependencies: []
+        },
+        {
+          id: 13,
+          parentId: 1,
+          name: 'Site cleaning and preparation',
+          type: 'task',
+          status: 'in-progress',
+          startDate: '2024-08-10',
+          endDate: '2024-08-20',
+          progress: 60,
+          assignee: 'Mike Chen',
+          dependencies: [12]
+        },
+        {
+          id: 14,
+          parentId: 1,
+          name: 'Preparation of utilities and equipment',
+          type: 'task',
+          status: 'in-progress',
+          startDate: '2024-08-12',
+          endDate: '2024-08-25',
+          progress: 40,
+          assignee: 'Emily Davis',
+          dependencies: [13]
+        },
+        {
+          id: 15,
+          parentId: 1,
+          name: 'Site excavation',
+          type: 'task',
+          status: 'pending',
+          startDate: '2024-08-21',
+          endDate: '2024-09-10',
+          progress: 0,
+          assignee: 'Robert Wilson',
+          dependencies: [13]
+        },
+        {
+          id: 16,
+          parentId: 1,
+          name: 'Installment of foundation and backfill',
+          type: 'task',
+          status: 'pending',
+          startDate: '2024-09-11',
+          endDate: '2024-10-15',
+          progress: 0,
+          assignee: 'Lisa Anderson',
+          dependencies: [15]
+        },
+        {
+          id: 17,
+          parentId: 1,
+          name: 'Floors and wall erection',
+          type: 'task',
+          status: 'pending',
+          startDate: '2024-10-16',
+          endDate: '2024-12-30',
+          progress: 0,
+          assignee: 'David Brown',
+          dependencies: [16]
+        },
+        {
+          id: 18,
+          parentId: 1,
+          name: 'Roof installment',
+          type: 'task',
+          status: 'pending',
+          startDate: '2025-01-02',
+          endDate: '2025-02-15',
+          progress: 0,
+          assignee: 'Jennifer Lee',
+          dependencies: [17]
+        },
+        {
+          id: 19,
+          parentId: 1,
+          name: 'Wall exterior and interior finishing',
+          type: 'task',
+          status: 'pending',
+          startDate: '2025-02-16',
+          endDate: '2025-03-30',
+          progress: 0,
+          assignee: 'Chris Martin',
+          dependencies: [18]
+        },
+        {
+          id: 20,
+          parentId: 1,
+          name: 'Electrical and plumbing works',
+          type: 'task',
+          status: 'pending',
+          startDate: '2025-02-01',
+          endDate: '2025-04-15',
+          progress: 0,
+          assignee: 'Kevin White',
+          dependencies: [17]
+        },
+        {
+          id: 21,
+          parentId: 1,
+          name: 'Aesthetics and finishings',
+          type: 'task',
+          status: 'pending',
+          startDate: '2025-04-16',
+          endDate: '2025-05-01',
+          progress: 0,
+          assignee: 'Amanda Green',
+          dependencies: [19, 20]
+        }
+      ]
     },
     {
       id: 2,
-      name: 'Foundation Complete',
-      status: 'completed',
-      startDate: '2024-02-16',
-      endDate: '2024-04-30',
-      actualEndDate: '2024-05-05',
-      progress: 100,
-      assignee: 'Sarah Johnson',
-      budget: 15000000,
-      dependencies: [1],
-      tasks: 28,
-      completedTasks: 28,
+      name: 'Infrastructure Development',
+      type: 'project',
+      status: 'pending',
+      startDate: '2024-09-01',
+      endDate: '2025-03-15',
+      progress: 0,
+      assignee: '',
+      budget: 50000000,
+      dependencies: [],
+      expanded: false,
+      risk: 'high',
       criticalPath: true,
-      risk: 'low',
-      description: 'Foundation excavation, concrete pouring, and waterproofing'
+      tasks: 8,
+      completedTasks: 0,
+      description: 'Infrastructure and utilities setup',
+      subtasks: [
+        {
+          id: 22,
+          parentId: 2,
+          name: 'Road Construction',
+          type: 'task',
+          status: 'pending',
+          startDate: '2024-09-01',
+          endDate: '2024-10-15',
+          progress: 0,
+          assignee: 'Michael Brown',
+          dependencies: []
+        },
+        {
+          id: 23,
+          parentId: 2,
+          name: 'Water Supply System',
+          type: 'task',
+          status: 'pending',
+          startDate: '2024-10-16',
+          endDate: '2024-11-30',
+          progress: 0,
+          assignee: 'Susan Davis',
+          dependencies: [22]
+        },
+        {
+          id: 24,
+          parentId: 2,
+          name: 'Electrical Grid Setup',
+          type: 'task',
+          status: 'pending',
+          startDate: '2024-12-01',
+          endDate: '2025-01-15',
+          progress: 0,
+          assignee: 'James Wilson',
+          dependencies: [22]
+        },
+        {
+          id: 25,
+          parentId: 2,
+          name: 'Sewage System',
+          type: 'task',
+          status: 'pending',
+          startDate: '2025-01-16',
+          endDate: '2025-02-28',
+          progress: 0,
+          assignee: 'Patricia Garcia',
+          dependencies: [23]
+        },
+        {
+          id: 26,
+          parentId: 2,
+          name: 'Telecommunications',
+          type: 'task',
+          status: 'pending',
+          startDate: '2025-02-01',
+          endDate: '2025-03-15',
+          progress: 0,
+          assignee: 'Thomas Martinez',
+          dependencies: [24]
+        }
+      ]
     },
     {
       id: 3,
-      name: 'Structural Frame 50%',
-      status: 'in-progress',
-      startDate: '2024-05-06',
-      endDate: '2024-08-15',
-      progress: 75,
-      assignee: 'Emily Davis',
-      budget: 25000000,
-      dependencies: [2],
-      tasks: 45,
-      completedTasks: 34,
-      criticalPath: true,
-      risk: 'medium',
-      description: 'Steel frame erection and concrete structure'
-    },
-    {
-      id: 4,
-      name: 'Structural Frame Complete',
+      name: 'Landscaping & External Works',
+      type: 'project',
       status: 'pending',
-      startDate: '2024-08-16',
-      endDate: '2024-11-30',
+      startDate: '2025-03-01',
+      endDate: '2025-06-30',
       progress: 0,
-      assignee: 'Emily Davis',
-      budget: 20000000,
-      dependencies: [3],
-      tasks: 40,
-      completedTasks: 0,
-      criticalPath: true,
-      risk: 'medium',
-      description: 'Complete structural frame and roof installation'
-    },
-    {
-      id: 5,
-      name: 'MEP Installation',
-      status: 'pending',
-      startDate: '2024-12-01',
-      endDate: '2025-03-15',
-      progress: 0,
-      assignee: 'Robert Wilson',
-      budget: 30000000,
-      dependencies: [4],
-      tasks: 60,
-      completedTasks: 0,
-      criticalPath: true,
-      risk: 'high',
-      description: 'Mechanical, electrical, and plumbing systems installation'
-    },
-    {
-      id: 6,
-      name: 'Interior Finishing',
-      status: 'pending',
-      startDate: '2025-03-16',
-      endDate: '2025-07-30',
-      progress: 0,
-      assignee: 'Lisa Anderson',
-      budget: 35000000,
-      dependencies: [5],
-      tasks: 80,
-      completedTasks: 0,
+      assignee: '',
+      budget: 15000000,
+      dependencies: [],
+      expanded: false,
+      risk: 'low',
       criticalPath: false,
-      risk: 'low',
-      description: 'Interior walls, flooring, painting, and fixtures'
-    },
-    {
-      id: 7,
-      name: 'Final Inspection',
-      status: 'pending',
-      startDate: '2025-08-01',
-      endDate: '2025-11-15',
-      progress: 0,
-      assignee: 'John Anderson',
-      budget: 2000000,
-      dependencies: [6],
-      tasks: 20,
+      tasks: 6,
       completedTasks: 0,
-      criticalPath: true,
-      risk: 'low',
-      description: 'Quality checks, safety inspections, and certifications'
-    },
-    {
-      id: 8,
-      name: 'Project Handover',
-      status: 'pending',
-      startDate: '2025-11-16',
-      endDate: '2025-12-31',
-      progress: 0,
-      assignee: 'Sarah Johnson',
-      budget: 3000000,
-      dependencies: [7],
-      tasks: 10,
-      completedTasks: 0,
-      criticalPath: true,
-      risk: 'low',
-      description: 'Final documentation, training, and handover to client'
+      description: 'External beautification and landscaping',
+      subtasks: [
+        {
+          id: 31,
+          parentId: 3,
+          name: 'Garden Design',
+          type: 'task',
+          status: 'pending',
+          startDate: '2025-03-01',
+          endDate: '2025-03-15',
+          progress: 0,
+          assignee: 'Nancy Robinson',
+          dependencies: []
+        },
+        {
+          id: 32,
+          parentId: 3,
+          name: 'Tree Planting',
+          type: 'task',
+          status: 'pending',
+          startDate: '2025-03-16',
+          endDate: '2025-04-15',
+          progress: 0,
+          assignee: 'Daniel Clark',
+          dependencies: [31]
+        },
+        {
+          id: 33,
+          parentId: 3,
+          name: 'Lawn Installation',
+          type: 'task',
+          status: 'pending',
+          startDate: '2025-04-16',
+          endDate: '2025-05-15',
+          progress: 0,
+          assignee: 'Maria Rodriguez',
+          dependencies: [31]
+        },
+        {
+          id: 34,
+          parentId: 3,
+          name: 'Pathway Construction',
+          type: 'task',
+          status: 'pending',
+          startDate: '2025-05-16',
+          endDate: '2025-06-15',
+          progress: 0,
+          assignee: 'Charles Lewis',
+          dependencies: [32, 33]
+        },
+        {
+          id: 35,
+          parentId: 3,
+          name: 'Outdoor Lighting',
+          type: 'task',
+          status: 'pending',
+          startDate: '2025-06-16',
+          endDate: '2025-06-30',
+          progress: 0,
+          assignee: 'Barbara Walker',
+          dependencies: [34]
+        }
+      ]
     }
   ];
 
+  // Get all tasks including subtasks
+  const getAllTasksFlat = () => {
+    const tasks: any[] = [];
+    enhancedMilestones.forEach(project => {
+      tasks.push(project);
+      if (project.subtasks) {
+        tasks.push(...project.subtasks);
+      }
+    });
+    return tasks;
+  };
+  
   // Filter milestones based on status
   const filteredMilestones = useMemo(() => {
-    if (filterStatus === 'all') return enhancedMilestones;
-    return enhancedMilestones.filter(m => m.status === filterStatus);
+    const allTasks = getAllTasksFlat();
+    if (filterStatus === 'all') return allTasks;
+    return allTasks.filter(t => t.status === filterStatus);
   }, [filterStatus]);
 
   // Calculate overall progress
   const overallProgress = useMemo(() => {
-    const totalWeight = filteredMilestones.reduce((sum, m) => sum + m.tasks, 0);
-    const completedWeight = filteredMilestones.reduce((sum, m) => sum + m.completedTasks, 0);
-    return totalWeight > 0 ? (completedWeight / totalWeight) * 100 : 0;
-  }, [filteredMilestones]);
+    const allTasks = getAllTasksFlat();
+    const completed = allTasks.filter(t => t.status === 'completed').length;
+    return allTasks.length > 0 ? (completed / allTasks.length) * 100 : 0;
+  }, []);
 
   // Milestone progress data for chart
   const milestoneProgressData = enhancedMilestones.map(m => ({
@@ -328,11 +529,11 @@ export function TimelineTabEnhanced({ project }: TimelineTabEnhancedProps) {
     totalDuration: differenceInDays(new Date(project.timeline.endDate), new Date(project.timeline.startDate)),
     elapsedDays: differenceInDays(new Date(), new Date(project.timeline.startDate)),
     remainingDays: differenceInDays(new Date(project.timeline.endDate), new Date()),
-    completedMilestones: enhancedMilestones.filter(m => m.status === 'completed').length,
-    delayedMilestones: enhancedMilestones.filter(m => m.actualEndDate && new Date(m.actualEndDate) > new Date(m.endDate)).length,
-    criticalPathMilestones: enhancedMilestones.filter(m => m.criticalPath).length,
-    totalBudget: enhancedMilestones.reduce((sum, m) => sum + m.budget, 0),
-    spentBudget: enhancedMilestones.filter(m => m.status === 'completed').reduce((sum, m) => sum + m.budget, 0)
+    completedMilestones: getAllTasksFlat().filter(t => t.status === 'completed').length,
+    delayedMilestones: getAllTasksFlat().filter(t => t.actualEndDate && new Date(t.actualEndDate) > new Date(t.endDate)).length,
+    criticalPathMilestones: getAllTasksFlat().filter(t => t.criticalPath).length,
+    totalBudget: enhancedMilestones[0]?.budget || 100000000,
+    spentBudget: enhancedMilestones[0]?.budget ? enhancedMilestones[0].budget * (enhancedMilestones[0].progress / 100) : 0
   };
 
   const getMilestoneIcon = (status: string) => {
@@ -353,13 +554,16 @@ export function TimelineTabEnhanced({ project }: TimelineTabEnhancedProps) {
     }
   };
 
-  // Gantt chart view component with drag-and-drop
+  // Gantt chart view component with drag-and-drop and sub-tasks
   const GanttView = () => {
-    const [milestones, setMilestones] = useState(enhancedMilestones);
+    const [projects, setProjects] = useState(enhancedMilestones);
+    const [expandedProjects, setExpandedProjects] = useState<Set<number>>(new Set([1]));
     const [draggedItem, setDraggedItem] = useState<any>(null);
     const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
     const [isResizing, setIsResizing] = useState<string | null>(null);
     const [resizeStart, setResizeStart] = useState({ x: 0, width: 0 });
+    const [showAddTask, setShowAddTask] = useState(false);
+    const [newTaskParent, setNewTaskParent] = useState<number | null>(null);
     
     const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
     
@@ -413,14 +617,32 @@ export function TimelineTabEnhanced({ project }: TimelineTabEnhancedProps) {
     
     const timelineHeaders = getTimelineHeaders();
     
-    // Filter milestones based on date range and status
-    const filteredMilestones = milestones.filter(m => {
-      const mStart = new Date(m.startDate);
-      const mEnd = new Date(m.endDate);
-      const inDateRange = (!dateRange.from || mEnd >= dateRange.from) && (!dateRange.to || mStart <= dateRange.to);
-      const matchesStatus = filterStatus === 'all' || m.status === filterStatus;
-      return inDateRange && matchesStatus;
-    });
+    // Get all tasks (flattened) for display
+    const getAllTasks = () => {
+      const tasks: any[] = [];
+      projects.forEach(project => {
+        tasks.push(project);
+        if (expandedProjects.has(project.id) && project.subtasks) {
+          tasks.push(...project.subtasks);
+        }
+      });
+      return tasks;
+    };
+    
+    const allTasks = getAllTasks();
+    
+    // Toggle project expansion
+    const toggleProject = (projectId: number) => {
+      setExpandedProjects(prev => {
+        const newSet = new Set(prev);
+        if (newSet.has(projectId)) {
+          newSet.delete(projectId);
+        } else {
+          newSet.add(projectId);
+        }
+        return newSet;
+      });
+    };
     
     // Handle edit milestone
     const handleEditMilestone = (milestone: any) => {
@@ -448,19 +670,19 @@ export function TimelineTabEnhanced({ project }: TimelineTabEnhancedProps) {
       const x = e.clientX - rect.left - dragOffset.x - 264; // Subtract sidebar width
       const dayPosition = Math.max(0, x / pixelsPerDay);
       
-      setMilestones(prev => prev.map(m => {
-        if (m.id === draggedItem.id) {
-          const duration = differenceInDays(new Date(m.endDate), new Date(m.startDate));
+      setProjects(prev => prev.map(p => {
+        if (p.id === draggedItem.id) {
+          const duration = differenceInDays(new Date(p.endDate), new Date(p.startDate));
           const newStartDate = addDays(startDate, dayPosition);
           const newEndDate = addDays(newStartDate, duration);
           
           return {
-            ...m,
+            ...p,
             startDate: format(newStartDate, 'yyyy-MM-dd'),
             endDate: format(newEndDate, 'yyyy-MM-dd')
           };
         }
-        return m;
+        return p;
       }));
     };
 
@@ -480,15 +702,15 @@ export function TimelineTabEnhanced({ project }: TimelineTabEnhancedProps) {
       const newWidth = Math.max(pixelsPerDay * 7, resizeStart.width + deltaX); // Min 1 week
       const newDuration = Math.round(newWidth / pixelsPerDay);
       
-      setMilestones(prev => prev.map(m => {
-        if (m.id.toString() === isResizing) {
-          const newEndDate = addDays(new Date(m.startDate), newDuration);
+      setProjects(prev => prev.map(p => {
+        if (p.id.toString() === isResizing) {
+          const newEndDate = addDays(new Date(p.startDate), newDuration);
           return {
-            ...m,
+            ...p,
             endDate: format(newEndDate, 'yyyy-MM-dd')
           };
         }
-        return m;
+        return p;
       }));
     };
 
@@ -499,10 +721,10 @@ export function TimelineTabEnhanced({ project }: TimelineTabEnhancedProps) {
     };
 
     return (
-      <Card>
+      <Card className="overflow-hidden">
         <CardHeader>
-          <div className="flex items-center justify-between">
-            <div>
+          <div className="flex items-center justify-between flex-wrap gap-4">
+            <div className="min-w-0">
               <CardTitle>Interactive Gantt Chart</CardTitle>
               <p className="text-xs text-muted-foreground mt-1">
                 Drag to reschedule • Resize edges • Double-click to edit • Filter by date/status
@@ -591,7 +813,7 @@ export function TimelineTabEnhanced({ project }: TimelineTabEnhancedProps) {
           </div>
         </CardHeader>
         <CardContent 
-          className="p-0"
+          className="p-0 relative"
           onMouseMove={(e) => {
             if (draggedItem) handleDrag(e);
             if (isResizing) handleResize(e);
@@ -599,153 +821,247 @@ export function TimelineTabEnhanced({ project }: TimelineTabEnhancedProps) {
           onMouseUp={handleMouseUp}
           onMouseLeave={handleMouseUp}
         >
-          <ScrollArea className="w-full">
-            <div className="min-w-[1200px] select-none">
-              {/* Timeline header */}
-              <div className="flex border-b bg-muted/30 sticky top-0 z-10">
-                <div className="w-64 p-3 font-semibold border-r bg-background">Milestone</div>
-                <div className="flex flex-1">
-                  {timelineHeaders.map((header, i) => (
-                    <div 
-                      key={i} 
-                      className="border-r p-2 text-xs text-center bg-background font-medium"
-                      style={{ width: currentZoom.pixelsPerUnit }}
-                    >
-                      {header.label}
-                    </div>
-                  ))}
-                </div>
+          <div className="flex h-[600px] border-t overflow-hidden">
+            {/* Fixed Left Panel */}
+            <div className="w-[400px] min-w-[400px] max-w-[400px] border-r bg-background flex-shrink-0 flex flex-col relative z-10">
+              {/* Left Panel Header */}
+              <div className="h-12 border-b bg-muted/30 flex items-center px-4 flex-shrink-0">
+                <span className="font-semibold text-sm flex-1">Task Name</span>
+                <span className="text-xs text-muted-foreground w-20 text-right">Assignee</span>
               </div>
-
-              {/* Gantt rows */}
-              {filteredMilestones.map((milestone, index) => {
-                const mStartDate = new Date(milestone.startDate);
-                const mEndDate = new Date(milestone.endDate);
-                const startOffset = differenceInDays(mStartDate, startDate);
-                const duration = differenceInDays(mEndDate, mStartDate);
-                const barLeft = startOffset * pixelsPerDay;
-                const barWidth = duration * pixelsPerDay;
-                
-                return (
-                  <div key={milestone.id} className="flex border-b hover:bg-muted/50 group relative">
-                    <div className="w-64 p-3 border-r bg-background">
-                      <div className="flex items-center gap-2">
-                        <Avatar className="h-7 w-7">
-                          <AvatarFallback className={cn(getAvatarColor(milestone.id + milestone.assignee), 'text-white text-xs font-semibold')}>
-                            {milestone.assignee.split(' ').map(n => n[0]).join('')}
+              
+              {/* Left Panel Rows */}
+              <div className="flex-1 overflow-y-auto overflow-x-hidden">
+                {allTasks.map((task) => (
+                  <div 
+                    key={task.id} 
+                    className={cn(
+                      "h-12 border-b hover:bg-muted/50 flex items-center group transition-colors",
+                      task.type === 'task' && "bg-muted/5"
+                    )}
+                    style={{ paddingLeft: task.type === 'task' ? '3rem' : '1rem', paddingRight: '1rem' }}
+                  >
+                    <div className="flex items-center gap-2 flex-1 min-w-0">
+                      {/* Expand/Collapse Icon for projects */}
+                      {task.type === 'project' ? (
+                        <button 
+                          onClick={() => toggleProject(task.id)}
+                          className="p-0.5 hover:bg-muted rounded flex-shrink-0"
+                        >
+                          {expandedProjects.has(task.id) ? (
+                            <ChevronDown className="h-3 w-3" />
+                          ) : (
+                            <ChevronRight className="h-3 w-3" />
+                          )}
+                        </button>
+                      ) : (
+                        <div className="w-5 flex-shrink-0" />
+                      )}
+                      
+                      {/* Status Indicator */}
+                      <div className={cn(
+                        "w-2 h-2 rounded-full flex-shrink-0",
+                        task.status === 'completed' ? 'bg-green-500' :
+                        task.status === 'in-progress' ? 'bg-blue-500' :
+                        'bg-gray-400'
+                      )} />
+                      
+                      {/* Task Name */}
+                      <span className={cn(
+                        "text-sm truncate flex-1 pr-2",
+                        task.type === 'project' ? "font-semibold text-foreground" : "font-normal text-muted-foreground"
+                      )}>
+                        {task.name}
+                      </span>
+                      
+                      {/* Assignee Avatar */}
+                      {task.assignee && (
+                        <Avatar className="h-5 w-5 flex-shrink-0">
+                          <AvatarFallback className={cn(
+                            getAvatarColor(task.id + task.assignee), 
+                            'text-white text-[9px] font-bold'
+                          )}>
+                            {task.assignee.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase()}
                           </AvatarFallback>
                         </Avatar>
-                        <div className="flex-1">
-                          <span className="text-sm font-medium truncate block">{milestone.name}</span>
-                          <div className="flex items-center gap-2 mt-0.5">
-                            <span className="text-xs text-muted-foreground">{milestone.assignee}</span>
-                            {milestone.criticalPath && (
-                              <Badge variant="destructive" className="text-xs h-4 px-1">
-                                Critical
-                              </Badge>
-                            )}
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                    <div className="relative flex-1" style={{ width: timelineHeaders.length * currentZoom.pixelsPerUnit }}>
-                      {/* Dependency lines */}
-                      {milestone.dependencies.map(depId => {
-                        const dep = milestones.find(m => m.id === depId);
-                        if (!dep) return null;
-                        const depEndOffset = differenceInDays(new Date(dep.endDate), startDate);
-                        const depIndex = filteredMilestones.findIndex(m => m.id === depId);
-                        const verticalOffset = (index - depIndex) * 60;
-                        
-                        return (
-                          <svg key={depId} className="absolute inset-0 pointer-events-none" style={{ zIndex: 0 }}>
-                            <defs>
-                              <marker id={`arrow-${depId}`} markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
-                                <polygon points="0 0, 10 3.5, 0 7" fill="#94a3b8" />
-                              </marker>
-                            </defs>
-                            <path
-                              d={`M ${depEndOffset * pixelsPerDay} ${30 - verticalOffset} 
-                                 Q ${(depEndOffset * pixelsPerDay + barLeft) / 2} ${30 - verticalOffset / 2},
-                                   ${barLeft - 5} 30`}
-                              stroke="#94a3b8"
-                              strokeWidth="1.5"
-                              fill="none"
-                              strokeDasharray="4 2"
-                              markerEnd={`url(#arrow-${depId})`}
-                              opacity="0.5"
-                            />
-                          </svg>
-                        );
-                      })}
-                      
-                      {/* Milestone bar */}
-                      <div 
-                        className={cn(
-                          "absolute top-1/2 -translate-y-1/2 h-10 rounded-md cursor-move transition-all hover:shadow-lg",
-                          "flex items-center justify-between px-2",
-                          milestone.status === 'completed' ? 'bg-green-600' :
-                          milestone.status === 'in-progress' ? 'bg-blue-600' :
-                          'bg-gray-400',
-                          milestone.criticalPath && 'ring-2 ring-red-500 ring-offset-1',
-                          draggedItem?.id === milestone.id && 'opacity-70 shadow-2xl'
-                        )}
-                        style={{
-                          left: Math.max(0, barLeft),
-                          width: barWidth,
-                          zIndex: draggedItem?.id === milestone.id ? 10 : 1
-                        }}
-                        onMouseDown={(e) => handleDragStart(e, milestone)}
-                        onDoubleClick={() => handleEditMilestone(milestone)}
-                      >
-                        {/* Progress fill */}
-                        <div 
-                          className="absolute inset-0 bg-black/20 rounded-md"
-                          style={{ width: `${milestone.progress}%` }}
-                        />
-                        
-                        {/* Content */}
-                        <span className="relative text-xs text-white font-medium z-10">
-                          {milestone.progress}%
-                        </span>
-                        
-                        {/* Resize handle */}
-                        <div 
-                          className="absolute right-0 top-0 bottom-0 w-2 cursor-ew-resize hover:bg-white/30 group-hover:opacity-100 opacity-0 transition-opacity"
-                          onMouseDown={(e) => handleResizeStart(e, milestone.id.toString(), barWidth)}
-                        />
-                      </div>
+                      )}
                     </div>
                   </div>
-                );
-              })}
-              
-              {/* Today line */}
-              <div 
-                className="absolute top-0 bottom-0 w-0.5 bg-red-500 pointer-events-none"
-                style={{ 
-                  left: 264 + (differenceInDays(new Date(), startDate) * pixelsPerDay),
-                  zIndex: 20
-                }}
-              >
-                <div className="absolute -top-6 -left-6 text-xs font-semibold text-red-500 bg-background px-1 rounded">
-                  Today
+                ))}
+                {/* Add Task Button */}
+                <div className="h-12 border-b hover:bg-muted/50 flex items-center px-4">
+                  <button 
+                    onClick={() => setShowAddTask(true)}
+                    className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors w-full text-left"
+                  >
+                    <Plus className="h-4 w-4" />
+                    <span>Add Task</span>
+                  </button>
                 </div>
               </div>
             </div>
-            <ScrollBar orientation="horizontal" />
-          </ScrollArea>
+
+            {/* Scrollable Right Timeline */}
+            <div className="flex-1 min-w-0 relative overflow-hidden bg-muted/5">
+              {/* Timeline Header */}
+              <div className="h-12 border-b bg-muted/30 sticky top-0 z-20 overflow-hidden">
+                <ScrollArea className="w-full h-full">
+                  <div className="flex h-full" style={{ minWidth: timelineHeaders.length * currentZoom.pixelsPerUnit }}>
+                    {timelineHeaders.map((header, i) => (
+                      <div 
+                        key={i} 
+                        className="border-r flex items-center justify-center text-xs font-medium bg-background"
+                        style={{ width: currentZoom.pixelsPerUnit }}
+                      >
+                        {header.label}
+                      </div>
+                    ))}
+                  </div>
+                  <ScrollBar orientation="horizontal" />
+                </ScrollArea>
+              </div>
+              
+              {/* Timeline Content */}
+              <ScrollArea className="h-[calc(100%-48px)]">
+                <div 
+                  className="relative"
+                  style={{ width: timelineHeaders.length * currentZoom.pixelsPerUnit, minWidth: '100%' }}
+                >
+                  {/* Grid Lines */}
+                  <div className="absolute inset-0 pointer-events-none">
+                    {timelineHeaders.map((_, i) => (
+                      <div 
+                        key={i} 
+                        className="absolute top-0 bottom-0 border-r border-muted"
+                        style={{ left: i * currentZoom.pixelsPerUnit }}
+                      />
+                    ))}
+                  </div>
+                  
+                  {/* Task Bars */}
+                  {allTasks.map((task, index) => {
+                    const tStartDate = new Date(task.startDate);
+                    const tEndDate = new Date(task.endDate);
+                    const startOffset = differenceInDays(tStartDate, startDate);
+                    const duration = differenceInDays(tEndDate, tStartDate);
+                    const barLeft = startOffset * pixelsPerDay;
+                    const barWidth = duration * pixelsPerDay;
+                    
+                    return (
+                      <div 
+                        key={task.id} 
+                        className="h-12 border-b relative group hover:bg-muted/20"
+                      >
+                        {/* Dependency lines */}
+                        {task.dependencies && task.dependencies.map((depId: number) => {
+                          const dep = allTasks.find(t => t.id === depId);
+                          if (!dep) return null;
+                          const depEndOffset = differenceInDays(new Date(dep.endDate), startDate);
+                          const depIndex = allTasks.findIndex(t => t.id === depId);
+                          const verticalOffset = (index - depIndex) * 48;
+                          
+                          return (
+                            <svg key={depId} className="absolute inset-0 pointer-events-none" style={{ zIndex: 0 }}>
+                              <defs>
+                                <marker id={`arrow-${task.id}-${depId}`} markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+                                  <polygon points="0 0, 10 3.5, 0 7" fill="#94a3b8" />
+                                </marker>
+                              </defs>
+                              <path
+                                d={`M ${depEndOffset * pixelsPerDay} ${24 - verticalOffset} 
+                                   Q ${(depEndOffset * pixelsPerDay + barLeft) / 2} ${24 - verticalOffset / 2},
+                                     ${barLeft - 5} 24`}
+                                stroke="#94a3b8"
+                                strokeWidth="1.5"
+                                fill="none"
+                                strokeDasharray="4 2"
+                                markerEnd={`url(#arrow-${task.id}-${depId})`}
+                                opacity="0.5"
+                              />
+                            </svg>
+                          );
+                        })}
+                        
+                        {/* Task Bar */}
+                        <div 
+                          className={cn(
+                            "absolute top-1/2 -translate-y-1/2 h-8 rounded cursor-move transition-all hover:shadow-lg",
+                            "flex items-center px-2",
+                            task.status === 'completed' ? 'bg-green-500' :
+                            task.status === 'in-progress' ? 'bg-blue-500' :
+                            'bg-gray-400',
+                            task.type === 'project' && 'font-semibold',
+                            draggedItem?.id === task.id && 'opacity-70 shadow-2xl'
+                          )}
+                          style={{
+                            left: Math.max(0, barLeft),
+                            width: barWidth,
+                            zIndex: draggedItem?.id === task.id ? 10 : 1
+                          }}
+                          onMouseDown={(e) => handleDragStart(e, task)}
+                          onDoubleClick={() => handleEditMilestone(task)}
+                        >
+                          {/* Progress fill */}
+                          <div 
+                            className="absolute inset-0 bg-black/20 rounded"
+                            style={{ width: `${task.progress}%` }}
+                          />
+                          
+                          {/* Content */}
+                          {barWidth > 40 && (
+                            <span className="relative text-xs text-white font-medium z-10 truncate">
+                              {task.progress}%
+                            </span>
+                          )}
+                          
+                          {/* Resize handle */}
+                          <div 
+                            className="absolute right-0 top-0 bottom-0 w-2 cursor-ew-resize hover:bg-white/30 group-hover:opacity-100 opacity-0 transition-opacity"
+                            onMouseDown={(e) => handleResizeStart(e, task.id.toString(), barWidth)}
+                          />
+                        </div>
+                      </div>
+                    );
+                  })}
+                  
+                  {/* Today line */}
+                  <div 
+                    className="absolute top-0 bottom-0 w-0.5 bg-red-500 pointer-events-none"
+                    style={{ 
+                      left: differenceInDays(new Date(), startDate) * pixelsPerDay,
+                      zIndex: 20
+                    }}
+                  >
+                    <div className="absolute -top-6 -left-6 text-xs font-semibold text-red-500 bg-background px-1 rounded">
+                      Today
+                    </div>
+                  </div>
+                </div>
+                <ScrollBar orientation="horizontal" />
+              </ScrollArea>
+            </div>
+          </div>
           
-          {/* Legend */}
-          <div className="p-4 border-t bg-muted/30">
+          {/* Bottom Toolbar */}
+          <div className="p-3 border-t bg-muted/30">
             <div className="flex items-center justify-between">
-              <div className="flex items-center gap-6 text-xs">
+              <div className="flex items-center gap-2">
+                <Button size="sm" variant="outline" onClick={() => setShowAddTask(true)}>
+                  <Plus className="h-4 w-4 mr-1" />
+                  Add Task
+                </Button>
+                <Button size="sm" variant="outline">
+                  <Plus className="h-4 w-4 mr-1" />
+                  Add Milestone
+                </Button>
+              </div>
+              <div className="flex items-center gap-4 text-xs">
                 <div className="flex items-center gap-2">
-                  <div className="w-3 h-3 bg-green-600 rounded" />
+                  <div className="w-3 h-3 bg-green-500 rounded" />
                   <span>Completed</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <div className="w-3 h-3 bg-blue-600 rounded" />
+                  <div className="w-3 h-3 bg-blue-500 rounded" />
                   <span>In Progress</span>
                 </div>
                 <div className="flex items-center gap-2">
@@ -762,7 +1078,7 @@ export function TimelineTabEnhanced({ project }: TimelineTabEnhancedProps) {
                 </div>
               </div>
               <div className="text-xs text-muted-foreground">
-                Showing {filteredMilestones.length} of {milestones.length} milestones • {filteredMilestones.filter(m => m.status === 'completed').length} completed
+                Showing {allTasks.length} tasks • {allTasks.filter(t => t.status === 'completed').length} completed
               </div>
             </div>
           </div>
@@ -1071,9 +1387,9 @@ export function TimelineTabEnhanced({ project }: TimelineTabEnhancedProps) {
                 
                 {/* Milestones */}
                 <div className="space-y-8">
-                  {filteredMilestones.map((milestone, index) => {
+                  {filteredMilestones.filter(t => t.type !== 'task').map((milestone, index) => {
                     const Icon = getMilestoneIcon(milestone.status);
-                    const isExpanded = selectedMilestone === milestone.id.toString();
+                    const isExpanded = selectedMilestone === milestone.id?.toString();
                     
                     return (
                       <div key={milestone.id} className="relative flex gap-6">
@@ -1194,7 +1510,7 @@ export function TimelineTabEnhanced({ project }: TimelineTabEnhancedProps) {
                               <div className="flex items-center justify-between">
                                 <div className="flex items-center gap-2">
                                   <Avatar className="h-6 w-6">
-                                    <AvatarFallback className={cn(getAvatarColor(milestone.id + milestone.assignee), 'text-white text-xs')}>
+                                    <AvatarFallback className={cn(getAvatarColor(milestone.id + milestone.assignee), 'text-white font-bold text-xs')}>
                                       {milestone.assignee.split(' ').map(n => n[0]).join('')}
                                     </AvatarFallback>
                                   </Avatar>
@@ -1291,7 +1607,7 @@ export function TimelineTabEnhanced({ project }: TimelineTabEnhancedProps) {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {filteredMilestones.map((milestone) => (
+                {filteredMilestones.filter(t => t.type !== 'task').map((milestone) => (
                   <TableRow key={milestone.id}>
                     <TableCell>
                       <div className="flex items-center gap-2">
@@ -1317,7 +1633,7 @@ export function TimelineTabEnhanced({ project }: TimelineTabEnhancedProps) {
                     <TableCell>
                       <div className="flex items-center gap-2">
                         <Avatar className="h-6 w-6">
-                          <AvatarFallback className={cn(getAvatarColor(milestone.id + milestone.assignee), 'text-white text-xs')}>
+                          <AvatarFallback className={cn(getAvatarColor(milestone.id + milestone.assignee), 'text-white font-bold text-xs')}>
                             {milestone.assignee.split(' ').map(n => n[0]).join('')}
                           </AvatarFallback>
                         </Avatar>
