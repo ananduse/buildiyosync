@@ -182,16 +182,24 @@ interface ProjectCalendarProps {
 export function ProjectCalendar({ project }: ProjectCalendarProps) {
   const [viewMode, setViewMode] = useState<'month' | 'week' | 'day' | 'agenda'>('month');
   const [currentDate, setCurrentDate] = useState(new Date());
+  
+  // Get current date for relative event dates
+  const today = new Date();
+  const currentYear = today.getFullYear();
+  const currentMonth = today.getMonth();
+  const currentDay = today.getDate();
+  
   const [events, setEvents] = useState<CalendarEvent[]>([
+    // Meeting category events
     {
       id: '1',
-      title: 'Foundation and backfill',
-      description: 'Complete foundation work and backfilling',
-      startDate: new Date(2024, 10, 25, 9, 0),
-      endDate: new Date(2024, 10, 25, 13, 0),
-      category: 'milestone',
-      location: 'Site A',
-      attendees: ['John Smith', 'Sarah Johnson'],
+      title: 'Project Kickoff Meeting',
+      description: 'Initial project kickoff with all stakeholders',
+      startDate: new Date(currentYear, currentMonth, currentDay - 5, 9, 0),
+      endDate: new Date(currentYear, currentMonth, currentDay - 5, 11, 0),
+      category: 'meeting',
+      location: 'Conference Room A',
+      attendees: ['John Smith', 'Sarah Johnson', 'Mike Chen', 'Emily Davis'],
       isAllDay: false,
       reminder: 30,
       recurring: 'none',
@@ -200,12 +208,145 @@ export function ProjectCalendar({ project }: ProjectCalendarProps) {
     },
     {
       id: '2',
-      title: 'Wall foundation installment',
-      description: 'Install wall foundations',
-      startDate: new Date(2024, 10, 26, 10, 0),
-      endDate: new Date(2024, 10, 26, 16, 0),
+      title: 'Weekly Team Standup',
+      description: 'Regular team sync meeting',
+      startDate: new Date(currentYear, currentMonth, currentDay, 10, 0),
+      endDate: new Date(currentYear, currentMonth, currentDay, 10, 30),
+      category: 'meeting',
+      location: 'Virtual - Teams',
+      attendees: ['Development Team'],
+      isAllDay: false,
+      reminder: 15,
+      recurring: 'weekly',
+      status: 'confirmed',
+      createdBy: 'PM001'
+    },
+    
+    // Milestone category events
+    {
+      id: '3',
+      title: 'Foundation Complete',
+      description: 'Foundation work completion milestone',
+      startDate: new Date(currentYear, currentMonth, currentDay - 10, 0, 0),
+      endDate: new Date(currentYear, currentMonth, currentDay - 10, 23, 59),
+      category: 'milestone',
+      location: 'Construction Site',
+      isAllDay: true,
+      recurring: 'none',
+      status: 'confirmed',
+      createdBy: 'PM001'
+    },
+    {
+      id: '4',
+      title: 'Phase 1 Delivery',
+      description: 'First phase of project delivery',
+      startDate: new Date(currentYear, currentMonth, currentDay + 15, 0, 0),
+      endDate: new Date(currentYear, currentMonth, currentDay + 15, 23, 59),
+      category: 'milestone',
+      isAllDay: true,
+      recurring: 'none',
+      status: 'confirmed',
+      createdBy: 'PM002'
+    },
+    
+    // Deadline category events
+    {
+      id: '5',
+      title: 'Permit Submission Deadline',
+      description: 'Final date for permit documentation submission',
+      startDate: new Date(currentYear, currentMonth, currentDay + 3, 17, 0),
+      endDate: new Date(currentYear, currentMonth, currentDay + 3, 17, 0),
+      category: 'deadline',
+      isAllDay: false,
+      reminder: 1440, // 1 day before
+      recurring: 'none',
+      status: 'confirmed',
+      createdBy: 'PM001'
+    },
+    {
+      id: '6',
+      title: 'Budget Report Due',
+      description: 'Q4 budget report submission',
+      startDate: new Date(currentYear, currentMonth, currentDay + 7, 23, 59),
+      endDate: new Date(currentYear, currentMonth, currentDay + 7, 23, 59),
+      category: 'deadline',
+      isAllDay: false,
+      reminder: 120,
+      recurring: 'none',
+      status: 'tentative',
+      createdBy: 'PM003'
+    },
+    
+    // Task category events
+    {
+      id: '7',
+      title: 'Site Preparation',
+      description: 'Clear and prepare construction site',
+      startDate: new Date(currentYear, currentMonth, currentDay - 2, 8, 0),
+      endDate: new Date(currentYear, currentMonth, currentDay - 2, 17, 0),
       category: 'task',
-      location: 'Site B',
+      location: 'Site A - North Section',
+      attendees: ['Construction Crew A'],
+      isAllDay: false,
+      recurring: 'none',
+      status: 'confirmed',
+      createdBy: 'PM002'
+    },
+    {
+      id: '8',
+      title: 'Install Electrical Wiring',
+      description: 'Complete electrical wiring for Building B',
+      startDate: new Date(currentYear, currentMonth, currentDay + 1, 9, 0),
+      endDate: new Date(currentYear, currentMonth, currentDay + 1, 16, 0),
+      category: 'task',
+      location: 'Building B',
+      attendees: ['Electrical Team'],
+      isAllDay: false,
+      recurring: 'none',
+      status: 'confirmed',
+      createdBy: 'PM001'
+    },
+    
+    // Call category events
+    {
+      id: '9',
+      title: 'Client Check-in Call',
+      description: 'Weekly progress update call with client',
+      startDate: new Date(currentYear, currentMonth, currentDay + 2, 14, 0),
+      endDate: new Date(currentYear, currentMonth, currentDay + 2, 14, 30),
+      category: 'call',
+      attendees: ['Client Representative', 'Project Manager'],
+      isAllDay: false,
+      reminder: 15,
+      recurring: 'weekly',
+      status: 'confirmed',
+      createdBy: 'PM001'
+    },
+    {
+      id: '10',
+      title: 'Vendor Discussion',
+      description: 'Discuss material delivery schedule',
+      startDate: new Date(currentYear, currentMonth, currentDay, 15, 30),
+      endDate: new Date(currentYear, currentMonth, currentDay, 16, 0),
+      category: 'call',
+      attendees: ['Vendor Manager'],
+      isAllDay: false,
+      reminder: 30,
+      recurring: 'none',
+      status: 'confirmed',
+      createdBy: 'PM002'
+    },
+    
+    // Review category events
+    {
+      id: '11',
+      title: 'Design Review Session',
+      description: 'Review architectural designs for Phase 2',
+      startDate: new Date(currentYear, currentMonth, currentDay + 4, 13, 0),
+      endDate: new Date(currentYear, currentMonth, currentDay + 4, 15, 0),
+      category: 'review',
+      location: 'Design Studio',
+      attendees: ['Architect', 'Design Team', 'Project Manager'],
       isAllDay: false,
       reminder: 60,
       recurring: 'none',
@@ -213,55 +354,79 @@ export function ProjectCalendar({ project }: ProjectCalendarProps) {
       createdBy: 'PM001'
     },
     {
-      id: '3',
-      title: 'Floors and wall erection',
-      description: 'Erect floors and walls',
-      startDate: new Date(2024, 10, 27, 8, 0),
-      endDate: new Date(2024, 10, 27, 17, 0),
-      category: 'task',
+      id: '12',
+      title: 'Safety Compliance Review',
+      description: 'Monthly safety standards review',
+      startDate: new Date(currentYear, currentMonth, currentDay + 10, 10, 0),
+      endDate: new Date(currentYear, currentMonth, currentDay + 10, 12, 0),
+      category: 'review',
+      location: 'Site Office',
+      attendees: ['Safety Officer', 'Site Manager'],
       isAllDay: false,
-      recurring: 'none',
-      status: 'confirmed',
-      createdBy: 'PM002'
-    },
-    {
-      id: '4',
-      title: 'Roof installment',
-      description: 'Install roofing structure',
-      startDate: new Date(2024, 10, 28, 9, 0),
-      endDate: new Date(2024, 10, 28, 15, 0),
-      category: 'milestone',
-      isAllDay: false,
-      recurring: 'none',
-      status: 'confirmed',
-      createdBy: 'PM001'
-    },
-    {
-      id: '5',
-      title: 'Electrical and plumbing works',
-      description: 'Complete electrical and plumbing installations',
-      startDate: new Date(2024, 10, 30, 8, 0),
-      endDate: new Date(2024, 10, 30, 18, 0),
-      category: 'task',
-      location: 'Main Building',
-      isAllDay: false,
-      recurring: 'none',
+      recurring: 'monthly',
       status: 'confirmed',
       createdBy: 'PM003'
     },
+    
+    // Site Visit category events
     {
-      id: '6',
-      title: 'Site inspection',
-      description: 'Monthly site inspection with client',
-      startDate: new Date(2024, 11, 1, 14, 0),
-      endDate: new Date(2024, 11, 1, 16, 0),
+      id: '13',
+      title: 'Client Site Inspection',
+      description: 'Monthly client walkthrough and inspection',
+      startDate: new Date(currentYear, currentMonth, currentDay + 5, 9, 0),
+      endDate: new Date(currentYear, currentMonth, currentDay + 5, 11, 0),
       category: 'site-visit',
-      attendees: ['Client Rep', 'PM', 'Site Manager'],
+      location: 'Main Construction Site',
+      attendees: ['Client Team', 'Project Manager', 'Site Manager'],
       isAllDay: false,
       reminder: 120,
       recurring: 'monthly',
       status: 'confirmed',
       createdBy: 'PM001'
+    },
+    {
+      id: '14',
+      title: 'Quality Inspection Visit',
+      description: 'External quality auditor visit',
+      startDate: new Date(currentYear, currentMonth, currentDay + 8, 14, 0),
+      endDate: new Date(currentYear, currentMonth, currentDay + 8, 17, 0),
+      category: 'site-visit',
+      location: 'All Sites',
+      attendees: ['Quality Auditor', 'QA Team'],
+      isAllDay: false,
+      reminder: 1440,
+      recurring: 'none',
+      status: 'tentative',
+      createdBy: 'PM002'
+    },
+    
+    // Other category events
+    {
+      id: '15',
+      title: 'Team Building Event',
+      description: 'Quarterly team building activity',
+      startDate: new Date(currentYear, currentMonth, currentDay + 12, 16, 0),
+      endDate: new Date(currentYear, currentMonth, currentDay + 12, 20, 0),
+      category: 'other',
+      location: 'City Park',
+      attendees: ['All Team Members'],
+      isAllDay: false,
+      reminder: 1440,
+      recurring: 'none',
+      status: 'confirmed',
+      createdBy: 'PM001'
+    },
+    {
+      id: '16',
+      title: 'Office Closed - Holiday',
+      description: 'National Holiday',
+      startDate: new Date(currentYear, currentMonth, currentDay + 20, 0, 0),
+      endDate: new Date(currentYear, currentMonth, currentDay + 20, 23, 59),
+      category: 'other',
+      isAllDay: true,
+      recurring: 'none',
+      status: 'confirmed',
+      createdBy: 'ADMIN'
     }
   ]);
 
@@ -357,14 +522,19 @@ export function ProjectCalendar({ project }: ProjectCalendarProps) {
 
   // Save event
   const handleSaveEvent = () => {
-    if (!editingEvent) return;
+    if (!editingEvent || !editingEvent.title.trim()) {
+      alert('Please enter a title for the event');
+      return;
+    }
     
     if (editingEvent.id.startsWith('event-')) {
       // New event
       setEvents([...events, editingEvent]);
+      console.log('Event created successfully');
     } else {
       // Update existing event
       setEvents(events.map(e => e.id === editingEvent.id ? editingEvent : e));
+      console.log('Event updated successfully');
     }
     
     setShowEventDialog(false);
@@ -375,6 +545,7 @@ export function ProjectCalendar({ project }: ProjectCalendarProps) {
   const handleDeleteEvent = () => {
     if (!selectedEvent) return;
     setEvents(events.filter(e => e.id !== selectedEvent.id));
+    console.log('Event deleted successfully');
     setShowDeleteDialog(false);
     setSelectedEvent(null);
   };
@@ -430,17 +601,25 @@ export function ProjectCalendar({ project }: ProjectCalendarProps) {
                   <div
                     key={event.id}
                     className={cn(
-                      "text-xs p-1 rounded cursor-pointer truncate",
+                      "text-xs p-1 rounded cursor-pointer truncate transition-all relative",
                       category?.color || 'bg-gray-500',
-                      "text-white hover:opacity-90"
+                      "text-white hover:opacity-80 hover:scale-105",
+                      event.status === 'tentative' && 'opacity-70 border border-dashed'
                     )}
-                    onClick={() => handleEditEvent(event)}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleEditEvent(event);
+                    }}
+                    title={`${event.title}${event.description ? '\n' + event.description : ''}${event.location ? '\n📍 ' + event.location : ''}`}
                   >
                     <div className="flex items-center gap-1">
                       {!event.isAllDay && (
-                        <Clock className="h-3 w-3" />
+                        <Clock className="h-3 w-3 flex-shrink-0" />
                       )}
-                      <span className="truncate">{event.title}</span>
+                      <span className="truncate font-medium">{event.title}</span>
+                      {event.recurring !== 'none' && (
+                        <Repeat className="h-3 w-3 flex-shrink-0" />
+                      )}
                     </div>
                   </div>
                 );
@@ -525,7 +704,7 @@ export function ProjectCalendar({ project }: ProjectCalendarProps) {
                       <div
                         key={event.id}
                         className={cn(
-                          "absolute left-1 right-1 p-1 rounded text-white text-xs cursor-pointer",
+                          "absolute left-1 right-1 p-1 rounded text-white text-xs cursor-pointer hover:opacity-90 transition-opacity",
                           category?.color || 'bg-gray-500'
                         )}
                         style={{
@@ -533,7 +712,10 @@ export function ProjectCalendar({ project }: ProjectCalendarProps) {
                           height: `${duration * 80 - 4}px`,
                           minHeight: '20px'
                         }}
-                        onClick={() => handleEditEvent(event)}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleEditEvent(event);
+                        }}
                       >
                         <div className="font-medium truncate">{event.title}</div>
                         {duration > 0.5 && (
@@ -631,7 +813,8 @@ export function ProjectCalendar({ project }: ProjectCalendarProps) {
                       </DropdownMenuItem>
                       <DropdownMenuItem 
                         className="text-red-600"
-                        onClick={() => {
+                        onClick={(e) => {
+                          e.stopPropagation();
                           setSelectedEvent(event);
                           setShowDeleteDialog(true);
                         }}
@@ -921,13 +1104,22 @@ export function ProjectCalendar({ project }: ProjectCalendarProps) {
               })}
             </div>
             
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => setSelectedCategories(eventCategories.map(c => c.id))}
-            >
-              Show All
-            </Button>
+            <div className="flex gap-2">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setSelectedCategories(eventCategories.map(c => c.id))}
+              >
+                Show All
+              </Button>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setSelectedCategories([])}
+              >
+                Hide All
+              </Button>
+            </div>
           </div>
         </Card>
       )}
@@ -983,10 +1175,12 @@ export function ProjectCalendar({ project }: ProjectCalendarProps) {
                       const Icon = category.icon;
                       return (
                         <SelectItem key={category.id} value={category.id}>
-                          <div className="flex items-center gap-2">
-                            <Icon className="h-4 w-4" />
+                          <span className="flex items-center gap-2">
+                            <span className={cn("p-1 rounded", category.color)}>
+                              <Icon className="h-3 w-3 text-white" />
+                            </span>
                             {category.name}
-                          </div>
+                          </span>
                         </SelectItem>
                       );
                     })}
