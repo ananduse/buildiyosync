@@ -43,6 +43,7 @@ import {
   Timer,
   UserCheck,
   Settings,
+  Flag,
   Info,
   ExternalLink,
   Copy,
@@ -126,6 +127,7 @@ import {
   FolderOpenIcon,
   BarChart2,
   ActivityIcon,
+  Kanban,
 } from 'lucide-react';
 
 import { cn } from '@/lib/utils';
@@ -894,11 +896,27 @@ export default function ProjectDetailsView() {
 
       {/* Content with Tabs */}
       <div className="container mx-auto max-w-[1600px] p-3">
-        <Tabs defaultValue="overview" className="w-full">
-          <TabsList className="grid w-full grid-cols-9 mb-6">
-            <TabsTrigger value="overview" className="flex items-center gap-2">
+        <Tabs defaultValue="dashboard" className="w-full">
+          <TabsList className="grid w-full grid-cols-10 mb-6">
+            <TabsTrigger value="dashboard" className="flex items-center gap-2">
               <LayoutGrid className="h-4 w-4" />
-              Overview
+              Dashboard
+            </TabsTrigger>
+            <TabsTrigger value="projects" className="flex items-center gap-2">
+              <Briefcase className="h-4 w-4" />
+              Projects
+            </TabsTrigger>
+            <TabsTrigger value="tasks" className="flex items-center gap-2">
+              <ListTodo className="h-4 w-4" />
+              Tasks
+            </TabsTrigger>
+            <TabsTrigger value="kanban" className="flex items-center gap-2">
+              <Kanban className="h-4 w-4" />
+              Kanban
+            </TabsTrigger>
+            <TabsTrigger value="milestones" className="flex items-center gap-2">
+              <Flag className="h-4 w-4" />
+              Milestones
             </TabsTrigger>
             <TabsTrigger value="timeline" className="flex items-center gap-2">
               <Calendar className="h-4 w-4" />
@@ -908,14 +926,6 @@ export default function ProjectDetailsView() {
               <Users className="h-4 w-4" />
               Team
             </TabsTrigger>
-            <TabsTrigger value="budget" className="flex items-center gap-2">
-              <DollarSign className="h-4 w-4" />
-              Budget
-            </TabsTrigger>
-            <TabsTrigger value="tasks" className="flex items-center gap-2">
-              <ListTodo className="h-4 w-4" />
-              Tasks
-            </TabsTrigger>
             <TabsTrigger value="documents" className="flex items-center gap-2">
               <FolderOpenIcon className="h-4 w-4" />
               Documents
@@ -924,100 +934,89 @@ export default function ProjectDetailsView() {
               <BarChart2 className="h-4 w-4" />
               Reports
             </TabsTrigger>
-            <TabsTrigger value="calendar" className="flex items-center gap-2">
-              <CalendarDays className="h-4 w-4" />
-              Calendar
-            </TabsTrigger>
-            <TabsTrigger value="activity" className="flex items-center gap-2">
-              <ActivityIcon className="h-4 w-4" />
-              Activity
+            <TabsTrigger value="settings" className="flex items-center gap-2">
+              <Settings className="h-4 w-4" />
+              Settings
             </TabsTrigger>
           </TabsList>
 
-          <TabsContent value="overview" className="space-y-4">
+          <TabsContent value="dashboard" className="space-y-4">
             <div className="grid gap-4 md:grid-cols-4">
-              <Card>
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium">Progress</CardTitle>
-                  <Target className="h-4 w-4 text-muted-foreground" />
-                </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold">{project.timeline.progress}%</div>
-                  <Progress value={project.timeline.progress} className="mt-2" />
-                  <p className="text-xs text-muted-foreground mt-1">
-                    {project.timeline.daysElapsed} of {project.timeline.duration} days
-                  </p>
-                </CardContent>
-              </Card>
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium">Progress</CardTitle>
+                <Target className="h-4 w-4 text-muted-foreground" />
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">{project.timeline.progress}%</div>
+                <Progress value={project.timeline.progress} className="mt-2" />
+                <p className="text-xs text-muted-foreground mt-1">
+                  {project.timeline.daysElapsed} of {project.timeline.duration} days
+                </p>
+              </CardContent>
+            </Card>
 
-              <Card>
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium">Budget Used</CardTitle>
-                  <CircleDollarSign className="h-4 w-4 text-muted-foreground" />
-                </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold">
-                    ${(project.budget.spent / 1000000).toFixed(1)}M
-                  </div>
-                  <Progress value={budgetUtilization} className="mt-2" />
-                  <p className="text-xs text-muted-foreground mt-1">
-                    of ${(project.budget.total / 1000000).toFixed(0)}M total
-                  </p>
-                </CardContent>
-              </Card>
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium">Budget Used</CardTitle>
+                <CircleDollarSign className="h-4 w-4 text-muted-foreground" />
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">
+                  ${(project.budget.spent / 1000000).toFixed(1)}M
+                </div>
+                <Progress value={budgetUtilization} className="mt-2" />
+                <p className="text-xs text-muted-foreground mt-1">
+                  of ${(project.budget.total / 1000000).toFixed(0)}M total
+                </p>
+              </CardContent>
+            </Card>
 
-              <Card>
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium">Tasks</CardTitle>
-                  <CheckSquare className="h-4 w-4 text-muted-foreground" />
-                </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold">
-                    {project.tasks.completed}/{project.tasks.total}
-                  </div>
-                  <Progress value={(project.tasks.completed / project.tasks.total) * 100} className="mt-2" />
-                  <p className="text-xs text-muted-foreground mt-1">
-                    {project.tasks.inProgress} in progress
-                  </p>
-                </CardContent>
-              </Card>
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium">Tasks</CardTitle>
+                <CheckSquare className="h-4 w-4 text-muted-foreground" />
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">
+                  {project.tasks.completed}/{project.tasks.total}
+                </div>
+                <Progress value={(project.tasks.completed / project.tasks.total) * 100} className="mt-2" />
+                <p className="text-xs text-muted-foreground mt-1">
+                  {project.tasks.inProgress} in progress
+                </p>
+              </CardContent>
+            </Card>
 
-              <Card>
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium">Team</CardTitle>
-                  <Users className="h-4 w-4 text-muted-foreground" />
-                </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold">{project.team.totalMembers}</div>
-                  <div className="flex items-center gap-4 mt-2">
-                    <span className="text-xs text-muted-foreground">
-                      {project.team.employees} employees
-                    </span>
-                    <span className="text-xs text-muted-foreground">
-                      {project.team.contractors} contractors
-                    </span>
-                  </div>
-                </CardContent>
-              </Card>
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium">Team</CardTitle>
+                <Users className="h-4 w-4 text-muted-foreground" />
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">{project.team.totalMembers}</div>
+                <div className="flex items-center gap-4 mt-2">
+                  <span className="text-xs text-muted-foreground">
+                    {project.team.employees} employees
+                  </span>
+                  <span className="text-xs text-muted-foreground">
+                    {project.team.contractors} contractors
+                  </span>
+                </div>
+              </CardContent>
+            </Card>
             </div>
 
             {/* Project Description */}
             <Card>
-              <CardHeader>
-                <CardTitle>Project Description</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-muted-foreground">{project.description}</p>
-              </CardContent>
-            </Card>
-
-            {/* Key Metrics */}
-            <div className="grid gap-4 md:grid-cols-2">
-              <Card>
-                <CardHeader>
-                  <CardTitle>Schedule Performance</CardTitle>
-                </CardHeader>
-                <CardContent>
+            <CardHeader>
+              <CardTitle>Project Description</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-muted-foreground">{project.description}</p>
+              <div className="grid gap-4 md:grid-cols-2 mt-4">
+                <div>
+                  <h4 className="font-semibold mb-2">Schedule Performance</h4>
                   <ResponsiveContainer width="100%" height={200}>
                     <LineChart data={progressChartData}>
                       <CartesianGrid strokeDasharray="3 3" />
@@ -1028,14 +1027,9 @@ export default function ProjectDetailsView() {
                       <Line type="monotone" dataKey="actual" stroke="#3b82f6" strokeWidth={2} />
                     </LineChart>
                   </ResponsiveContainer>
-                </CardContent>
-              </Card>
-
-              <Card>
-                <CardHeader>
-                  <CardTitle>Budget Distribution</CardTitle>
-                </CardHeader>
-                <CardContent>
+                </div>
+                <div>
+                  <h4 className="font-semibold mb-2">Budget Distribution</h4>
                   <ResponsiveContainer width="100%" height={200}>
                     <PieChart>
                       <Pie
@@ -1054,9 +1048,136 @@ export default function ProjectDetailsView() {
                       <RechartsTooltip />
                     </PieChart>
                   </ResponsiveContainer>
-                </CardContent>
-              </Card>
-            </div>
+                </div>
+              </div>
+            </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="projects">
+            <Card>
+              <CardHeader>
+                <CardTitle>Project Overview</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  <div className="grid gap-4 md:grid-cols-2">
+                    <div>
+                      <h4 className="font-semibold mb-2">Project Details</h4>
+                      <div className="space-y-2">
+                        <div className="flex justify-between">
+                          <span className="text-muted-foreground">Project ID:</span>
+                          <span className="font-medium">{project.id}</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-muted-foreground">Customer:</span>
+                          <span className="font-medium">{project.customer.name}</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-muted-foreground">Location:</span>
+                          <span className="font-medium">{project.location.city}, {project.location.state}</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-muted-foreground">Phase:</span>
+                          <Badge>{project.phase}</Badge>
+                        </div>
+                      </div>
+                    </div>
+                    <div>
+                      <h4 className="font-semibold mb-2">Project Metrics</h4>
+                      <div className="space-y-2">
+                        <div className="flex justify-between">
+                          <span className="text-muted-foreground">Overall Health:</span>
+                          <span className="font-medium capitalize">{project.performance.overallHealth}</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-muted-foreground">Efficiency:</span>
+                          <span className="font-medium">{project.performance.efficiency}%</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-muted-foreground">Quality Index:</span>
+                          <span className="font-medium">{project.performance.qualityIndex}%</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-muted-foreground">Safety Index:</span>
+                          <span className="font-medium">{project.performance.safetyIndex}%</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <Separator />
+                  <div>
+                    <h4 className="font-semibold mb-2">Description</h4>
+                    <p className="text-muted-foreground">{project.description}</p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="tasks">
+            <TasksTab project={project} />
+          </TabsContent>
+
+          <TabsContent value="kanban">
+            <Card>
+              <CardHeader>
+                <CardTitle>Kanban Board</CardTitle>
+                <CardDescription>Manage tasks in a visual board layout</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="grid gap-4 md:grid-cols-4">
+                  {['To Do', 'In Progress', 'Review', 'Done'].map((column) => (
+                    <div key={column} className="space-y-2">
+                      <h3 className="font-semibold text-sm text-muted-foreground">{column}</h3>
+                      <div className="space-y-2">
+                        {[1, 2, 3].map((task) => (
+                          <Card key={task} className="p-3">
+                            <div className="space-y-1">
+                              <p className="text-sm font-medium">Task {task}</p>
+                              <p className="text-xs text-muted-foreground">Sample task description</p>
+                              <div className="flex items-center gap-2 mt-2">
+                                <Badge variant="outline" className="text-xs">Priority</Badge>
+                                <span className="text-xs text-muted-foreground">2 days ago</span>
+                              </div>
+                            </div>
+                          </Card>
+                        ))}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="milestones">
+            <Card>
+              <CardHeader>
+                <CardTitle>Project Milestones</CardTitle>
+                <CardDescription>Track key project milestones and deliverables</CardDescription>
+              </CardHeader>
+              <CardContent>
+              <div className="space-y-4">
+                {project.milestones.slice(0, 5).map((milestone: any) => (
+                  <div key={milestone.id} className="flex items-center justify-between p-3 border rounded-lg">
+                    <div className="flex items-center gap-3">
+                      {milestone.status === 'completed' && <CheckCircle2 className="h-5 w-5 text-green-600" />}
+                      {milestone.status === 'in-progress' && <Clock className="h-5 w-5 text-blue-600" />}
+                      {milestone.status === 'pending' && <Circle className="h-5 w-5 text-gray-400" />}
+                      <div>
+                        <p className="font-medium">{milestone.name}</p>
+                        <p className="text-sm text-muted-foreground">Due: {format(new Date(milestone.date), 'MMM dd, yyyy')}</p>
+                      </div>
+                    </div>
+                    <Badge variant={milestone.status === 'completed' ? 'default' : milestone.status === 'in-progress' ? 'secondary' : 'outline'}>
+                      {milestone.status}
+                    </Badge>
+                  </div>
+                ))}
+              </div>
+              </CardContent>
+            </Card>
           </TabsContent>
 
           <TabsContent value="timeline">
@@ -1067,14 +1188,6 @@ export default function ProjectDetailsView() {
             <TeamTab project={project} />
           </TabsContent>
 
-          <TabsContent value="budget">
-            <BudgetTab project={project} />
-          </TabsContent>
-
-          <TabsContent value="tasks">
-            <TasksTab project={project} />
-          </TabsContent>
-
           <TabsContent value="documents">
             <DocumentsTab project={project} />
           </TabsContent>
@@ -1083,12 +1196,82 @@ export default function ProjectDetailsView() {
             <ReportsTab project={project} />
           </TabsContent>
 
-          <TabsContent value="calendar">
-            <CalendarTab project={project} />
-          </TabsContent>
-
-          <TabsContent value="activity">
-            <ActivityTab project={project} />
+          <TabsContent value="settings">
+            <Card>
+              <CardHeader>
+                <CardTitle>Project Settings</CardTitle>
+                <CardDescription>Manage project configuration and preferences</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-6">
+                  <div>
+                    <h3 className="text-lg font-semibold mb-4">General Settings</h3>
+                    <div className="space-y-4">
+                      <div className="flex items-center justify-between">
+                        <div className="space-y-0.5">
+                          <Label>Project Notifications</Label>
+                          <p className="text-sm text-muted-foreground">Receive updates about project changes</p>
+                        </div>
+                        <Switch defaultChecked />
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <div className="space-y-0.5">
+                          <Label>Email Reports</Label>
+                          <p className="text-sm text-muted-foreground">Get weekly project reports via email</p>
+                        </div>
+                        <Switch />
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <div className="space-y-0.5">
+                          <Label>Auto-save Changes</Label>
+                          <p className="text-sm text-muted-foreground">Automatically save project updates</p>
+                        </div>
+                        <Switch defaultChecked />
+                      </div>
+                    </div>
+                  </div>
+                  <Separator />
+                  <div>
+                    <h3 className="text-lg font-semibold mb-4">Access Control</h3>
+                    <div className="space-y-4">
+                      <div>
+                        <Label>Project Visibility</Label>
+                        <Select defaultValue="team">
+                          <SelectTrigger className="w-full mt-2">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="private">Private</SelectItem>
+                            <SelectItem value="team">Team Members Only</SelectItem>
+                            <SelectItem value="organization">Organization</SelectItem>
+                            <SelectItem value="public">Public</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <div>
+                        <Label>Default Permission Level</Label>
+                        <Select defaultValue="view">
+                          <SelectTrigger className="w-full mt-2">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="view">View Only</SelectItem>
+                            <SelectItem value="comment">Can Comment</SelectItem>
+                            <SelectItem value="edit">Can Edit</SelectItem>
+                            <SelectItem value="admin">Admin</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    </div>
+                  </div>
+                  <Separator />
+                  <div className="flex justify-end gap-2">
+                    <Button variant="outline">Cancel</Button>
+                    <Button>Save Settings</Button>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
           </TabsContent>
         </Tabs>
       </div>
