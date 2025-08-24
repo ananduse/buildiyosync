@@ -109,6 +109,7 @@ import {
 } from '@/components/ui/tooltip';
 import { Calendar } from '@/components/ui/calendar';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Checkbox } from '@/components/ui/checkbox';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -439,6 +440,11 @@ export function ProjectCalendar({ project }: ProjectCalendarProps) {
   const [searchQuery, setSearchQuery] = useState('');
   const [showWeekends, setShowWeekends] = useState(true);
   const [showWeekNumbers, setShowWeekNumbers] = useState(false);
+  const [dateRange, setDateRange] = useState<{ from: Date | undefined; to: Date | undefined }>({
+    from: undefined,
+    to: undefined
+  });
+  const [showCategoryDropdown, setShowCategoryDropdown] = useState(false);
 
   // Get calendar days based on view mode
   const calendarDays = useMemo(() => {
@@ -462,9 +468,26 @@ export function ProjectCalendar({ project }: ProjectCalendarProps) {
       const matchesCategory = selectedCategories.includes(event.category);
       const matchesSearch = event.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
                            event.description?.toLowerCase().includes(searchQuery.toLowerCase());
-      return matchesCategory && matchesSearch;
+      
+      // Date range filter
+      let matchesDateRange = true;
+      if (dateRange.from || dateRange.to) {
+        const eventDate = startOfDay(event.startDate);
+        if (dateRange.from && dateRange.to) {
+          matchesDateRange = isWithinInterval(eventDate, { 
+            start: startOfDay(dateRange.from), 
+            end: endOfDay(dateRange.to) 
+          });
+        } else if (dateRange.from) {
+          matchesDateRange = eventDate >= startOfDay(dateRange.from);
+        } else if (dateRange.to) {
+          matchesDateRange = eventDate <= endOfDay(dateRange.to);
+        }
+      }
+      
+      return matchesCategory && matchesSearch && matchesDateRange;
     });
-  }, [events, selectedCategories, searchQuery]);
+  }, [events, selectedCategories, searchQuery, dateRange]);
 
   // Get events for a specific day
   const getEventsForDay = (date: Date) => {
@@ -1079,49 +1102,258 @@ export function ProjectCalendar({ project }: ProjectCalendarProps) {
       {/* Filters */}
       {showFilters && (
         <Card className="p-4">
-          <div className="flex items-center justify-between">
+          <div className="flex items-center gap-4 flex-wrap">
+            {/* Date Range Filter */}
             <div className="flex items-center gap-2">
-              <span className="text-sm font-medium">Categories:</span>
-              {eventCategories.map(category => {
-                const Icon = category.icon;
-                return (
+              <CalendarIcon className="h-4 w-4 text-muted-foreground" />
+              <Popover>
+                <PopoverTrigger asChild>
                   <Button
-                    key={category.id}
-                    variant={selectedCategories.includes(category.id) ? "default" : "outline"}
+                    variant="outline"
                     size="sm"
-                    onClick={() => {
-                      if (selectedCategories.includes(category.id)) {
-                        setSelectedCategories(selectedCategories.filter(c => c !== category.id));
-                      } else {
-                        setSelectedCategories([...selectedCategories, category.id]);
-                      }
-                    }}
+                    className={cn(
+                      "justify-start text-left font-normal min-w-[240px]",
+                      !dateRange.from && !dateRange.to && "text-muted-foreground"
+                    )}
                   >
-                    <Icon className="h-3 w-3 mr-1" />
-                    {category.name}
+                    {dateRange.from ? (
+                      dateRange.to ? (
+                        <>
+                          {format(dateRange.from, "LLL dd, y")} - {format(dateRange.to, "LLL dd, y")}
+                        </>
+                      ) : (
+                        format(dateRange.from, "LLL dd, y")
+                      )
+                    ) : (
+                      "Select date range"
+                    )}
                   </Button>
-                );
-              })}
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0" align="start">
+                  <Calendar
+                    initialFocus
+                    mode="range"
+                    defaultMonth={dateRange.from}
+                    selected={{ from: dateRange.from, to: dateRange.to }}
+                    onSelect={(range: any) => setDateRange(range || { from: undefined, to: undefined })}
+                    numberOfMonths={2}
+                  />
+                  <div className="p-3 border-t flex justify-between">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => setDateRange({ from: undefined, to: undefined })}
+                    >
+                      Clear
+                    </Button>
+                    <div className="flex gap-2">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => {
+                          const today = new Date();
+                          setDateRange({
+                            from: startOfWeek(today),
+                            to: endOfWeek(today)
+                          });
+                        }}
+                      >
+                        This Week
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => {
+                          const today = new Date();
+                          setDateRange({
+                            from: startOfMonth(today),
+                            to: endOfMonth(today)
+                          });
+                        }}
+                      >
+                        This Month
+                      </Button>
+                    </div>
+                  </div>
+                </PopoverContent>
+              </Popover>
+              {(dateRange.from || dateRange.to) && (
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-6 w-6"
+                  onClick={() => setDateRange({ from: undefined, to: undefined })}
+                >
+                  <X className="h-3 w-3" />
+                </Button>
+              )}
             </div>
-            
-            <div className="flex gap-2">
+
+            {/* Category Filter Dropdown */}
+            <div className="flex items-center gap-2">
+              <Tag className="h-4 w-4 text-muted-foreground" />
+              <Popover open={showCategoryDropdown} onOpenChange={setShowCategoryDropdown}>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="justify-between min-w-[200px]"
+                  >
+                    <span className="truncate">
+                      {selectedCategories.length === 0
+                        ? "No categories selected"
+                        : selectedCategories.length === eventCategories.length
+                        ? "All categories"
+                        : `${selectedCategories.length} categories`}
+                    </span>
+                    <ChevronDown className="h-4 w-4 ml-2 shrink-0" />
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-[280px] p-2" align="start">
+                  <div className="space-y-1">
+                    <div className="px-2 py-1.5 text-sm font-medium">Select Categories</div>
+                    <Separator />
+                    <ScrollArea className="h-[300px]">
+                      <div className="space-y-1 p-1">
+                        {eventCategories.map(category => {
+                          const Icon = category.icon;
+                          const isSelected = selectedCategories.includes(category.id);
+                          return (
+                            <button
+                              key={category.id}
+                              className={cn(
+                                "w-full flex items-center gap-2 p-1 rounded-md transition-colors",
+                                "hover:bg-accent/50"
+                              )}
+                              onClick={() => {
+                                if (isSelected) {
+                                  setSelectedCategories(selectedCategories.filter(c => c !== category.id));
+                                } else {
+                                  setSelectedCategories([...selectedCategories, category.id]);
+                                }
+                              }}
+                            >
+                              <Checkbox
+                                checked={isSelected}
+                                className="shrink-0"
+                                onClick={(e) => e.stopPropagation()}
+                              />
+                              <div className={cn(
+                                "flex-1 rounded-md px-3 py-2 flex items-center gap-3 text-center",
+                                category.color,
+                                "text-white font-medium shadow-sm"
+                              )}>
+                                <Icon className="h-4 w-4 shrink-0" />
+                                <span className="flex-1">{category.name}</span>
+                              </div>
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </ScrollArea>
+                    <Separator />
+                    <div className="flex justify-between p-1">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => setSelectedCategories([])}
+                      >
+                        Clear
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => setSelectedCategories(eventCategories.map(c => c.id))}
+                      >
+                        Select All
+                      </Button>
+                    </div>
+                  </div>
+                </PopoverContent>
+              </Popover>
+            </div>
+
+            {/* Quick Filters */}
+            <div className="flex items-center gap-2 ml-auto">
               <Button
-                variant="ghost"
+                variant={selectedCategories.length === eventCategories.length ? "default" : "outline"}
                 size="sm"
                 onClick={() => setSelectedCategories(eventCategories.map(c => c.id))}
               >
-                Show All
+                All Events
               </Button>
               <Button
-                variant="ghost"
+                variant="outline"
                 size="sm"
-                onClick={() => setSelectedCategories([])}
+                onClick={() => {
+                  const today = new Date();
+                  setDateRange({
+                    from: today,
+                    to: addDays(today, 7)
+                  });
+                }}
               >
-                Hide All
+                Next 7 Days
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => {
+                  const today = new Date();
+                  setDateRange({
+                    from: today,
+                    to: addDays(today, 30)
+                  });
+                }}
+              >
+                Next 30 Days
               </Button>
             </div>
           </div>
+          
+          {/* Active Filters Display */}
+          {(selectedCategories.length < eventCategories.length || dateRange.from || dateRange.to) && (
+            <div className="flex items-center gap-2 mt-3 pt-3 border-t">
+              <span className="text-sm text-muted-foreground">Active filters:</span>
+              {selectedCategories.length < eventCategories.length && (
+                <Badge variant="secondary" className="text-xs">
+                  {selectedCategories.length} of {eventCategories.length} categories
+                </Badge>
+              )}
+              {(dateRange.from || dateRange.to) && (
+                <Badge variant="secondary" className="text-xs">
+                  Date range applied
+                </Badge>
+              )}
+              <Button
+                variant="ghost"
+                size="sm"
+                className="ml-auto h-7 text-xs"
+                onClick={() => {
+                  setSelectedCategories(eventCategories.map(c => c.id));
+                  setDateRange({ from: undefined, to: undefined });
+                }}
+              >
+                Clear all filters
+              </Button>
+            </div>
+          )}
         </Card>
+      )}
+      
+      {/* Results Count */}
+      {(selectedCategories.length < eventCategories.length || dateRange.from || dateRange.to || searchQuery) && (
+        <div className="flex items-center justify-between px-2">
+          <p className="text-sm text-muted-foreground">
+            Showing <span className="font-medium text-foreground">{filteredEvents.length}</span> of{" "}
+            <span className="font-medium text-foreground">{events.length}</span> events
+          </p>
+          {filteredEvents.length === 0 && (
+            <p className="text-sm text-amber-600">
+              No events match your filters. Try adjusting your criteria.
+            </p>
+          )}
+        </div>
       )}
       
       {/* Calendar View */}
