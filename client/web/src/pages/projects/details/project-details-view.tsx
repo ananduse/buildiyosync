@@ -750,7 +750,7 @@ export default function ProjectDetailsView() {
     <div className="min-h-screen bg-background">
       {/* Header */}
       <div className="border-b bg-white">
-        <div className="px-6 py-4">
+        <div className="container mx-auto px-6 py-4 max-w-[1600px]">
           {/* Breadcrumb */}
           <Breadcrumb className="mb-4">
             <BreadcrumbList>
@@ -869,7 +869,7 @@ export default function ProjectDetailsView() {
         </div>
 
         {/* Tabs */}
-        <div className="px-6">
+        <div className="container mx-auto px-6 max-w-[1600px]">
           <Tabs value={activeTab} onValueChange={setActiveTab}>
             <TabsList className="h-12 p-0 bg-transparent border-b-0 w-full justify-start">
               <TabsTrigger 
@@ -941,7 +941,7 @@ export default function ProjectDetailsView() {
       </div>
 
       {/* Content */}
-      <div className="p-6">
+      <div className="container mx-auto p-6 max-w-[1600px]">
         {activeTab === 'overview' && (
           <div className="space-y-6">
             {/* Key Metrics */}

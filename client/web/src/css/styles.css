@@ -31,6 +31,10 @@
 @custom-variant light (&:not(.dark *));
 
 /** Custom Scrollbar Styles for Gantt Chart **/
+body.gantt-active {
+  overflow: hidden !important;
+}
+
 .gantt-scrollbar {
   scrollbar-width: thin;
   scrollbar-color: rgb(156 163 175) transparent;

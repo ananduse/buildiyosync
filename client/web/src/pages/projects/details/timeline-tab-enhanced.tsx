@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import React, { useState, useMemo } from 'react';
 import { format, addDays, differenceInDays, startOfMonth, endOfMonth, eachDayOfInterval, isSameMonth, isToday, isBefore, isAfter } from 'date-fns';
 import {
   Calendar as CalendarIcon,
@@ -163,6 +163,19 @@ interface TimelineTabEnhancedProps {
 
 export function TimelineTabEnhanced({ project }: TimelineTabEnhancedProps) {
   const [viewMode, setViewMode] = useState<'timeline' | 'gantt' | 'calendar' | 'list'>('timeline');
+  
+  // Disable page scroll when in Gantt view
+  React.useEffect(() => {
+    if (viewMode === 'gantt') {
+      document.body.classList.add('gantt-active');
+    } else {
+      document.body.classList.remove('gantt-active');
+    }
+    
+    return () => {
+      document.body.classList.remove('gantt-active');
+    };
+  }, [viewMode]);
   const [dateRange, setDateRange] = useState<{ from: Date | undefined; to: Date | undefined }>({
     from: new Date(project.timeline.startDate),
     to: new Date(project.timeline.endDate)
@@ -566,6 +579,17 @@ export function TimelineTabEnhanced({ project }: TimelineTabEnhancedProps) {
     const [newTaskParent, setNewTaskParent] = useState<number | null>(null);
     const [scrollLeft, setScrollLeft] = useState(0);
     
+    // Disable body scroll when Gantt is mounted
+    React.useEffect(() => {
+      // Add class to body
+      document.body.classList.add('gantt-active');
+      
+      // Cleanup function to remove class when component unmounts
+      return () => {
+        document.body.classList.remove('gantt-active');
+      };
+    }, []);
+    
     const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
     
     // Calculate timeline units based on zoom level and date range
@@ -722,8 +746,8 @@ export function TimelineTabEnhanced({ project }: TimelineTabEnhancedProps) {
     };
 
     return (
-      <Card className="overflow-hidden">
-        <CardHeader>
+      <Card className="w-full max-w-full overflow-hidden h-[calc(100vh-200px)]">
+        <CardHeader className="flex-shrink-0">
           <div className="flex items-center justify-between flex-wrap gap-4">
             <div className="min-w-0">
               <CardTitle>Interactive Gantt Chart</CardTitle>
@@ -814,7 +838,7 @@ export function TimelineTabEnhanced({ project }: TimelineTabEnhancedProps) {
           </div>
         </CardHeader>
         <CardContent 
-          className="p-0 relative"
+          className="p-0 relative h-[calc(100%-120px)]"
           onMouseMove={(e) => {
             if (draggedItem) handleDrag(e);
             if (isResizing) handleResize(e);
@@ -822,9 +846,9 @@ export function TimelineTabEnhanced({ project }: TimelineTabEnhancedProps) {
           onMouseUp={handleMouseUp}
           onMouseLeave={handleMouseUp}
         >
-          <div className="flex h-[600px] border-t" style={{ overflow: 'hidden' }}>
+          <div className="flex h-full border-t w-full max-w-full" style={{ overflow: 'hidden' }}>
             {/* Fixed Left Panel */}
-            <div className="w-[400px] min-w-[400px] max-w-[400px] border-r bg-background flex-shrink-0 flex flex-col relative z-10">
+            <div className="w-[350px] min-w-[350px] max-w-[350px] border-r bg-background flex-shrink-0 flex flex-col relative z-10">
               {/* Left Panel Header */}
               <div className="h-12 border-b bg-muted/30 flex items-center px-4 flex-shrink-0">
                 <span className="font-semibold text-sm flex-1">Task Name</span>
@@ -1199,10 +1223,10 @@ export function TimelineTabEnhanced({ project }: TimelineTabEnhancedProps) {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 w-full max-w-full" style={{ overflow: viewMode === 'gantt' ? 'hidden' : 'auto' }}>
       {/* Enhanced Timeline Header */}
       <div className="flex flex-col gap-4">
-        <div className="flex items-center justify-between">
+        <div className="flex items-center justify-between flex-wrap gap-4">
           <div>
             <h2 className="text-2xl font-bold">Project Timeline & Milestones</h2>
             <p className="text-muted-foreground">
