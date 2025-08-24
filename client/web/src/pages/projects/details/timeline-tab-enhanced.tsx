@@ -578,6 +578,10 @@ export function TimelineTabEnhanced({ project }: TimelineTabEnhancedProps) {
     const [showAddTask, setShowAddTask] = useState(false);
     const [newTaskParent, setNewTaskParent] = useState<number | null>(null);
     const [scrollLeft, setScrollLeft] = useState(0);
+    const [showEditDialog, setShowEditDialog] = useState(false);
+    const [editingTask, setEditingTask] = useState<any>(null);
+    const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+    const [deletingTask, setDeletingTask] = useState<any>(null);
     
     // Disable body scroll when Gantt is mounted
     React.useEffect(() => {
@@ -669,10 +673,99 @@ export function TimelineTabEnhanced({ project }: TimelineTabEnhancedProps) {
       });
     };
     
-    // Handle edit milestone
-    const handleEditMilestone = (milestone: any) => {
-      setEditingMilestone(milestone);
+    // Handle edit task/milestone
+    const handleEditTask = (task: any) => {
+      setEditingTask(task);
       setShowEditDialog(true);
+    };
+    
+    // Handle add new task
+    const handleAddTask = (parentId?: number) => {
+      setNewTaskParent(parentId || null);
+      setShowAddTask(true);
+    };
+    
+    // Handle delete task/milestone
+    const handleDeleteTask = (task: any) => {
+      setDeletingTask(task);
+      setShowDeleteDialog(true);
+    };
+    
+    // Save new task
+    const handleSaveNewTask = (taskData: any) => {
+      const newTask = {
+        id: Math.max(...allTasks.map(t => t.id)) + 1,
+        ...taskData,
+        status: 'pending',
+        progress: 0,
+        dependencies: []
+      };
+      
+      if (newTaskParent) {
+        // Add as subtask
+        setProjects(prev => prev.map(p => {
+          if (p.id === newTaskParent) {
+            return {
+              ...p,
+              subtasks: [...(p.subtasks || []), newTask]
+            };
+          }
+          return p;
+        }));
+      } else {
+        // Add as new project/milestone
+        setProjects(prev => [...prev, { ...newTask, type: 'project', subtasks: [] }]);
+      }
+      
+      setShowAddTask(false);
+      setNewTaskParent(null);
+    };
+    
+    // Update existing task
+    const handleUpdateTask = (taskData: any) => {
+      setProjects(prev => prev.map(p => {
+        if (p.id === taskData.id) {
+          return { ...p, ...taskData };
+        }
+        if (p.subtasks) {
+          return {
+            ...p,
+            subtasks: p.subtasks.map((t: any) => 
+              t.id === taskData.id ? { ...t, ...taskData } : t
+            )
+          };
+        }
+        return p;
+      }));
+      
+      setShowEditDialog(false);
+      setEditingTask(null);
+    };
+    
+    // Delete task
+    const handleConfirmDelete = () => {
+      if (!deletingTask) return;
+      
+      setProjects(prev => {
+        // If it's a main project/milestone
+        if (deletingTask.type === 'project') {
+          return prev.filter(p => p.id !== deletingTask.id);
+        }
+        
+        // If it's a subtask
+        return prev.map(p => {
+          if (p.subtasks) {
+            return {
+              ...p,
+              subtasks: p.subtasks.filter((t: any) => t.id !== deletingTask.id)
+            };
+          }
+          return p;
+        });
+      });
+      
+      setShowDeleteDialog(false);
+      setDeletingTask(null);
     };
 
     // Handle drag start
@@ -746,7 +839,9 @@ export function TimelineTabEnhanced({ project }: TimelineTabEnhancedProps) {
     };
 
     return (
-      <Card className="w-full max-w-full overflow-hidden h-[calc(100vh-200px)]">
+      <>
+      <div className="gantt-chart-container">
+      <Card className="w-full overflow-hidden" style={{ height: 'calc(100vh - 280px)', maxWidth: '100%' }}>
         <CardHeader className="flex-shrink-0">
           <div className="flex items-center justify-between flex-wrap gap-4">
             <div className="min-w-0">
@@ -838,7 +933,7 @@ export function TimelineTabEnhanced({ project }: TimelineTabEnhancedProps) {
           </div>
         </CardHeader>
         <CardContent 
-          className="p-0 relative h-[calc(100%-120px)]"
+          className="p-0 relative" style={{ height: 'calc(100% - 140px)' }}
           onMouseMove={(e) => {
             if (draggedItem) handleDrag(e);
             if (isResizing) handleResize(e);
@@ -846,9 +941,9 @@ export function TimelineTabEnhanced({ project }: TimelineTabEnhancedProps) {
           onMouseUp={handleMouseUp}
           onMouseLeave={handleMouseUp}
         >
-          <div className="flex h-full border-t w-full max-w-full" style={{ overflow: 'hidden' }}>
+          <div className="flex h-full border-t" style={{ width: '100%', minWidth: 0, overflow: 'hidden' }}>
             {/* Fixed Left Panel */}
-            <div className="w-[350px] min-w-[350px] max-w-[350px] border-r bg-background flex-shrink-0 flex flex-col relative z-10">
+            <div className="border-r bg-background flex-shrink-0 flex flex-col relative z-10" style={{ width: '280px', minWidth: '280px' }}>
               {/* Left Panel Header */}
               <div className="h-12 border-b bg-muted/30 flex items-center px-4 flex-shrink-0">
                 <span className="font-semibold text-sm flex-1">Task Name</span>
@@ -856,7 +951,16 @@ export function TimelineTabEnhanced({ project }: TimelineTabEnhancedProps) {
               </div>
               
               {/* Left Panel Rows */}
-              <div className="flex-1 gantt-scrollbar" style={{ overflowY: 'auto', overflowX: 'hidden' }}>
+              <div 
+                className="flex-1 gantt-scrollbar" 
+                style={{ overflowY: 'scroll', overflowX: 'hidden' }} 
+                id="gantt-left-scroll"
+                onScroll={(e) => {
+                  // Sync vertical scroll with right panel
+                  const rightPanel = document.getElementById('gantt-right-scroll');
+                  if (rightPanel) rightPanel.scrollTop = e.currentTarget.scrollTop;
+                }}
+              >
                 {allTasks.map((task) => (
                   <div 
                     key={task.id} 
@@ -927,12 +1031,12 @@ export function TimelineTabEnhanced({ project }: TimelineTabEnhancedProps) {
             </div>
 
             {/* Scrollable Right Timeline */}
-            <div className="flex-1 min-w-0 flex flex-col overflow-hidden bg-muted/5">
+            <div className="flex-1 flex flex-col bg-muted/5" style={{ minWidth: 0, overflow: 'hidden' }}>
               {/* Timeline Header - Fixed height, scrolls with content */}
-              <div className="h-12 border-b bg-muted/30 flex-shrink-0 gantt-header-sync">
+              <div className="h-12 border-b bg-muted/30 flex-shrink-0 overflow-hidden">
                 <div 
                   className="h-full"
-                  style={{ transform: `translateX(-${scrollLeft}px)` }}
+                  style={{ transform: `translateX(-${scrollLeft}px)`, transition: 'transform 0.1s' }}
                 >
                   <div className="flex h-full" style={{ width: timelineHeaders.length * currentZoom.pixelsPerUnit }}>
                     {timelineHeaders.map((header, i) => (
@@ -951,7 +1055,14 @@ export function TimelineTabEnhanced({ project }: TimelineTabEnhancedProps) {
               {/* Timeline Content - Scrollable area */}
               <div 
                 className="flex-1 gantt-content-scroll"
-                onScroll={(e) => setScrollLeft(e.currentTarget.scrollLeft)}
+                style={{ overflowX: 'auto', overflowY: 'scroll', width: '100%', minWidth: 0 }}
+                onScroll={(e) => {
+                  setScrollLeft(e.currentTarget.scrollLeft);
+                  // Sync vertical scroll with left panel
+                  const leftPanel = document.getElementById('gantt-left-scroll');
+                  if (leftPanel) leftPanel.scrollTop = e.currentTarget.scrollTop;
+                }}
+                id="gantt-right-scroll"
               >
                 <div 
                   className="relative min-h-full"
@@ -1029,7 +1140,7 @@ export function TimelineTabEnhanced({ project }: TimelineTabEnhancedProps) {
                             zIndex: draggedItem?.id === task.id ? 10 : 1
                           }}
                           onMouseDown={(e) => handleDragStart(e, task)}
-                          onDoubleClick={() => handleEditMilestone(task)}
+                          onDoubleClick={() => handleEditTask(task)}
                         >
                           {/* Progress fill */}
                           <div 
@@ -1072,7 +1183,7 @@ export function TimelineTabEnhanced({ project }: TimelineTabEnhancedProps) {
           </div>
           
           {/* Bottom Toolbar */}
-          <div className="p-3 border-t bg-muted/30">
+          <div className="p-3 border-t bg-muted/30 flex-shrink-0">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <Button size="sm" variant="outline" onClick={() => setShowAddTask(true)}>
@@ -1113,6 +1224,268 @@ export function TimelineTabEnhanced({ project }: TimelineTabEnhancedProps) {
           </div>
         </CardContent>
       </Card>
+      </div>
+      
+      <Dialog open={showAddTask} onOpenChange={setShowAddTask}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>
+              {newTaskParent ? 'Add Sub-task' : 'Add Milestone'}
+            </DialogTitle>
+            <DialogDescription>
+              {newTaskParent ? 'Create a new sub-task for the selected milestone' : 'Create a new project milestone'}
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div>
+              <Label htmlFor="task-name">Name</Label>
+              <Input
+                id="task-name"
+                placeholder={newTaskParent ? "Enter sub-task name" : "Enter milestone name"}
+                className="mt-1"
+              />
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <Label htmlFor="start-date">Start Date</Label>
+                <Input
+                  id="start-date"
+                  type="date"
+                  defaultValue={format(new Date(), 'yyyy-MM-dd')}
+                  className="mt-1"
+                />
+              </div>
+              <div>
+                <Label htmlFor="end-date">End Date</Label>
+                <Input
+                  id="end-date"
+                  type="date"
+                  defaultValue={format(addDays(new Date(), 7), 'yyyy-MM-dd')}
+                  className="mt-1"
+                />
+              </div>
+            </div>
+            <div>
+              <Label htmlFor="status">Status</Label>
+              <Select defaultValue="pending">
+                <SelectTrigger id="status" className="mt-1">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="pending">Pending</SelectItem>
+                  <SelectItem value="in-progress">In Progress</SelectItem>
+                  <SelectItem value="completed">Completed</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div>
+              <Label htmlFor="priority">Priority</Label>
+              <Select defaultValue="medium">
+                <SelectTrigger id="priority" className="mt-1">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="low">Low</SelectItem>
+                  <SelectItem value="medium">Medium</SelectItem>
+                  <SelectItem value="high">High</SelectItem>
+                  <SelectItem value="critical">Critical</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div>
+              <Label htmlFor="assignee">Assignee</Label>
+              <Input
+                id="assignee"
+                placeholder="Enter assignee name"
+                className="mt-1"
+              />
+            </div>
+            <div>
+              <Label htmlFor="description">Description</Label>
+              <Textarea
+                id="description"
+                placeholder="Enter description"
+                className="mt-1"
+                rows={3}
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowAddTask(false)}>
+              Cancel
+            </Button>
+            <Button onClick={() => {
+              // Collect form data and save
+              const taskData = {
+                name: (document.getElementById('task-name') as HTMLInputElement)?.value,
+                startDate: (document.getElementById('start-date') as HTMLInputElement)?.value,
+                endDate: (document.getElementById('end-date') as HTMLInputElement)?.value,
+                status: 'pending',
+                priority: 'medium',
+                assignee: (document.getElementById('assignee') as HTMLInputElement)?.value,
+                description: (document.getElementById('description') as HTMLTextAreaElement)?.value,
+              };
+              handleSaveNewTask(taskData);
+              setShowAddTask(false);
+            }}>
+              <Plus className="h-4 w-4 mr-2" />
+              Add {newTaskParent ? 'Sub-task' : 'Milestone'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Edit Task/Milestone Dialog */}
+      <Dialog open={showEditDialog} onOpenChange={setShowEditDialog}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Edit {editingTask?.subtasks ? 'Milestone' : 'Task'}</DialogTitle>
+            <DialogDescription>
+              Update the details for this {editingTask?.subtasks ? 'milestone' : 'task'}
+            </DialogDescription>
+          </DialogHeader>
+          {editingTask && (
+            <div className="space-y-4">
+              <div>
+                <Label htmlFor="edit-task-name">Name</Label>
+                <Input
+                  id="edit-task-name"
+                  defaultValue={editingTask.name}
+                  className="mt-1"
+                />
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <Label htmlFor="edit-start-date">Start Date</Label>
+                  <Input
+                    id="edit-start-date"
+                    type="date"
+                    defaultValue={format(new Date(editingTask.startDate), 'yyyy-MM-dd')}
+                    className="mt-1"
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="edit-end-date">End Date</Label>
+                  <Input
+                    id="edit-end-date"
+                    type="date"
+                    defaultValue={format(new Date(editingTask.endDate), 'yyyy-MM-dd')}
+                    className="mt-1"
+                  />
+                </div>
+              </div>
+              <div>
+                <Label htmlFor="edit-status">Status</Label>
+                <Select defaultValue={editingTask.status}>
+                  <SelectTrigger id="edit-status" className="mt-1">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="pending">Pending</SelectItem>
+                    <SelectItem value="in-progress">In Progress</SelectItem>
+                    <SelectItem value="completed">Completed</SelectItem>
+                  </SelectContent>
+              </Select>
+              </div>
+              <div>
+                <Label htmlFor="edit-priority">Priority</Label>
+                <Select defaultValue={editingTask.priority || 'medium'}>
+                  <SelectTrigger id="edit-priority" className="mt-1">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="low">Low</SelectItem>
+                    <SelectItem value="medium">Medium</SelectItem>
+                    <SelectItem value="high">High</SelectItem>
+                    <SelectItem value="critical">Critical</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div>
+                <Label htmlFor="edit-assignee">Assignee</Label>
+                <Input
+                  id="edit-assignee"
+                  defaultValue={editingTask.assignee}
+                  className="mt-1"
+                />
+              </div>
+              <div>
+                <Label htmlFor="edit-description">Description</Label>
+                <Textarea
+                  id="edit-description"
+                  defaultValue={editingTask.description || ''}
+                  className="mt-1"
+                  rows={3}
+                />
+              </div>
+              <div>
+                <Label htmlFor="edit-progress">Progress (%)</Label>
+                <Input
+                  id="edit-progress"
+                  type="number"
+                  min="0"
+                  max="100"
+                  defaultValue={editingTask.progress}
+                  className="mt-1"
+                />
+              </div>
+            </div>
+          )}
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowEditDialog(false)}>
+              Cancel
+            </Button>
+            <Button onClick={() => {
+              // Collect form data and update
+              const taskData = {
+                ...editingTask,
+                name: (document.getElementById('edit-task-name') as HTMLInputElement)?.value,
+                startDate: (document.getElementById('edit-start-date') as HTMLInputElement)?.value,
+                endDate: (document.getElementById('edit-end-date') as HTMLInputElement)?.value,
+                status: (document.getElementById('edit-status') as HTMLElement)?.textContent?.toLowerCase().replace(' ', '-'),
+                priority: (document.getElementById('edit-priority') as HTMLElement)?.textContent?.toLowerCase(),
+                assignee: (document.getElementById('edit-assignee') as HTMLInputElement)?.value,
+                description: (document.getElementById('edit-description') as HTMLTextAreaElement)?.value,
+                progress: parseInt((document.getElementById('edit-progress') as HTMLInputElement)?.value || '0'),
+              };
+              handleUpdateTask(taskData);
+            }}>
+              <CheckCircle2 className="h-4 w-4 mr-2" />
+              Save Changes
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Delete Confirmation Dialog */}
+      <Dialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Delete {deletingTask?.subtasks ? 'Milestone' : 'Task'}</DialogTitle>
+            <DialogDescription>
+              Are you sure you want to delete "{deletingTask?.name}"?
+              {deletingTask?.subtasks && deletingTask.subtasks.length > 0 && (
+                <span className="block mt-2 text-red-600">
+                  This will also delete {deletingTask.subtasks.length} sub-task(s).
+                </span>
+              )}
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowDeleteDialog(false)}>
+              Cancel
+            </Button>
+            <Button 
+              variant="destructive" 
+              onClick={handleConfirmDelete}
+            >
+              <Trash2 className="h-4 w-4 mr-2" />
+              Delete
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </>
     );
   };
 
@@ -1223,7 +1596,7 @@ export function TimelineTabEnhanced({ project }: TimelineTabEnhancedProps) {
   };
 
   return (
-    <div className="space-y-6 w-full max-w-full" style={{ overflow: viewMode === 'gantt' ? 'hidden' : 'auto' }}>
+    <div className="space-y-6 w-full" style={{ maxWidth: '100%', overflow: viewMode === 'gantt' ? 'hidden' : 'visible' }}>
       {/* Enhanced Timeline Header */}
       <div className="flex flex-col gap-4">
         <div className="flex items-center justify-between flex-wrap gap-4">

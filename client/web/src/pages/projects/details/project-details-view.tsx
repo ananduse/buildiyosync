@@ -34,6 +34,11 @@ import {
   HardHat,
   Truck,
   ClipboardCheck,
+  LayoutDashboard,
+  FolderKanban,
+  Columns3,
+  Flag,
+  CalendarRange,
   FileCheck,
   AlertCircle,
   CheckCircle2,
@@ -52,7 +57,6 @@ import {
   Wrench,
   CircleDollarSign,
   Award,
-  Flag,
   FolderOpen,
   Upload,
   Paperclip,
@@ -670,7 +674,7 @@ const generateMockProjectDetails = () => {
 export default function ProjectDetailsView() {
   const { id } = useParams();
   const navigate = useNavigate();
-  const [activeTab, setActiveTab] = useState('overview');
+  const [activeTab, setActiveTab] = useState('dashboard');
   const [selectedView, setSelectedView] = useState('details');
   const [showFilters, setShowFilters] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
@@ -748,9 +752,81 @@ export default function ProjectDetailsView() {
 
   return (
     <div className="min-h-screen bg-background">
+      {/* Top Navigation Tabs */}
+      <div className="border-b bg-white sticky top-0 z-40 shadow-sm">
+        <div className="container mx-auto max-w-[1600px] px-6">
+          <Tabs value={activeTab} onValueChange={setActiveTab}>
+            <TabsList className="h-12 p-0 bg-transparent border-0 w-full justify-start rounded-none gap-0 flex overflow-x-auto scrollbar-hide">
+              <TabsTrigger 
+                value="dashboard" 
+                className="relative h-full px-6 rounded-none bg-transparent border-b-2 border-transparent text-sm font-medium text-gray-600 transition-all duration-200 hover:text-gray-900 hover:bg-gray-50/50 data-[state=active]:text-primary data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:font-semibold flex items-center gap-2"
+              >
+                <LayoutDashboard className="h-4 w-4" />
+                Dashboard
+              </TabsTrigger>
+              <TabsTrigger 
+                value="overview" 
+                className="relative h-full px-6 rounded-none bg-transparent border-b-2 border-transparent text-sm font-medium text-gray-600 transition-all duration-200 hover:text-gray-900 hover:bg-gray-50/50 data-[state=active]:text-primary data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:font-semibold flex items-center gap-2"
+              >
+                <FolderKanban className="h-4 w-4" />
+                Projects
+              </TabsTrigger>
+              <TabsTrigger 
+                value="tasks" 
+                className="relative h-full px-6 rounded-none bg-transparent border-b-2 border-transparent text-sm font-medium text-gray-600 transition-all duration-200 hover:text-gray-900 hover:bg-gray-50/50 data-[state=active]:text-primary data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:font-semibold flex items-center gap-2"
+              >
+                <CheckSquare className="h-4 w-4" />
+                Tasks
+              </TabsTrigger>
+              <TabsTrigger 
+                value="kanban" 
+                className="relative h-full px-6 rounded-none bg-transparent border-b-2 border-transparent text-sm font-medium text-gray-600 transition-all duration-200 hover:text-gray-900 hover:bg-gray-50/50 data-[state=active]:text-primary data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:font-semibold flex items-center gap-2"
+              >
+                <Columns3 className="h-4 w-4" />
+                Kanban
+              </TabsTrigger>
+              <TabsTrigger 
+                value="milestones" 
+                className="relative h-full px-6 rounded-none bg-transparent border-b-2 border-transparent text-sm font-medium text-gray-600 transition-all duration-200 hover:text-gray-900 hover:bg-gray-50/50 data-[state=active]:text-primary data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:font-semibold flex items-center gap-2"
+              >
+                <Flag className="h-4 w-4" />
+                Milestones
+              </TabsTrigger>
+              <TabsTrigger 
+                value="timeline" 
+                className="relative h-full px-6 rounded-none bg-transparent border-b-2 border-transparent text-sm font-medium text-gray-600 transition-all duration-200 hover:text-gray-900 hover:bg-gray-50/50 data-[state=active]:text-primary data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:font-semibold flex items-center gap-2"
+              >
+                <CalendarRange className="h-4 w-4" />
+                Timeline
+              </TabsTrigger>
+              <TabsTrigger 
+                value="team" 
+                className="relative h-full px-6 rounded-none bg-transparent border-b-2 border-transparent text-sm font-medium text-gray-600 transition-all duration-200 hover:text-gray-900 hover:bg-gray-50/50 data-[state=active]:text-primary data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:font-semibold flex items-center gap-2"
+              >
+                <Users className="h-4 w-4" />
+                Team
+              </TabsTrigger>
+              <TabsTrigger 
+                value="documents" 
+                className="relative h-full px-6 rounded-none bg-transparent border-b-2 border-transparent text-sm font-medium text-gray-600 transition-all duration-200 hover:text-gray-900 hover:bg-gray-50/50 data-[state=active]:text-primary data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:font-semibold flex items-center gap-2"
+              >
+                <FileText className="h-4 w-4" />
+                Documents
+              </TabsTrigger>
+              <TabsTrigger 
+                value="reports" 
+                className="relative h-full px-6 rounded-none bg-transparent border-b-2 border-transparent text-sm font-medium text-gray-600 transition-all duration-200 hover:text-gray-900 hover:bg-gray-50/50 data-[state=active]:text-primary data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:font-semibold flex items-center gap-2"
+              >
+                <BarChart3 className="h-4 w-4" />
+                Reports
+              </TabsTrigger>
+            </TabsList>
+          </Tabs>
+        </div>
+      </div>
       {/* Header */}
       <div className="border-b bg-white">
-        <div className="container mx-auto px-6 py-4 max-w-[1600px]">
+        <div className={cn("container mx-auto py-4 max-w-[1600px]", activeTab === 'timeline' ? "px-4" : "px-6")}>
           {/* Breadcrumb */}
           <Breadcrumb className="mb-4">
             <BreadcrumbList>
@@ -867,82 +943,11 @@ export default function ProjectDetailsView() {
             </div>
           </div>
         </div>
-
-        {/* Tabs */}
-        <div className="container mx-auto px-6 max-w-[1600px]">
-          <Tabs value={activeTab} onValueChange={setActiveTab}>
-            <TabsList className="h-12 p-0 bg-transparent border-b-0 w-full justify-start">
-              <TabsTrigger 
-                value="overview" 
-                className="data-[state=active]:border-b-2 data-[state=active]:border-primary rounded-none px-4"
-              >
-                <Layers className="h-4 w-4 mr-2" />
-                Overview
-              </TabsTrigger>
-              <TabsTrigger 
-                value="timeline" 
-                className="data-[state=active]:border-b-2 data-[state=active]:border-primary rounded-none px-4"
-              >
-                <Calendar className="h-4 w-4 mr-2" />
-                Timeline
-              </TabsTrigger>
-              <TabsTrigger 
-                value="team" 
-                className="data-[state=active]:border-b-2 data-[state=active]:border-primary rounded-none px-4"
-              >
-                <Users className="h-4 w-4 mr-2" />
-                Team
-              </TabsTrigger>
-              <TabsTrigger 
-                value="budget" 
-                className="data-[state=active]:border-b-2 data-[state=active]:border-primary rounded-none px-4"
-              >
-                <DollarSign className="h-4 w-4 mr-2" />
-                Budget
-              </TabsTrigger>
-              <TabsTrigger 
-                value="tasks" 
-                className="data-[state=active]:border-b-2 data-[state=active]:border-primary rounded-none px-4"
-              >
-                <CheckSquare className="h-4 w-4 mr-2" />
-                Tasks
-              </TabsTrigger>
-              <TabsTrigger 
-                value="documents" 
-                className="data-[state=active]:border-b-2 data-[state=active]:border-primary rounded-none px-4"
-              >
-                <FileText className="h-4 w-4 mr-2" />
-                Documents
-              </TabsTrigger>
-              <TabsTrigger 
-                value="reports" 
-                className="data-[state=active]:border-b-2 data-[state=active]:border-primary rounded-none px-4"
-              >
-                <BarChart3 className="h-4 w-4 mr-2" />
-                Reports
-              </TabsTrigger>
-              <TabsTrigger 
-                value="calendar" 
-                className="data-[state=active]:border-b-2 data-[state=active]:border-primary rounded-none px-4"
-              >
-                <CalendarDays className="h-4 w-4 mr-2" />
-                Calendar
-              </TabsTrigger>
-              <TabsTrigger 
-                value="activity" 
-                className="data-[state=active]:border-b-2 data-[state=active]:border-primary rounded-none px-4"
-              >
-                <Activity className="h-4 w-4 mr-2" />
-                Activity
-              </TabsTrigger>
-            </TabsList>
-          </Tabs>
-        </div>
       </div>
 
       {/* Content */}
-      <div className="container mx-auto p-6 max-w-[1600px]">
-        {activeTab === 'overview' && (
+      <div className={cn("container mx-auto max-w-[1600px]", activeTab === 'timeline' ? "p-3" : "p-6")}>
+        {false && activeTab === 'overview' && (
           <div className="space-y-6">
             {/* Key Metrics */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -1385,15 +1390,188 @@ export default function ProjectDetailsView() {
         )}
 
         {/* Timeline Tab */}
+        {/* Dashboard Tab */}
+        {activeTab === 'dashboard' && (
+          <div className="space-y-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+              <Card>
+                <CardHeader className="pb-3">
+                  <CardTitle className="text-base font-medium">Total Tasks</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold">124</div>
+                  <p className="text-xs text-muted-foreground mt-1">+12% from last month</p>
+                </CardContent>
+              </Card>
+              <Card>
+                <CardHeader className="pb-3">
+                  <CardTitle className="text-base font-medium">In Progress</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold">42</div>
+                  <p className="text-xs text-muted-foreground mt-1">28 completed this week</p>
+                </CardContent>
+              </Card>
+              <Card>
+                <CardHeader className="pb-3">
+                  <CardTitle className="text-base font-medium">Team Members</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold">16</div>
+                  <p className="text-xs text-muted-foreground mt-1">2 new this month</p>
+                </CardContent>
+              </Card>
+              <Card>
+                <CardHeader className="pb-3">
+                  <CardTitle className="text-base font-medium">Completion</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold">68%</div>
+                  <Progress value={68} className="mt-2" />
+                </CardContent>
+              </Card>
+            </div>
+          </div>
+        )}
+
+        {/* Projects Tab (was Overview) */}
+        {activeTab === 'overview' && (
+          <div className="space-y-6">
+            {/* Previous overview content */}
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+              {/* Left Column - 2 cols */}
+              <div className="lg:col-span-2 space-y-6">
+                {/* Project Description */}
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Project Overview</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <p className="text-sm text-muted-foreground mb-4">
+                      {project.description}
+                    </p>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <p className="text-xs text-muted-foreground mb-1">Project Type</p>
+                        <p className="text-sm font-medium">{project.type}</p>
+                      </div>
+                      <div>
+                        <p className="text-xs text-muted-foreground mb-1">Contract Value</p>
+                        <p className="text-sm font-medium">${project.budget.allocated.toLocaleString()}</p>
+                      </div>
+                      <div>
+                        <p className="text-xs text-muted-foreground mb-1">Completion</p>
+                        <div className="flex items-center gap-2">
+                          <Progress value={project.timeline.progress} className="flex-1" />
+                          <span className="text-sm font-medium">{project.timeline.progress}%</span>
+                        </div>
+                      </div>
+                      <div>
+                        <p className="text-xs text-muted-foreground mb-1">Risk Level</p>
+                        <Badge className={getRiskColor(project.risks.level)}>
+                          {project.risks.level} Risk
+                        </Badge>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Tasks Tab */}
+        {activeTab === 'tasks' && <TasksTab project={project} />}
+
+        {/* Kanban Tab */}
+        {activeTab === 'kanban' && (
+          <div className="space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-4">
+              <div className="space-y-3">
+                <div className="flex items-center justify-between p-2 bg-muted rounded-lg">
+                  <h3 className="font-medium text-sm">To Do</h3>
+                  <Badge variant="secondary">8</Badge>
+                </div>
+                <div className="space-y-2">
+                  <Card className="p-3 cursor-move hover:shadow-md transition-shadow">
+                    <h4 className="text-sm font-medium mb-2">Update project timeline</h4>
+                    <div className="flex items-center justify-between">
+                      <Badge variant="outline" className="text-xs">High</Badge>
+                      <Avatar className="h-6 w-6">
+                        <AvatarFallback className="text-xs">JD</AvatarFallback>
+                      </Avatar>
+                    </div>
+                  </Card>
+                </div>
+              </div>
+              <div className="space-y-3">
+                <div className="flex items-center justify-between p-2 bg-muted rounded-lg">
+                  <h3 className="font-medium text-sm">In Progress</h3>
+                  <Badge variant="secondary">5</Badge>
+                </div>
+              </div>
+              <div className="space-y-3">
+                <div className="flex items-center justify-between p-2 bg-muted rounded-lg">
+                  <h3 className="font-medium text-sm">Review</h3>
+                  <Badge variant="secondary">3</Badge>
+                </div>
+              </div>
+              <div className="space-y-3">
+                <div className="flex items-center justify-between p-2 bg-muted rounded-lg">
+                  <h3 className="font-medium text-sm">Done</h3>
+                  <Badge variant="secondary">12</Badge>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Milestones Tab */}
+        {activeTab === 'milestones' && (
+          <div className="space-y-4">
+            <Card>
+              <CardHeader>
+                <CardTitle>Project Milestones</CardTitle>
+                <CardDescription>Key deliverables and checkpoints</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  {project.timeline.milestones.map((milestone) => (
+                    <div key={milestone.id} className="flex items-center gap-4 p-4 border rounded-lg">
+                      <div className={cn(
+                        "w-3 h-3 rounded-full",
+                        milestone.status === 'completed' ? 'bg-green-500' :
+                        milestone.status === 'in-progress' ? 'bg-blue-500' :
+                        'bg-gray-300'
+                      )} />
+                      <div className="flex-1">
+                        <h4 className="font-medium">{milestone.name}</h4>
+                        <p className="text-sm text-muted-foreground">
+                          {format(new Date(milestone.date), 'MMM dd, yyyy')}
+                        </p>
+                      </div>
+                      <Badge variant={milestone.status === 'completed' ? 'default' : 'outline'}>
+                        {milestone.status}
+                      </Badge>
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        )}
+
+        {/* Timeline Tab */}
         {activeTab === 'timeline' && <TimelineTabEnhanced project={project} />}
 
+        {/* Team Tab */}
         {activeTab === 'team' && <TeamTab project={project} />}
-        {activeTab === 'budget' && <BudgetTab project={project} />}
-        {activeTab === 'tasks' && <TasksTab project={project} />}
+
+        {/* Documents Tab */}
         {activeTab === 'documents' && <DocumentsTab project={project} />}
+
+        {/* Reports Tab */}
         {activeTab === 'reports' && <ReportsTab project={project} />}
-        {activeTab === 'calendar' && <CalendarTab project={project} />}
-        {activeTab === 'activity' && <ActivityTab project={project} />}
       </div>
     </div>
   );

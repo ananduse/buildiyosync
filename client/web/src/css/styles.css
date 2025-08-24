@@ -35,54 +35,143 @@ body.gantt-active {
   overflow: hidden !important;
 }
 
-.gantt-scrollbar {
+/* Custom scrollbar for Gantt elements */
+.gantt-scrollbar,
+.gantt-content-scroll {
   scrollbar-width: thin;
-  scrollbar-color: rgb(156 163 175) transparent;
+  scrollbar-color: rgb(156 163 175) rgb(243 244 246);
 }
 
-.gantt-scrollbar::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
+.gantt-scrollbar::-webkit-scrollbar,
+.gantt-content-scroll::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
 }
 
-.gantt-scrollbar::-webkit-scrollbar-track {
-  background: transparent;
-}
-
-.gantt-scrollbar::-webkit-scrollbar-thumb {
-  background-color: rgb(156 163 175);
+.gantt-scrollbar::-webkit-scrollbar-track,
+.gantt-content-scroll::-webkit-scrollbar-track {
+  background: rgb(243 244 246);
   border-radius: 4px;
 }
 
-.gantt-scrollbar::-webkit-scrollbar-thumb:hover {
-  background-color: rgb(107 114 128);
-}
-
-.gantt-header-sync {
-  overflow: hidden;
-  position: relative;
-}
-
-.gantt-content-scroll {
-  overflow: auto;
-  scrollbar-width: thin;
-  scrollbar-color: rgb(156 163 175) transparent;
-}
-
-.gantt-content-scroll::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
-}
-
-.gantt-content-scroll::-webkit-scrollbar-track {
-  background: transparent;
-}
-
+.gantt-scrollbar::-webkit-scrollbar-thumb,
 .gantt-content-scroll::-webkit-scrollbar-thumb {
   background-color: rgb(156 163 175);
   border-radius: 4px;
+  border: 2px solid rgb(243 244 246);
 }
 
+.gantt-scrollbar::-webkit-scrollbar-thumb:hover,
 .gantt-content-scroll::-webkit-scrollbar-thumb:hover {
   background-color: rgb(107 114 128);
+}
+
+.gantt-scrollbar::-webkit-scrollbar-corner,
+.gantt-content-scroll::-webkit-scrollbar-corner {
+  background: rgb(243 244 246);
+}
+
+/* Gantt container constraints */
+.gantt-chart-container {
+  width: 100%;
+  max-width: 100%;
+  overflow: hidden;
+  box-sizing: border-box;
+}
+
+/* Fix for Demo1 layout with sidebar */
+.demo1 main .container {
+  max-width: 100%;
+  width: 100%;
+}
+
+/* Specific fix for timeline tab content */
+.demo1 main [data-tab="timeline"] {
+  max-width: 100%;
+  overflow-x: hidden;
+}
+
+/* Enhanced Tab Styling */
+.tabs-trigger {
+  position: relative;
+  transition: all 0.2s ease;
+}
+
+.tabs-trigger::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  width: 0;
+  height: 2px;
+  background-color: transparent;
+  transform: translateX(-50%);
+  transition: width 0.3s ease, background-color 0.3s ease;
+}
+
+.tabs-trigger:hover::after {
+  width: 100%;
+  background-color: rgba(59, 130, 246, 0.3);
+}
+
+.tabs-trigger[data-state="active"]::after {
+  width: 100%;
+  background-color: rgb(59, 130, 246);
+}
+
+/* Tab hover animation */
+@keyframes tabHoverPulse {
+  0% {
+    background-color: transparent;
+  }
+  50% {
+    background-color: rgba(156, 163, 175, 0.1);
+  }
+  100% {
+    background-color: transparent;
+  }
+}
+
+/* Active tab indicator animation */
+@keyframes slideIn {
+  from {
+    width: 0;
+    opacity: 0;
+  }
+  to {
+    width: 100%;
+    opacity: 1;
+  }
+}
+
+.tabs-trigger[data-state="active"] {
+  animation: slideIn 0.3s ease forwards;
+}
+
+/* Hide scrollbar for tab list */
+.scrollbar-hide {
+  -ms-overflow-style: none;  /* IE and Edge */
+  scrollbar-width: none;  /* Firefox */
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;  /* Chrome, Safari and Opera */
+}
+
+/* Tab container shadow effect */
+.tab-container {
+  box-shadow: 0 2px 4px -1px rgba(0, 0, 0, 0.06), 0 1px 2px -1px rgba(0, 0, 0, 0.03);
+}
+
+/* Tab ripple effect on click */
+.tabs-trigger:active {
+  transform: scale(0.98);
+  transition: transform 0.1s ease;
+}
+
+/* Tab focus outline */
+.tabs-trigger:focus-visible {
+  outline: 2px solid rgba(59, 130, 246, 0.5);
+  outline-offset: -2px;
+  border-radius: 4px;
 }
