@@ -564,6 +564,7 @@ export function TimelineTabEnhanced({ project }: TimelineTabEnhancedProps) {
     const [resizeStart, setResizeStart] = useState({ x: 0, width: 0 });
     const [showAddTask, setShowAddTask] = useState(false);
     const [newTaskParent, setNewTaskParent] = useState<number | null>(null);
+    const [scrollLeft, setScrollLeft] = useState(0);
     
     const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
     
@@ -821,7 +822,7 @@ export function TimelineTabEnhanced({ project }: TimelineTabEnhancedProps) {
           onMouseUp={handleMouseUp}
           onMouseLeave={handleMouseUp}
         >
-          <div className="flex h-[600px] border-t overflow-hidden">
+          <div className="flex h-[600px] border-t" style={{ overflow: 'hidden' }}>
             {/* Fixed Left Panel */}
             <div className="w-[400px] min-w-[400px] max-w-[400px] border-r bg-background flex-shrink-0 flex flex-col relative z-10">
               {/* Left Panel Header */}
@@ -831,7 +832,7 @@ export function TimelineTabEnhanced({ project }: TimelineTabEnhancedProps) {
               </div>
               
               {/* Left Panel Rows */}
-              <div className="flex-1 overflow-y-auto overflow-x-hidden">
+              <div className="flex-1 gantt-scrollbar" style={{ overflowY: 'auto', overflowX: 'hidden' }}>
                 {allTasks.map((task) => (
                   <div 
                     key={task.id} 
@@ -902,30 +903,35 @@ export function TimelineTabEnhanced({ project }: TimelineTabEnhancedProps) {
             </div>
 
             {/* Scrollable Right Timeline */}
-            <div className="flex-1 min-w-0 relative overflow-hidden bg-muted/5">
-              {/* Timeline Header */}
-              <div className="h-12 border-b bg-muted/30 sticky top-0 z-20 overflow-hidden">
-                <ScrollArea className="w-full h-full">
-                  <div className="flex h-full" style={{ minWidth: timelineHeaders.length * currentZoom.pixelsPerUnit }}>
+            <div className="flex-1 min-w-0 flex flex-col overflow-hidden bg-muted/5">
+              {/* Timeline Header - Fixed height, scrolls with content */}
+              <div className="h-12 border-b bg-muted/30 flex-shrink-0 gantt-header-sync">
+                <div 
+                  className="h-full"
+                  style={{ transform: `translateX(-${scrollLeft}px)` }}
+                >
+                  <div className="flex h-full" style={{ width: timelineHeaders.length * currentZoom.pixelsPerUnit }}>
                     {timelineHeaders.map((header, i) => (
                       <div 
                         key={i} 
-                        className="border-r flex items-center justify-center text-xs font-medium bg-background"
+                        className="border-r flex items-center justify-center text-xs font-medium bg-background flex-shrink-0"
                         style={{ width: currentZoom.pixelsPerUnit }}
                       >
                         {header.label}
                       </div>
                     ))}
                   </div>
-                  <ScrollBar orientation="horizontal" />
-                </ScrollArea>
+                </div>
               </div>
               
-              {/* Timeline Content */}
-              <ScrollArea className="h-[calc(100%-48px)]">
+              {/* Timeline Content - Scrollable area */}
+              <div 
+                className="flex-1 gantt-content-scroll"
+                onScroll={(e) => setScrollLeft(e.currentTarget.scrollLeft)}
+              >
                 <div 
-                  className="relative"
-                  style={{ width: timelineHeaders.length * currentZoom.pixelsPerUnit, minWidth: '100%' }}
+                  className="relative min-h-full"
+                  style={{ width: timelineHeaders.length * currentZoom.pixelsPerUnit }}
                 >
                   {/* Grid Lines */}
                   <div className="absolute inset-0 pointer-events-none">
@@ -1037,8 +1043,7 @@ export function TimelineTabEnhanced({ project }: TimelineTabEnhancedProps) {
                     </div>
                   </div>
                 </div>
-                <ScrollBar orientation="horizontal" />
-              </ScrollArea>
+              </div>
             </div>
           </div>
           
