@@ -466,11 +466,18 @@ export function AppRoutingSetup() {
         <Route path="reports" element={<AnalyticsDashboard />} />
         <Route path="analytics" element={<AnalyticsDashboard />} />
         <Route path=":id" element={<ProjectDetailsView />} />
+        <Route path=":id/overview" element={<ProjectDetailsView />} />
+        <Route path=":id/activity" element={<ProjectDetailsView />} />
+        <Route path=":id/timeline" element={<ProjectDetailsView />} />
+        <Route path=":id/team" element={<ProjectDetailsView />} />
+        <Route path=":id/tasks" element={<ProjectDetailsView />} />
+        <Route path=":id/budget" element={<ProjectDetailsView />} />
+        <Route path=":id/documents" element={<ProjectDetailsView />} />
+        <Route path=":id/calendar" element={<ProjectDetailsView />} />
+        <Route path=":id/reports" element={<ProjectDetailsView />} />
         <Route path=":id/details" element={<ProjectDetailsView />} />
         <Route path=":id/dashboard" element={<ProjectDashboard />} />
         <Route path=":id/customer-view" element={<ProjectDetails />} />
-        <Route path=":id/team" element={<ProjectTeamManagement />} />
-        <Route path=":id/tasks" element={<ProjectTaskManagement />} />
       </Route>
       
       <Route element={<RequireAuth />}>

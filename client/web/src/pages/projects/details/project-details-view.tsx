@@ -1,5 +1,5 @@
-import { useState, useMemo } from 'react';
-import { useParams, useNavigate, Link } from 'react-router-dom';
+import { useState, useMemo, useEffect } from 'react';
+import { useParams, useNavigate, Link, useLocation } from 'react-router-dom';
 import { format, differenceInDays, addDays, subDays } from 'date-fns';
 import {
   Building2,
@@ -12,6 +12,7 @@ import {
   CheckCircle,
   AlertTriangle,
   Activity,
+  LayoutGrid,
   Package,
   Briefcase,
   Home,
@@ -121,7 +122,6 @@ import {
   FilePlus,
   FileX,
   FolderX,
-  LayoutGrid,
   ListTodo,
   FolderOpenIcon,
   BarChart2,
@@ -285,8 +285,7 @@ import {
   YAxis,
 } from 'recharts';
 
-// Import tab components for potential use in individual project views
-// These components can be accessed through separate routes
+// Import tab components for project views
 import { 
   TeamTab, 
   BudgetTab, 
@@ -693,9 +692,29 @@ const generateMockProjectDetails = () => {
 export default function ProjectDetailsView() {
   const { id } = useParams();
   const navigate = useNavigate();
+  const location = useLocation();
   const [selectedView, setSelectedView] = useState('details');
   const [showFilters, setShowFilters] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
+  
+  // Determine active tab from URL
+  const getActiveTab = () => {
+    const pathSegments = location.pathname.split('/');
+    const lastSegment = pathSegments[pathSegments.length - 1];
+    const validTabs = ['overview', 'activity', 'timeline', 'team', 'tasks', 'budget', 'documents', 'calendar', 'reports'];
+    
+    if (validTabs.includes(lastSegment)) {
+      return lastSegment;
+    }
+    return 'overview'; // default tab
+  };
+  
+  const [activeTab, setActiveTab] = useState(getActiveTab());
+  
+  // Update active tab when URL changes
+  useEffect(() => {
+    setActiveTab(getActiveTab());
+  }, [location.pathname]);
   
   // Mock data - in real app, fetch based on ID
   const project = useMemo(() => generateMockProjectDetails(), []);
@@ -900,26 +919,97 @@ export default function ProjectDetailsView() {
         </div>
       </div>
 
-      {/* Content with Tabs */}
-      <div className="container mx-auto max-w-[1600px] p-4">
-        <Tabs defaultValue="overview" className="space-y-6">
-          {/* Tab Navigation */}
-          <TabsList className="grid w-full grid-cols-9 lg:w-auto lg:inline-grid">
-            <TabsTrigger value="overview">Overview</TabsTrigger>
-            <TabsTrigger value="activity">Activity</TabsTrigger>
-            <TabsTrigger value="timeline">Timeline</TabsTrigger>
-            <TabsTrigger value="team">Team</TabsTrigger>
-            <TabsTrigger value="tasks">Tasks</TabsTrigger>
-            <TabsTrigger value="budget">Budget</TabsTrigger>
-            <TabsTrigger value="documents">Documents</TabsTrigger>
-            <TabsTrigger value="calendar">Calendar</TabsTrigger>
-            <TabsTrigger value="reports">Reports</TabsTrigger>
-          </TabsList>
+      {/* Tab Navigation - Moved to top */}
+      <div className="bg-white border-b">
+        <div className="container mx-auto max-w-[1600px]">
+          <Tabs 
+            value={activeTab} 
+            onValueChange={(value) => {
+              setActiveTab(value);
+              navigate(`/projects/${id}/${value}`);
+            }}
+            className="w-full"
+          >
+            <TabsList 
+              variant="line" 
+              size="md"
+              className="flex items-center shrink-0 border-b border-border px-4 lg:px-6 gap-6 bg-transparent w-full justify-start overflow-x-auto [&_button]:border-b-2 [&_button_svg]:size-4 [&_button]:text-secondary-foreground"
+            >
+              <TabsTrigger 
+                value="overview" 
+                className="shrink-0 cursor-pointer whitespace-nowrap inline-flex justify-center items-center font-medium ring-offset-background transition-colors focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 data-disabled:pointer-events-none data-disabled:opacity-50 [&_svg]:shrink-0 [&_svg]:text-muted-foreground [&:hover_svg]:text-primary [&[data-state=active]_svg]:text-primary border-b-2 text-muted-foreground border-transparent hover:text-primary data-[state=active]:border-primary data-[state=active]:text-primary gap-2 [&_svg]:size-4 text-sm py-2.5"
+              >
+                <LayoutGrid className="h-4 w-4" />
+                Overview
+              </TabsTrigger>
+              <TabsTrigger 
+                value="activity"
+                className="shrink-0 cursor-pointer whitespace-nowrap inline-flex justify-center items-center font-medium ring-offset-background transition-colors focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 data-disabled:pointer-events-none data-disabled:opacity-50 [&_svg]:shrink-0 [&_svg]:text-muted-foreground [&:hover_svg]:text-primary [&[data-state=active]_svg]:text-primary border-b-2 text-muted-foreground border-transparent hover:text-primary data-[state=active]:border-primary data-[state=active]:text-primary gap-2 [&_svg]:size-4 text-sm py-2.5"
+              >
+                <Activity className="h-4 w-4" />
+                Activity
+              </TabsTrigger>
+              <TabsTrigger 
+                value="timeline"
+                className="shrink-0 cursor-pointer whitespace-nowrap inline-flex justify-center items-center font-medium ring-offset-background transition-colors focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 data-disabled:pointer-events-none data-disabled:opacity-50 [&_svg]:shrink-0 [&_svg]:text-muted-foreground [&:hover_svg]:text-primary [&[data-state=active]_svg]:text-primary border-b-2 text-muted-foreground border-transparent hover:text-primary data-[state=active]:border-primary data-[state=active]:text-primary gap-2 [&_svg]:size-4 text-sm py-2.5"
+              >
+                <Clock className="h-4 w-4" />
+                Timeline
+              </TabsTrigger>
+              <TabsTrigger 
+                value="team"
+                className="shrink-0 cursor-pointer whitespace-nowrap inline-flex justify-center items-center font-medium ring-offset-background transition-colors focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 data-disabled:pointer-events-none data-disabled:opacity-50 [&_svg]:shrink-0 [&_svg]:text-muted-foreground [&:hover_svg]:text-primary [&[data-state=active]_svg]:text-primary border-b-2 text-muted-foreground border-transparent hover:text-primary data-[state=active]:border-primary data-[state=active]:text-primary gap-2 [&_svg]:size-4 text-sm py-2.5"
+              >
+                <Users className="h-4 w-4" />
+                Team
+              </TabsTrigger>
+              <TabsTrigger 
+                value="tasks"
+                className="shrink-0 cursor-pointer whitespace-nowrap inline-flex justify-center items-center font-medium ring-offset-background transition-colors focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 data-disabled:pointer-events-none data-disabled:opacity-50 [&_svg]:shrink-0 [&_svg]:text-muted-foreground [&:hover_svg]:text-primary [&[data-state=active]_svg]:text-primary border-b-2 text-muted-foreground border-transparent hover:text-primary data-[state=active]:border-primary data-[state=active]:text-primary gap-2 [&_svg]:size-4 text-sm py-2.5"
+              >
+                <CheckSquare className="h-4 w-4" />
+                Tasks
+              </TabsTrigger>
+              <TabsTrigger 
+                value="budget"
+                className="shrink-0 cursor-pointer whitespace-nowrap inline-flex justify-center items-center font-medium ring-offset-background transition-colors focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 data-disabled:pointer-events-none data-disabled:opacity-50 [&_svg]:shrink-0 [&_svg]:text-muted-foreground [&:hover_svg]:text-primary [&[data-state=active]_svg]:text-primary border-b-2 text-muted-foreground border-transparent hover:text-primary data-[state=active]:border-primary data-[state=active]:text-primary gap-2 [&_svg]:size-4 text-sm py-2.5"
+              >
+                <DollarSign className="h-4 w-4" />
+                Budget
+              </TabsTrigger>
+              <TabsTrigger 
+                value="documents"
+                className="shrink-0 cursor-pointer whitespace-nowrap inline-flex justify-center items-center font-medium ring-offset-background transition-colors focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 data-disabled:pointer-events-none data-disabled:opacity-50 [&_svg]:shrink-0 [&_svg]:text-muted-foreground [&:hover_svg]:text-primary [&[data-state=active]_svg]:text-primary border-b-2 text-muted-foreground border-transparent hover:text-primary data-[state=active]:border-primary data-[state=active]:text-primary gap-2 [&_svg]:size-4 text-sm py-2.5"
+              >
+                <FolderOpen className="h-4 w-4" />
+                Documents
+              </TabsTrigger>
+              <TabsTrigger 
+                value="calendar"
+                className="shrink-0 cursor-pointer whitespace-nowrap inline-flex justify-center items-center font-medium ring-offset-background transition-colors focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 data-disabled:pointer-events-none data-disabled:opacity-50 [&_svg]:shrink-0 [&_svg]:text-muted-foreground [&:hover_svg]:text-primary [&[data-state=active]_svg]:text-primary border-b-2 text-muted-foreground border-transparent hover:text-primary data-[state=active]:border-primary data-[state=active]:text-primary gap-2 [&_svg]:size-4 text-sm py-2.5"
+              >
+                <CalendarDays className="h-4 w-4" />
+                Calendar
+              </TabsTrigger>
+              <TabsTrigger 
+                value="reports"
+                className="shrink-0 cursor-pointer whitespace-nowrap inline-flex justify-center items-center font-medium ring-offset-background transition-colors focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 data-disabled:pointer-events-none data-disabled:opacity-50 [&_svg]:shrink-0 [&_svg]:text-muted-foreground [&:hover_svg]:text-primary [&[data-state=active]_svg]:text-primary border-b-2 text-muted-foreground border-transparent hover:text-primary data-[state=active]:border-primary data-[state=active]:text-primary gap-2 [&_svg]:size-4 text-sm py-2.5"
+              >
+                <BarChart3 className="h-4 w-4" />
+                Reports
+              </TabsTrigger>
+            </TabsList>
+          </Tabs>
+        </div>
+      </div>
 
+      {/* Content Area */}
+      <div className="container mx-auto max-w-[1600px] p-4">
+        <Tabs value={activeTab} className="space-y-6">
           {/* Overview Tab */}
           <TabsContent value="overview" className="space-y-6">
             {/* Key Metrics */}
-        <div className="grid gap-4 md:grid-cols-4">
+            <div className="grid gap-4 md:grid-cols-4">
             <Card>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                 <CardTitle className="text-sm font-medium">Progress</CardTitle>
@@ -1173,10 +1263,6 @@ export default function ProjectDetailsView() {
             </div>
           </CardContent>
         </Card>
-        
-        {/* Note: Individual project sections (Team, Budget, Tasks, Documents, Reports, Calendar, Activity) 
-            are available as separate views accessible through the sidebar menu or quick actions above.
-            Each section provides detailed functionality for managing specific aspects of the project. */}
           </TabsContent>
 
           {/* Activity Tab */}
