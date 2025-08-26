@@ -1,0 +1,364 @@
+'use client';
+
+import { useState, useMemo, useCallback } from 'react';
+import { useParams } from 'react-router-dom';
+import { 
+  Upload, Download, FolderOpen, FileText, Search, Filter, Grid3x3, List, 
+  Plus, Eye, Edit, Trash2, History, MessageSquare, Share2, Lock, Unlock,
+  CheckCircle, XCircle, Clock, AlertTriangle, FileSignature, Settings,
+  ChevronDown, MoreVertical, Star, Archive, RefreshCw, Layers, Building2,
+  Zap, Settings2, Droplets, Wind, Flame, Trees, Map, Palette, Shield,
+  ClipboardList, Mail
+} from 'lucide-react';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Badge } from '@/components/ui/badge';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { 
+  Select, SelectContent, SelectItem, SelectTrigger, SelectValue 
+} from '@/components/ui/select';
+import { 
+  DropdownMenu, DropdownMenuContent, DropdownMenuItem, 
+  DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger 
+} from '@/components/ui/dropdown-menu';
+import { Checkbox } from '@/components/ui/checkbox';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { Separator } from '@/components/ui/separator';
+import { cn } from '@/lib/utils';
+import { DOCUMENT_CATEGORIES, type Document, type DocumentCategory } from '@/types/document.types';
+import DocumentUploadDialog from './components/document-upload-dialog';
+import DocumentViewer from './components/document-viewer';
+import DocumentVersionHistory from './components/document-version-history';
+import DocumentFilters from './components/document-filters';
+import DocumentGrid from './components/document-grid';
+import DocumentList from './components/document-list';
+
+// Mock data generator
+const generateMockDocuments = (projectId: string): Document[] => {
+  const documents: Document[] = [];
+  const statuses = ['draft', 'review', 'approved', 'rejected'] as const;
+  
+  DOCUMENT_CATEGORIES.slice(0, 8).forEach((category, catIndex) => {
+    for (let i = 0; i < Math.floor(Math.random() * 5) + 2; i++) {
+      const docId = `doc-${catIndex}-${i}`;
+      documents.push({
+        id: docId,
+        projectId,
+        title: `${category.name} Drawing ${i + 1}`,
+        description: `Technical ${category.name.toLowerCase()} documentation for project section ${i + 1}`,
+        documentNumber: `${category.code}-${String(i + 1).padStart(3, '0')}-R01`,
+        category,
+        currentVersion: {
+          id: `ver-${docId}-1`,
+          documentId: docId,
+          versionNumber: '1.0',
+          fileUrl: '/sample.pdf',
+          fileName: `${category.code}_${i + 1}.pdf`,
+          fileSize: Math.floor(Math.random() * 10000000) + 500000,
+          fileType: 'application/pdf',
+          uploadedBy: {
+            id: 'user1',
+            name: 'John Doe',
+            email: 'john@example.com',
+            role: 'Project Manager'
+          },
+          uploadedAt: new Date(Date.now() - Math.random() * 30 * 24 * 60 * 60 * 1000).toISOString(),
+          status: statuses[Math.floor(Math.random() * statuses.length)],
+          changes: i > 0 ? 'Updated dimensions and annotations' : 'Initial version'
+        },
+        versions: [],
+        tags: ['technical', category.code.toLowerCase(), '2024'],
+        status: 'active',
+        confidential: Math.random() > 0.7,
+        createdBy: {
+          id: 'user1',
+          name: 'John Doe',
+          email: 'john@example.com',
+          role: 'Project Manager'
+        },
+        createdAt: new Date(Date.now() - Math.random() * 60 * 24 * 60 * 60 * 1000).toISOString(),
+        updatedAt: new Date(Date.now() - Math.random() * 7 * 24 * 60 * 60 * 1000).toISOString(),
+        permissions: [],
+        metadata: {
+          discipline: category.name,
+          phase: 'Construction',
+          revision: 'A',
+          paperSize: 'A1',
+          drawingScale: '1:100'
+        }
+      });
+    }
+  });
+  
+  return documents;
+};
+
+export default function ProjectDocuments() {
+  const { projectId = 'P015' } = useParams();
+  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
+  const [searchQuery, setSearchQuery] = useState('');
+  const [selectedCategory, setSelectedCategory] = useState<string>('all');
+  const [selectedDocuments, setSelectedDocuments] = useState<string[]>([]);
+  const [showUploadDialog, setShowUploadDialog] = useState(false);
+  const [showDocumentViewer, setShowDocumentViewer] = useState(false);
+  const [selectedDocument, setSelectedDocument] = useState<Document | null>(null);
+  const [showVersionHistory, setShowVersionHistory] = useState(false);
+  const [showFilters, setShowFilters] = useState(false);
+  
+  // Generate mock documents
+  const documents = useMemo(() => generateMockDocuments(projectId), [projectId]);
+  
+  // Filter documents
+  const filteredDocuments = useMemo(() => {
+    return documents.filter(doc => {
+      const matchesSearch = doc.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                           doc.documentNumber.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                           doc.description?.toLowerCase().includes(searchQuery.toLowerCase());
+      const matchesCategory = selectedCategory === 'all' || doc.category.id === selectedCategory;
+      return matchesSearch && matchesCategory;
+    });
+  }, [documents, searchQuery, selectedCategory]);
+  
+  // Group documents by category
+  const groupedDocuments = useMemo(() => {
+    const grouped: Record<string, Document[]> = {};
+    filteredDocuments.forEach(doc => {
+      if (!grouped[doc.category.id]) {
+        grouped[doc.category.id] = [];
+      }
+      grouped[doc.category.id].push(doc);
+    });
+    return grouped;
+  }, [filteredDocuments]);
+  
+  const handleSelectAll = useCallback((checked: boolean) => {
+    if (checked) {
+      setSelectedDocuments(filteredDocuments.map(d => d.id));
+    } else {
+      setSelectedDocuments([]);
+    }
+  }, [filteredDocuments]);
+  
+  const handleDocumentSelect = useCallback((docId: string, checked: boolean) => {
+    if (checked) {
+      setSelectedDocuments(prev => [...prev, docId]);
+    } else {
+      setSelectedDocuments(prev => prev.filter(id => id !== docId));
+    }
+  }, []);
+  
+  const handleDocumentClick = useCallback((document: Document) => {
+    setSelectedDocument(document);
+    setShowDocumentViewer(true);
+  }, []);
+  
+  const handleBulkAction = useCallback((action: string) => {
+    console.log(`Performing ${action} on ${selectedDocuments.length} documents`);
+    setSelectedDocuments([]);
+  }, [selectedDocuments]);
+  
+  const getCategoryIcon = (iconName: string) => {
+    const icons: Record<string, any> = {
+      Building2, Layers, Zap, Settings2, Droplets, Wind, Flame, Trees, Map, 
+      Palette, FileText, FileSignature, Shield, ClipboardList, Mail
+    };
+    const Icon = icons[iconName] || FileText;
+    return <Icon className="h-4 w-4" />;
+  };
+  
+  const getStatusColor = (status: string) => {
+    const colors: Record<string, string> = {
+      draft: 'bg-gray-100 text-gray-700',
+      review: 'bg-blue-100 text-blue-700',
+      approved: 'bg-green-100 text-green-700',
+      rejected: 'bg-red-100 text-red-700'
+    };
+    return colors[status] || 'bg-gray-100 text-gray-700';
+  };
+  
+  return (
+    <div className="flex flex-col h-full">
+      {/* Header */}
+      <div className="bg-white border-b px-6 py-4">
+        <div className="flex items-center justify-between mb-4">
+          <div>
+            <h1 className="text-2xl font-bold text-gray-900">Document Management</h1>
+            <p className="text-gray-600 mt-1">Project {projectId} - {filteredDocuments.length} documents</p>
+          </div>
+          
+          <div className="flex items-center gap-3">
+            {selectedDocuments.length > 0 && (
+              <div className="flex items-center gap-2 mr-4">
+                <span className="text-sm text-gray-600">
+                  {selectedDocuments.length} selected
+                </span>
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="outline" size="sm">
+                      Bulk Actions
+                      <ChevronDown className="h-4 w-4 ml-2" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end" className="w-48">
+                    <DropdownMenuItem onClick={() => handleBulkAction('download')}>
+                      <Download className="h-4 w-4 mr-2" />
+                      Download
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => handleBulkAction('share')}>
+                      <Share2 className="h-4 w-4 mr-2" />
+                      Share
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => handleBulkAction('archive')}>
+                      <Archive className="h-4 w-4 mr-2" />
+                      Archive
+                    </DropdownMenuItem>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem 
+                      onClick={() => handleBulkAction('delete')}
+                      className="text-red-600"
+                    >
+                      <Trash2 className="h-4 w-4 mr-2" />
+                      Delete
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </div>
+            )}
+            
+            <Button 
+              variant="outline" 
+              size="sm"
+              onClick={() => setShowFilters(!showFilters)}
+            >
+              <Filter className="h-4 w-4 mr-2" />
+              Filters
+            </Button>
+            
+            <div className="flex items-center border rounded-lg">
+              <Button
+                variant={viewMode === 'grid' ? 'default' : 'ghost'}
+                size="sm"
+                onClick={() => setViewMode('grid')}
+                className="rounded-r-none"
+              >
+                <Grid3x3 className="h-4 w-4" />
+              </Button>
+              <Button
+                variant={viewMode === 'list' ? 'default' : 'ghost'}
+                size="sm"
+                onClick={() => setViewMode('list')}
+                className="rounded-l-none"
+              >
+                <List className="h-4 w-4" />
+              </Button>
+            </div>
+            
+            <Button onClick={() => setShowUploadDialog(true)}>
+              <Upload className="h-4 w-4 mr-2" />
+              Upload Document
+            </Button>
+          </div>
+        </div>
+        
+        {/* Search Bar */}
+        <div className="flex items-center gap-4">
+          <div className="flex-1 relative">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+            <Input
+              placeholder="Search documents by name, number, or description..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="pl-10"
+            />
+          </div>
+          
+          <Select value={selectedCategory} onValueChange={setSelectedCategory}>
+            <SelectTrigger className="w-48">
+              <SelectValue placeholder="All Categories" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Categories</SelectItem>
+              {DOCUMENT_CATEGORIES.map(cat => (
+                <SelectItem key={cat.id} value={cat.id}>
+                  <div className="flex items-center gap-2">
+                    {getCategoryIcon(cat.icon)}
+                    <span>{cat.name}</span>
+                  </div>
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+      </div>
+      
+      {/* Filters Panel */}
+      {showFilters && (
+        <DocumentFilters 
+          onClose={() => setShowFilters(false)}
+          onApply={(filters) => {
+            console.log('Applying filters:', filters);
+            setShowFilters(false);
+          }}
+        />
+      )}
+      
+      {/* Main Content */}
+      <div className="flex-1 overflow-auto p-6 bg-gray-50">
+        {viewMode === 'grid' ? (
+          <DocumentGrid
+            documents={filteredDocuments}
+            selectedDocuments={selectedDocuments}
+            onDocumentSelect={handleDocumentSelect}
+            onDocumentClick={handleDocumentClick}
+            onSelectAll={handleSelectAll}
+            getCategoryIcon={getCategoryIcon}
+            getStatusColor={getStatusColor}
+          />
+        ) : (
+          <DocumentList
+            documents={filteredDocuments}
+            selectedDocuments={selectedDocuments}
+            onDocumentSelect={handleDocumentSelect}
+            onDocumentClick={handleDocumentClick}
+            onSelectAll={handleSelectAll}
+            getCategoryIcon={getCategoryIcon}
+            getStatusColor={getStatusColor}
+          />
+        )}
+      </div>
+      
+      {/* Dialogs */}
+      {showUploadDialog && (
+        <DocumentUploadDialog
+          projectId={projectId}
+          onClose={() => setShowUploadDialog(false)}
+          onUpload={(files) => {
+            console.log('Uploading files:', files);
+            setShowUploadDialog(false);
+          }}
+        />
+      )}
+      
+      {showDocumentViewer && selectedDocument && (
+        <DocumentViewer
+          document={selectedDocument}
+          onClose={() => {
+            setShowDocumentViewer(false);
+            setSelectedDocument(null);
+          }}
+          onShowHistory={() => {
+            setShowVersionHistory(true);
+          }}
+        />
+      )}
+      
+      {showVersionHistory && selectedDocument && (
+        <DocumentVersionHistory
+          document={selectedDocument}
+          onClose={() => setShowVersionHistory(false)}
+        />
+      )}
+    </div>
+  );
+}

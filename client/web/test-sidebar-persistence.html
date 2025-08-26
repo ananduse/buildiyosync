@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Sidebar Persistence</title>
+    <style>
+        body {
+            font-family: system-ui, -apple-system, sans-serif;
+            padding: 20px;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        h1 {
+            color: #333;
+        }
+        .storage-item {
+            background: #f5f5f5;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 10px 0;
+            border: 1px solid #ddd;
+        }
+        .storage-key {
+            font-weight: bold;
+            color: #0066cc;
+        }
+        .storage-value {
+            color: #666;
+            margin-left: 10px;
+        }
+        button {
+            background: #0066cc;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background: #0052a3;
+        }
+        .status {
+            padding: 10px;
+            border-radius: 5px;
+            margin: 10px 0;
+        }
+        .success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .info {
+            background: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+    </style>
+</head>
+<body>
+    <h1>Sidebar Persistence Test</h1>
+    
+    <div class="status info">
+        <h2>Current LocalStorage Values:</h2>
+        <div id="storage-display"></div>
+    </div>
+
+    <h2>Test Controls:</h2>
+    <button onclick="toggleSidebar('demo1')">Toggle Demo1 Sidebar</button>
+    <button onclick="toggleSidebar('demo3')">Toggle Demo3 Sidebar</button>
+    <button onclick="toggleSidebar('projects')">Toggle Projects Sidebar</button>
+    <button onclick="toggleSidebar('leads')">Toggle Leads Sidebar</button>
+    <button onclick="toggleSidebar('crm')">Toggle CRM Sidebar</button>
+    <button onclick="clearStorage()">Clear All Storage</button>
+    <button onclick="displayStorage()">Refresh Display</button>
+
+    <script>
+        // Display all sidebar-related localStorage items
+        function displayStorage() {
+            const display = document.getElementById('storage-display');
+            display.innerHTML = '';
+            
+            const sidebarKeys = [
+                'app_settings_layouts.demo1.sidebarCollapse',
+                'sidebarCollapsed',
+                'sidebar-collapsed',
+                'projects-sidebar-collapsed',
+                'leads-sidebar-collapsed',
+                'crm-sidebar-collapsed',
+                'workspace-mode',
+                'leads-workspace-mode',
+                'pinned-nav-items',
+                'leads-pinned-nav-items',
+                'crm-pinned-nav-items'
+            ];
+            
+            let foundAny = false;
+            sidebarKeys.forEach(key => {
+                const value = localStorage.getItem(key);
+                if (value !== null) {
+                    foundAny = true;
+                    const div = document.createElement('div');
+                    div.className = 'storage-item';
+                    div.innerHTML = `
+                        <span class="storage-key">${key}:</span>
+                        <span class="storage-value">${value}</span>
+                    `;
+                    display.appendChild(div);
+                }
+            });
+            
+            if (!foundAny) {
+                display.innerHTML = '<div class="storage-item">No sidebar persistence data found in localStorage</div>';
+            }
+        }
+        
+        // Toggle sidebar state for different layouts
+        function toggleSidebar(layout) {
+            let key, currentValue;
+            
+            switch(layout) {
+                case 'demo1':
+                    key = 'app_settings_layouts.demo1.sidebarCollapse';
+                    break;
+                case 'demo3':
+                    key = 'sidebarCollapsed';
+                    break;
+                case 'projects':
+                    key = 'sidebar-collapsed';
+                    break;
+                case 'leads':
+                    key = 'leads-sidebar-collapsed';
+                    break;
+                case 'crm':
+                    key = 'crm-sidebar-collapsed';
+                    break;
+            }
+            
+            currentValue = localStorage.getItem(key);
+            const newValue = currentValue === 'true' ? 'false' : 'true';
+            localStorage.setItem(key, newValue);
+            
+            displayStorage();
+            
+            // Show status
+            const status = document.createElement('div');
+            status.className = 'status success';
+            status.innerHTML = `Set ${key} to ${newValue}`;
+            document.body.insertBefore(status, document.querySelector('h2'));
+            setTimeout(() => status.remove(), 3000);
+        }
+        
+        // Clear all storage
+        function clearStorage() {
+            const sidebarKeys = [
+                'app_settings_layouts.demo1.sidebarCollapse',
+                'sidebarCollapsed',
+                'sidebar-collapsed',
+                'projects-sidebar-collapsed',
+                'leads-sidebar-collapsed',
+                'crm-sidebar-collapsed',
+                'workspace-mode',
+                'leads-workspace-mode',
+                'pinned-nav-items',
+                'leads-pinned-nav-items',
+                'crm-pinned-nav-items'
+            ];
+            
+            sidebarKeys.forEach(key => localStorage.removeItem(key));
+            displayStorage();
+            
+            // Show status
+            const status = document.createElement('div');
+            status.className = 'status success';
+            status.innerHTML = 'Cleared all sidebar persistence data';
+            document.body.insertBefore(status, document.querySelector('h2'));
+            setTimeout(() => status.remove(), 3000);
+        }
+        
+        // Initial display
+        displayStorage();
+    </script>
+</body>
+</html>

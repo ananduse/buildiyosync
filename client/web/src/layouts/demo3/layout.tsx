@@ -29,15 +29,28 @@ export function Demo3Layout() {
   
   // Initialize collapsed state with immediate CSS variable update
   const [isCollapsed, setIsCollapsed] = useState(() => {
-    const saved = localStorage.getItem('sidebarCollapsed');
-    const collapsed = saved ? JSON.parse(saved) : false;
+    // Check localStorage for saved preference
+    const saved = typeof window !== 'undefined' ? localStorage.getItem('sidebarCollapsed') : null;
+    
+    // Default to collapsed (true) if no saved preference exists OR on mobile
+    const collapsed = saved !== null ? JSON.parse(saved) : true;
+    
+    // Calculate width based on collapsed state
     const width = collapsed ? '58px' : '240px';
     
     // Set CSS variable immediately during state initialization
     if (typeof window !== 'undefined') {
       document.documentElement.style.setProperty('--sidebar-width', width);
+      // Add class to body to prevent transition on initial load
+      document.body.classList.add('sidebar-no-transition');
+      
       // Force a style recalculation
       document.documentElement.offsetHeight;
+      
+      // Remove the no-transition class after a frame
+      requestAnimationFrame(() => {
+        document.body.classList.remove('sidebar-no-transition');
+      });
     }
     
     return collapsed;
@@ -77,6 +90,10 @@ export function Demo3Layout() {
       body {
         --sidebar-width: ${sidebarWidth} !important;
       }
+      /* Prevent transitions on initial load */
+      body.sidebar-no-transition * {
+        transition: none !important;
+      }
     `;
     
     // Remove any existing override
@@ -108,6 +125,14 @@ export function Demo3Layout() {
     setOption('layout', 'demo3');
     setOption('container', 'fluid');
   }, [setOption]);
+
+  // Auto-collapse sidebar on mobile devices or when route changes on mobile
+  useEffect(() => {
+    if (isMobileMode && !isCollapsed) {
+      setIsCollapsed(true);
+      localStorage.setItem('sidebarCollapsed', JSON.stringify(true));
+    }
+  }, [isMobileMode, pathname]);
 
   // If it's a lead page, use our enhanced LeadLayout
   if (isLeadPage) {

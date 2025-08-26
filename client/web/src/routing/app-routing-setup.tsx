@@ -243,6 +243,7 @@ import ProjectDetails from '@/pages/projects/details/project-details';
 import ProjectDetailsView from '@/pages/projects/details/project-details-view';
 import ProjectTeamManagement from '@/pages/projects/team/team-management';
 import ProjectTaskManagement from '@/pages/projects/tasks/task-management';
+import ProjectDocuments from '@/pages/projects/documents/project-documents';
 import AnalyticsDashboard from '@/pages/projects/reports/analytics-dashboard';
 import EnterpriseDashboard from '@/pages/projects/dashboard/enterprise-dashboard';
 import ProjectKanban from '@/pages/projects/kanban/project-kanban';
@@ -467,7 +468,7 @@ export function AppRoutingSetup() {
         <Route path="analytics" element={<AnalyticsDashboard />} />
         <Route path="milestones" element={<ProjectTaskManagement />} />
         <Route path="timeline" element={<ProjectTaskManagement />} />
-        <Route path="documents" element={<ProjectTaskManagement />} />
+        <Route path="documents" element={<ProjectDocuments />} />
         <Route path="settings" element={<ProjectTaskManagement />} />
         <Route path="create" element={<ProjectListPage />} />
         <Route path="templates" element={<ProjectListPage />} />
@@ -488,7 +489,7 @@ export function AppRoutingSetup() {
         <Route path=":id/team" element={<ProjectDetailsView />} />
         <Route path=":id/tasks" element={<ProjectDetailsView />} />
         <Route path=":id/budget" element={<ProjectDetailsView />} />
-        <Route path=":id/documents" element={<ProjectDetailsView />} />
+        <Route path=":id/documents" element={<ProjectDocuments />} />
         <Route path=":id/calendar" element={<ProjectDetailsView />} />
         <Route path=":id/reports" element={<ProjectDetailsView />} />
         <Route path=":id/details" element={<ProjectDetailsView />} />

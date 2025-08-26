@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useState } from 'react';
 import { projectNavItems } from '@/components/projects/config/navigation';
 import type { NavItem } from '@/components/projects/config/types';
+import { usePersistentState } from '@/hooks/use-persistent-state';
 
 interface LayoutContextType {
   sidebarCollapse: boolean;
@@ -25,9 +26,18 @@ const LayoutContext = createContext<LayoutContextType>({
 });
 
 export function LayoutProvider({ children }: { children: React.ReactNode }) {
-  const [sidebarCollapse, setSidebarCollapse] = useState(false);
-  const [pinnedNavItems, setPinnedNavItems] = useState<string[]>([]);
-  const [isWorkspaceMode, setIsWorkspaceMode] = useState(false);
+  const [sidebarCollapse, setSidebarCollapse] = usePersistentState<boolean>(
+    'sidebar-collapsed',
+    false
+  );
+  const [pinnedNavItems, setPinnedNavItems] = usePersistentState<string[]>(
+    'pinned-nav-items',
+    []
+  );
+  const [isWorkspaceMode, setIsWorkspaceMode] = usePersistentState<boolean>(
+    'workspace-mode',
+    false
+  );
 
   const toggleSidebarCollapse = () => {
     setSidebarCollapse(!sidebarCollapse);

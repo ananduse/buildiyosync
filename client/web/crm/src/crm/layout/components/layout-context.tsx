@@ -1,5 +1,6 @@
 import { createContext, useContext, useState, ReactNode, useMemo } from 'react';
 import { NavConfig } from '@/crm/config/types';
+import { usePersistentState } from '@/hooks/use-persistent-state';
 
 // Define the shape of the layout state
 interface LayoutState {
@@ -22,9 +23,15 @@ interface LayoutProviderProps {
 }
 
 export function LayoutProvider({ children, sidebarNavItems }: LayoutProviderProps) {
-  const [sidebarCollapse, setSidebarCollapse] = useState(false);
+  const [sidebarCollapse, setSidebarCollapse] = usePersistentState<boolean>(
+    'crm-sidebar-collapsed',
+    false
+  );
   const initialPinned = sidebarNavItems.filter(item => item.pinned).map(item => item.id);
-  const [sidebarPinnedNavItems, setSidebarPinnedNavItems] = useState<string[]>(initialPinned);
+  const [sidebarPinnedNavItems, setSidebarPinnedNavItems] = usePersistentState<string[]>(
+    'crm-pinned-nav-items',
+    initialPinned
+  );
 
   const pinSidebarNavItem = (id: string) => {
     setSidebarPinnedNavItems((prev) => prev.includes(id) ? prev : [...prev, id]);

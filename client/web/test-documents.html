@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Document Management Page</title>
+    <style>
+        body {
+            font-family: system-ui, -apple-system, sans-serif;
+            padding: 40px;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        h1 { color: #333; }
+        .link-card {
+            display: block;
+            padding: 20px;
+            margin: 10px 0;
+            border: 2px solid #3B82F6;
+            border-radius: 8px;
+            text-decoration: none;
+            color: #333;
+            background: #F0F9FF;
+            transition: all 0.3s;
+        }
+        .link-card:hover {
+            background: #3B82F6;
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+        }
+        .link-title {
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        .link-description {
+            font-size: 14px;
+            opacity: 0.8;
+        }
+        .status {
+            padding: 10px;
+            border-radius: 5px;
+            margin: 20px 0;
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+    </style>
+</head>
+<body>
+    <h1>📄 Document Management System Test</h1>
+    
+    <div class="status">
+        ✅ The new document management system has been successfully implemented!
+    </div>
+
+    <p>Click on the links below to test the document management pages:</p>
+
+    <a href="http://localhost:5173/projects/documents" class="link-card" target="_blank">
+        <div class="link-title">📁 All Projects Documents</div>
+        <div class="link-description">/projects/documents - View all project documents</div>
+    </a>
+
+    <a href="http://localhost:5173/projects/P015/documents" class="link-card" target="_blank">
+        <div class="link-title">📄 Project P015 Documents</div>
+        <div class="link-description">/projects/P015/documents - View documents for specific project</div>
+    </a>
+
+    <a href="http://localhost:5173/projects/P001/documents" class="link-card" target="_blank">
+        <div class="link-title">📋 Project P001 Documents</div>
+        <div class="link-description">/projects/P001/documents - View documents for another project</div>
+    </a>
+
+    <h2>Features Available:</h2>
+    <ul>
+        <li>✅ 15 Document Categories (Architectural, Structural, Electrical, etc.)</li>
+        <li>✅ Version Control with History Tracking</li>
+        <li>✅ Grid and List Views</li>
+        <li>✅ Advanced Search and Filtering</li>
+        <li>✅ Bulk Operations (Select, Download, Archive, Delete)</li>
+        <li>✅ Drag & Drop File Upload</li>
+        <li>✅ PDF Viewer with Annotations</li>
+        <li>✅ Comment System for Collaboration</li>
+        <li>✅ Document Status Workflow</li>
+        <li>✅ Confidential Document Marking</li>
+    </ul>
+
+    <h2>Navigation:</h2>
+    <p>You can also navigate to the document management from within the application:</p>
+    <ol>
+        <li>Go to the Projects section</li>
+        <li>Select any project (e.g., P015)</li>
+        <li>Click on "Documents" in the project navigation</li>
+    </ol>
+
+    <script>
+        // Check if server is running
+        fetch('http://localhost:5173')
+            .then(() => {
+                console.log('✅ Dev server is running');
+            })
+            .catch(() => {
+                alert('⚠️ Dev server is not running. Please start it with: npm run dev');
+            });
+    </script>
+</body>
+</html>
