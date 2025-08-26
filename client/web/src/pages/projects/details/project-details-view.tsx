@@ -805,11 +805,15 @@ export default function ProjectDetailsView() {
           <Breadcrumb className="mb-4">
             <BreadcrumbList>
               <BreadcrumbItem>
-                <BreadcrumbLink href="/projects">Projects</BreadcrumbLink>
+                <BreadcrumbLink asChild>
+                  <Link to="/projects">Projects</Link>
+                </BreadcrumbLink>
               </BreadcrumbItem>
               <BreadcrumbSeparator />
               <BreadcrumbItem>
-                <BreadcrumbLink href="/projects/list">All Projects</BreadcrumbLink>
+                <BreadcrumbLink asChild>
+                  <Link to="/projects/list">All Projects</Link>
+                </BreadcrumbLink>
               </BreadcrumbItem>
               <BreadcrumbSeparator />
               <BreadcrumbItem>

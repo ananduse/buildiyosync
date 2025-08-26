@@ -465,6 +465,22 @@ export function AppRoutingSetup() {
         <Route path="tasks/all" element={<ProjectTaskManagement />} />
         <Route path="reports" element={<AnalyticsDashboard />} />
         <Route path="analytics" element={<AnalyticsDashboard />} />
+        <Route path="milestones" element={<ProjectTaskManagement />} />
+        <Route path="timeline" element={<ProjectTaskManagement />} />
+        <Route path="documents" element={<ProjectTaskManagement />} />
+        <Route path="settings" element={<ProjectTaskManagement />} />
+        <Route path="create" element={<ProjectListPage />} />
+        <Route path="templates" element={<ProjectListPage />} />
+        <Route path="initiation" element={<ProjectListPage />} />
+        <Route path="estimation" element={<ProjectListPage />} />
+        <Route path="resources" element={<ProjectTeamManagement />} />
+        <Route path="budget" element={<AnalyticsDashboard />} />
+        <Route path="materials" element={<ProjectTaskManagement />} />
+        <Route path="quality" element={<ProjectTaskManagement />} />
+        <Route path="safety" element={<ProjectTaskManagement />} />
+        <Route path="daily-followup" element={<ProjectTaskManagement />} />
+        <Route path="rfi" element={<ProjectTaskManagement />} />
+        <Route path="change-orders" element={<ProjectTaskManagement />} />
         <Route path=":id" element={<ProjectDetailsView />} />
         <Route path=":id/overview" element={<ProjectDetailsView />} />
         <Route path=":id/activity" element={<ProjectDetailsView />} />

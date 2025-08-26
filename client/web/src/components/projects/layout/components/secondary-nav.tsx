@@ -14,15 +14,15 @@ import {
 import { useEffect, useState } from 'react';
 
 const navItems = [
-  { value: 'overview', path: 'overview', label: 'Overview', icon: LayoutGrid },
-  { value: 'activity', path: 'activity', label: 'Activity', icon: Activity },
-  { value: 'timeline', path: 'timeline', label: 'Timeline', icon: Clock },
-  { value: 'team', path: 'team', label: 'Team', icon: Users },
-  { value: 'tasks', path: 'tasks', label: 'Tasks', icon: CheckSquare },
-  { value: 'budget', path: 'budget', label: 'Budget', icon: DollarSign },
-  { value: 'documents', path: 'documents', label: 'Documents', icon: FileText },
-  { value: 'calendar', path: 'calendar', label: 'Calendar', icon: Calendar },
-  { value: 'reports', path: 'reports', label: 'Reports', icon: TrendingUp },
+  { value: 'overview', path: '/projects/dashboard', label: 'Overview', icon: LayoutGrid },
+  { value: 'activity', path: '/projects/list', label: 'Activity', icon: Activity },
+  { value: 'timeline', path: '/projects/timeline', label: 'Timeline', icon: Clock },
+  { value: 'team', path: '/projects/team', label: 'Team', icon: Users },
+  { value: 'tasks', path: '/projects/tasks', label: 'Tasks', icon: CheckSquare },
+  { value: 'budget', path: '/projects/reports', label: 'Budget', icon: DollarSign },
+  { value: 'documents', path: '/projects/documents', label: 'Documents', icon: FileText },
+  { value: 'calendar', path: '/projects/tasks', label: 'Calendar', icon: Calendar },
+  { value: 'reports', path: '/projects/reports', label: 'Reports', icon: TrendingUp },
 ];
 
 export function SecondaryNav() {
@@ -36,32 +36,21 @@ export function SecondaryNav() {
   const isProjectDetail = !!projectId;
 
   useEffect(() => {
-    // Extract the last segment of the path to determine active tab
-    const pathSegments = location.pathname.split('/');
-    const lastSegment = pathSegments[pathSegments.length - 1];
-    
     const currentItem = navItems.find(item => 
-      item.value === lastSegment || item.path === lastSegment
+      location.pathname === item.path || location.pathname.startsWith(item.path + '/')
     );
     
     if (currentItem) {
       setActiveTab(currentItem.value);
-    } else if (isProjectDetail && !navItems.find(item => item.value === lastSegment)) {
-      // If we're on a project detail page but no specific tab, default to overview
+    } else {
       setActiveTab('overview');
     }
-  }, [location, isProjectDetail]);
+  }, [location]);
 
   const handleTabChange = (value: string) => {
     const item = navItems.find(nav => nav.value === value);
     if (item) {
-      if (isProjectDetail) {
-        // Navigate within project context
-        navigate(`/projects/${projectId}/${item.path}`);
-      } else {
-        // Navigate to general project sections
-        navigate(`/projects/${item.path}`);
-      }
+      navigate(item.path);
     }
   };
 
