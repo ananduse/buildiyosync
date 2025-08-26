@@ -1,9 +1,7 @@
 import { useState } from 'react';
 import { 
-  X, Download, Share2, Printer, History, MessageSquare, 
-  ZoomIn, ZoomOut, RotateCw, ChevronLeft, ChevronRight,
-  Highlighter, Type, Square, Circle, ArrowRight, Trash2,
-  Save, Edit3, Lock, Unlock, MoreVertical, Maximize2
+  X, Download, Share2, Printer, History, MessageSquare,
+  Edit3, Lock
 } from 'lucide-react';
 import { 
   Dialog, DialogContent, DialogHeader, DialogTitle 
@@ -12,6 +10,10 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import DocumentWorkflow from './document-workflow';
+import DocumentRelated from './document-related';
+import DocumentMetadataComponent from './document-metadata';
+import SamplePDFViewer from './sample-pdf-viewer';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Textarea } from '@/components/ui/textarea';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -33,38 +35,15 @@ export default function DocumentViewer({
   onClose,
   onShowHistory
 }: DocumentViewerProps) {
-  const [currentPage, setCurrentPage] = useState(1);
-  const [totalPages] = useState(10); // Mock total pages
-  const [zoom, setZoom] = useState(100);
-  const [annotationTool, setAnnotationTool] = useState<string | null>(null);
-  const [comments, setComments] = useState<DocumentComment[]>([]);
+  const [comments, setComments] = useState<DocumentComment[]>(
+    document.currentVersion.comments || []
+  );
   const [newComment, setNewComment] = useState('');
   const [selectedComment, setSelectedComment] = useState<string | null>(null);
-  const [annotations, setAnnotations] = useState<DocumentAnnotation[]>([]);
-  
-  const handleZoomIn = () => {
-    setZoom(prev => Math.min(prev + 25, 200));
-  };
-  
-  const handleZoomOut = () => {
-    setZoom(prev => Math.max(prev - 25, 50));
-  };
-  
-  const handleRotate = () => {
-    console.log('Rotating document');
-  };
-  
-  const handlePreviousPage = () => {
-    setCurrentPage(prev => Math.max(prev - 1, 1));
-  };
-  
-  const handleNextPage = () => {
-    setCurrentPage(prev => Math.min(prev + 1, totalPages));
-  };
-  
-  const handleAnnotationToolSelect = (tool: string) => {
-    setAnnotationTool(annotationTool === tool ? null : tool);
-  };
+  const [annotations, setAnnotations] = useState<DocumentAnnotation[]>(
+    document.currentVersion.annotations || []
+  );
+  const [currentPage, setCurrentPage] = useState(1);
   
   const handleAddComment = () => {
     if (!newComment.trim()) return;
@@ -160,131 +139,41 @@ export default function DocumentViewer({
         <div className="flex flex-1 overflow-hidden">
           {/* Document Viewer */}
           <div className="flex-1 flex flex-col bg-gray-100">
-            {/* Toolbar */}
-            <div className="flex items-center justify-between px-4 py-2 bg-white border-b">
-              <div className="flex items-center gap-2">
-                {/* Zoom Controls */}
-                <div className="flex items-center gap-1 border-r pr-2">
-                  <Button variant="ghost" size="sm" onClick={handleZoomOut}>
-                    <ZoomOut className="h-4 w-4" />
-                  </Button>
-                  <span className="text-sm font-medium w-12 text-center">{zoom}%</span>
-                  <Button variant="ghost" size="sm" onClick={handleZoomIn}>
-                    <ZoomIn className="h-4 w-4" />
-                  </Button>
-                </div>
-                
-                {/* Page Navigation */}
-                <div className="flex items-center gap-1 border-r pr-2">
-                  <Button variant="ghost" size="sm" onClick={handlePreviousPage} disabled={currentPage === 1}>
-                    <ChevronLeft className="h-4 w-4" />
-                  </Button>
-                  <span className="text-sm font-medium px-2">
-                    {currentPage} / {totalPages}
-                  </span>
-                  <Button variant="ghost" size="sm" onClick={handleNextPage} disabled={currentPage === totalPages}>
-                    <ChevronRight className="h-4 w-4" />
-                  </Button>
-                </div>
-                
-                {/* Annotation Tools */}
-                <div className="flex items-center gap-1">
-                  <Button 
-                    variant={annotationTool === 'highlight' ? 'default' : 'ghost'} 
-                    size="sm"
-                    onClick={() => handleAnnotationToolSelect('highlight')}
-                  >
-                    <Highlighter className="h-4 w-4" />
-                  </Button>
-                  <Button 
-                    variant={annotationTool === 'text' ? 'default' : 'ghost'} 
-                    size="sm"
-                    onClick={() => handleAnnotationToolSelect('text')}
-                  >
-                    <Type className="h-4 w-4" />
-                  </Button>
-                  <Button 
-                    variant={annotationTool === 'rectangle' ? 'default' : 'ghost'} 
-                    size="sm"
-                    onClick={() => handleAnnotationToolSelect('rectangle')}
-                  >
-                    <Square className="h-4 w-4" />
-                  </Button>
-                  <Button 
-                    variant={annotationTool === 'circle' ? 'default' : 'ghost'} 
-                    size="sm"
-                    onClick={() => handleAnnotationToolSelect('circle')}
-                  >
-                    <Circle className="h-4 w-4" />
-                  </Button>
-                  <Button 
-                    variant={annotationTool === 'arrow' ? 'default' : 'ghost'} 
-                    size="sm"
-                    onClick={() => handleAnnotationToolSelect('arrow')}
-                  >
-                    <ArrowRight className="h-4 w-4" />
-                  </Button>
-                </div>
-              </div>
-              
-              <div className="flex items-center gap-2">
-                <Button variant="ghost" size="sm" onClick={handleRotate}>
-                  <RotateCw className="h-4 w-4" />
-                </Button>
-                <Button variant="ghost" size="sm">
-                  <Maximize2 className="h-4 w-4" />
-                </Button>
-              </div>
-            </div>
-            
-            {/* PDF Viewer Area */}
-            <div className="flex-1 overflow-auto p-8">
-              <div 
-                className="mx-auto bg-white shadow-lg"
-                style={{
-                  width: `${8.5 * zoom}px`,
-                  minHeight: `${11 * zoom}px`,
-                  transform: `scale(${zoom / 100}`,
-                  transformOrigin: 'top center'
-                }}
-              >
-                {/* Mock PDF Page */}
-                <div className="p-8">
-                  <div className="h-8 bg-gray-200 rounded mb-4"></div>
-                  <div className="space-y-2 mb-6">
-                    <div className="h-3 bg-gray-100 rounded w-full"></div>
-                    <div className="h-3 bg-gray-100 rounded w-5/6"></div>
-                    <div className="h-3 bg-gray-100 rounded w-4/6"></div>
-                  </div>
-                  <div className="h-64 bg-gray-100 rounded mb-6"></div>
-                  <div className="space-y-2">
-                    <div className="h-3 bg-gray-100 rounded w-full"></div>
-                    <div className="h-3 bg-gray-100 rounded w-5/6"></div>
-                    <div className="h-3 bg-gray-100 rounded w-full"></div>
-                    <div className="h-3 bg-gray-100 rounded w-4/6"></div>
-                  </div>
-                </div>
-              </div>
-            </div>
+            {/* PDF Viewer with built-in toolbar */}
+            <SamplePDFViewer
+              documentUrl={document.currentVersion.fileUrl}
+              initialPage={currentPage}
+              onPageChange={(page) => setCurrentPage(page)}
+              onAnnotation={(annotation) => {
+                setAnnotations(prev => [...prev, annotation]);
+                console.log('New annotation:', annotation);
+              }}
+            />
           </div>
           
           {/* Sidebar */}
-          <div className="w-96 bg-white border-l flex flex-col">
+          <div className="w-[420px] bg-white border-l flex flex-col">
             <Tabs defaultValue="comments" className="flex-1 flex flex-col">
-              <TabsList className="w-full rounded-none">
-                <TabsTrigger value="comments" className="flex-1">
+              <TabsList className="w-full rounded-none flex justify-start gap-0.5 p-1 bg-gray-50">
+                <TabsTrigger value="comments" className="text-xs px-2 py-1.5 data-[state=active]:bg-white data-[state=active]:text-primary data-[state=active]:shadow-sm">
                   Comments ({comments.length})
                 </TabsTrigger>
-                <TabsTrigger value="annotations" className="flex-1">
-                  Annotations ({annotations.length})
+                <TabsTrigger value="workflow" className="text-xs px-2 py-1.5 data-[state=active]:bg-white data-[state=active]:text-primary data-[state=active]:shadow-sm">
+                  Workflow
                 </TabsTrigger>
-                <TabsTrigger value="info" className="flex-1">
-                  Info
+                <TabsTrigger value="related" className="text-xs px-2 py-1.5 data-[state=active]:bg-white data-[state=active]:text-primary data-[state=active]:shadow-sm">
+                  Related
+                </TabsTrigger>
+                <TabsTrigger value="metadata" className="text-xs px-2 py-1.5 data-[state=active]:bg-white data-[state=active]:text-primary data-[state=active]:shadow-sm">
+                  Metadata
+                </TabsTrigger>
+                <TabsTrigger value="annotations" className="text-xs px-2 py-1.5 data-[state=active]:bg-white data-[state=active]:text-primary data-[state=active]:shadow-sm">
+                  Annotations
                 </TabsTrigger>
               </TabsList>
               
-              <TabsContent value="comments" className="flex-1 flex flex-col mt-0">
-                <ScrollArea className="flex-1 p-4">
+              <TabsContent value="comments" className="flex-1 flex flex-col mt-0 p-0">
+                <ScrollArea className="flex-1 px-3 py-3">
                   <div className="space-y-4">
                     {comments.map((comment) => (
                       <div 
@@ -346,18 +235,98 @@ export default function DocumentViewer({
                 </div>
               </TabsContent>
               
-              <TabsContent value="annotations" className="flex-1 p-4">
+              <TabsContent value="annotations" className="flex-1 px-3 py-3">
                 <div className="space-y-4">
                   <p className="text-sm text-gray-600">
-                    Select an annotation tool from the toolbar to start annotating the document.
+                    Select an annotation tool from the PDF viewer toolbar to add annotations.
                   </p>
-                  {annotations.length === 0 && (
+                  {annotations.length === 0 ? (
                     <div className="text-center py-8 text-gray-500">
                       <Edit3 className="h-12 w-12 mx-auto mb-2 text-gray-300" />
                       <p>No annotations yet</p>
+                      <p className="text-xs mt-2">Use the highlight, text, or shape tools in the viewer</p>
+                    </div>
+                  ) : (
+                    <div className="space-y-3">
+                      {annotations.map((annotation, idx) => (
+                        <div key={annotation.id} className="p-3 border rounded-lg bg-gray-50">
+                          <div className="flex items-start justify-between">
+                            <div className="flex-1">
+                              <div className="flex items-center gap-2 mb-1">
+                                <span className="text-xs font-medium capitalize text-gray-700">
+                                  {annotation.type}
+                                </span>
+                                <span className="text-xs text-gray-500">
+                                  Page {annotation.pageNumber || 1}
+                                </span>
+                              </div>
+                              {annotation.content && (
+                                <p className="text-sm text-gray-600">{annotation.content}</p>
+                              )}
+                              <p className="text-xs text-gray-400 mt-1">
+                                Added by {annotation.createdBy?.name || 'You'}
+                              </p>
+                            </div>
+                            <button className="text-gray-400 hover:text-red-500 transition-colors">
+                              <X className="h-4 w-4" />
+                            </button>
+                          </div>
+                        </div>
+                      ))}
                     </div>
                   )}
                 </div>
+              </TabsContent>
+              
+              <TabsContent value="workflow" className="flex-1 overflow-auto mt-0 p-0">
+                <ScrollArea className="h-full">
+                  <div className="px-3 py-3">
+                    <DocumentWorkflow
+                      document={document}
+                      onStatusChange={(status, comment) => {
+                        console.log('Status changed to:', status, comment);
+                      }}
+                    />
+                  </div>
+                </ScrollArea>
+              </TabsContent>
+              
+              <TabsContent value="related" className="flex-1 overflow-auto mt-0 p-0">
+                <ScrollArea className="h-full">
+                  <div className="px-3 py-3">
+                    <DocumentRelated
+                      document={document}
+                      allDocuments={[]} // Would be passed from parent
+                      relations={[]} // Would be passed from parent
+                      onAddRelation={(relation) => {
+                        console.log('Adding relation:', relation);
+                      }}
+                      onRemoveRelation={(id) => {
+                        console.log('Removing relation:', id);
+                      }}
+                      onViewDocument={(doc) => {
+                        console.log('Viewing document:', doc);
+                      }}
+                    />
+                  </div>
+                </ScrollArea>
+              </TabsContent>
+              
+              <TabsContent value="metadata" className="flex-1 overflow-auto mt-0 p-0">
+                <ScrollArea className="h-full">
+                  <div className="px-3 py-3">
+                    <DocumentMetadataComponent
+                      document={document}
+                      customFields={[]} // Would be passed from parent
+                      onUpdateMetadata={(metadata) => {
+                        console.log('Updating metadata:', metadata);
+                      }}
+                      onManageFields={() => {
+                        console.log('Managing custom fields');
+                      }}
+                    />
+                  </div>
+                </ScrollArea>
               </TabsContent>
               
               <TabsContent value="info" className="flex-1 p-4">

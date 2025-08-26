@@ -132,7 +132,14 @@ export interface DocumentMetadata {
   level?: string;
   grid?: string;
   revision?: string;
-  customFields?: Record<string, any>;
+  customFields?: DocumentCustomFields;
+  projectPhase?: 'concept' | 'design' | 'construction' | 'commissioning' | 'handover';
+  contractPackage?: string;
+  submittalNumber?: string;
+  transmittalNumber?: string;
+  responseRequired?: boolean;
+  responseDate?: string;
+  distribution?: string[];
 }
 
 export interface DocumentWorkflow {
@@ -141,6 +148,34 @@ export interface DocumentWorkflow {
   stages: WorkflowStage[];
   currentStage: string;
   history: WorkflowHistory[];
+  transitions: WorkflowTransition[];
+  autoTransitions?: AutoTransitionRule[];
+}
+
+export interface WorkflowTransition {
+  id: string;
+  from: string;
+  to: string;
+  name: string;
+  requiresApproval: boolean;
+  approvers?: string[];
+  conditions?: TransitionCondition[];
+}
+
+export interface TransitionCondition {
+  type: 'field_value' | 'user_role' | 'time_elapsed' | 'custom';
+  field?: string;
+  operator?: string;
+  value?: any;
+}
+
+export interface AutoTransitionRule {
+  id: string;
+  fromStatus: string;
+  toStatus: string;
+  triggerType: 'time' | 'approval_count' | 'condition';
+  triggerValue?: any;
+  enabled: boolean;
 }
 
 export interface WorkflowStage {
@@ -183,4 +218,69 @@ export interface DocumentFilter {
   tags?: string[];
   hasComments?: boolean;
   confidential?: boolean;
+  sortBy?: 'name' | 'date' | 'size' | 'status' | 'category' | 'modified' | 'created';
+  sortOrder?: 'asc' | 'desc';
+  relatedTo?: string[];
+  hasMetadata?: string[];
+  workflowStage?: string[];
 }
+
+export interface RelatedDocument {
+  id: string;
+  documentId: string;
+  relatedDocumentId: string;
+  relationType: 'parent' | 'child' | 'reference' | 'supersedes' | 'superseded_by' | 'related';
+  description?: string;
+  createdAt: string;
+  createdBy: User;
+}
+
+export interface CustomField {
+  id: string;
+  name: string;
+  type: 'text' | 'number' | 'date' | 'select' | 'multiselect' | 'boolean' | 'user' | 'url';
+  required: boolean;
+  options?: string[];
+  defaultValue?: any;
+  validation?: FieldValidation;
+  category?: string;
+  order: number;
+}
+
+export interface FieldValidation {
+  min?: number;
+  max?: number;
+  pattern?: string;
+  message?: string;
+}
+
+export interface DocumentCustomFields {
+  [fieldId: string]: any;
+}
+
+export const WORKFLOW_STATUSES = [
+  { id: 'draft', name: 'Draft', color: '#6B7280', icon: 'Edit', order: 1 },
+  { id: 'review', name: 'In Review', color: '#3B82F6', icon: 'Eye', order: 2 },
+  { id: 'pending_approval', name: 'Pending Approval', color: '#F59E0B', icon: 'Clock', order: 3 },
+  { id: 'approved', name: 'Approved', color: '#10B981', icon: 'CheckCircle', order: 4 },
+  { id: 'rejected', name: 'Rejected', color: '#EF4444', icon: 'XCircle', order: 5 },
+  { id: 'archived', name: 'Archived', color: '#9CA3AF', icon: 'Archive', order: 6 },
+] as const;
+
+export const STANDARD_WORKFLOW = {
+  id: 'standard',
+  name: 'Standard Document Workflow',
+  stages: [
+    { id: 'draft', name: 'Draft', order: 1 },
+    { id: 'review', name: 'Review', order: 2 },
+    { id: 'approval', name: 'Approval', order: 3 },
+    { id: 'published', name: 'Published', order: 4 },
+  ],
+  transitions: [
+    { from: 'draft', to: 'review', name: 'Submit for Review' },
+    { from: 'review', to: 'approval', name: 'Submit for Approval' },
+    { from: 'review', to: 'draft', name: 'Return to Draft' },
+    { from: 'approval', to: 'published', name: 'Approve' },
+    { from: 'approval', to: 'review', name: 'Request Changes' },
+  ],
+};

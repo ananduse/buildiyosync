@@ -26,73 +26,16 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
 import { cn } from '@/lib/utils';
-import { DOCUMENT_CATEGORIES, type Document, type DocumentCategory } from '@/types/document.types';
+import { DOCUMENT_CATEGORIES, type Document, type DocumentCategory, type DocumentFilter } from '@/types/document.types';
+import { formatFileSize, formatDate, sortDocuments, filterDocuments } from '@/utils/document-utils';
+import { getCompleteDocumentData } from '@/data/sample-document-data';
 import DocumentUploadDialog from './components/document-upload-dialog';
 import DocumentViewer from './components/document-viewer';
 import DocumentVersionHistory from './components/document-version-history';
 import DocumentFilters from './components/document-filters';
 import DocumentGrid from './components/document-grid';
-import DocumentList from './components/document-list';
+import DocumentDataGrid from './components/document-data-grid';
 
-// Mock data generator
-const generateMockDocuments = (projectId: string): Document[] => {
-  const documents: Document[] = [];
-  const statuses = ['draft', 'review', 'approved', 'rejected'] as const;
-  
-  DOCUMENT_CATEGORIES.slice(0, 8).forEach((category, catIndex) => {
-    for (let i = 0; i < Math.floor(Math.random() * 5) + 2; i++) {
-      const docId = `doc-${catIndex}-${i}`;
-      documents.push({
-        id: docId,
-        projectId,
-        title: `${category.name} Drawing ${i + 1}`,
-        description: `Technical ${category.name.toLowerCase()} documentation for project section ${i + 1}`,
-        documentNumber: `${category.code}-${String(i + 1).padStart(3, '0')}-R01`,
-        category,
-        currentVersion: {
-          id: `ver-${docId}-1`,
-          documentId: docId,
-          versionNumber: '1.0',
-          fileUrl: '/sample.pdf',
-          fileName: `${category.code}_${i + 1}.pdf`,
-          fileSize: Math.floor(Math.random() * 10000000) + 500000,
-          fileType: 'application/pdf',
-          uploadedBy: {
-            id: 'user1',
-            name: 'John Doe',
-            email: 'john@example.com',
-            role: 'Project Manager'
-          },
-          uploadedAt: new Date(Date.now() - Math.random() * 30 * 24 * 60 * 60 * 1000).toISOString(),
-          status: statuses[Math.floor(Math.random() * statuses.length)],
-          changes: i > 0 ? 'Updated dimensions and annotations' : 'Initial version'
-        },
-        versions: [],
-        tags: ['technical', category.code.toLowerCase(), '2024'],
-        status: 'active',
-        confidential: Math.random() > 0.7,
-        createdBy: {
-          id: 'user1',
-          name: 'John Doe',
-          email: 'john@example.com',
-          role: 'Project Manager'
-        },
-        createdAt: new Date(Date.now() - Math.random() * 60 * 24 * 60 * 60 * 1000).toISOString(),
-        updatedAt: new Date(Date.now() - Math.random() * 7 * 24 * 60 * 60 * 1000).toISOString(),
-        permissions: [],
-        metadata: {
-          discipline: category.name,
-          phase: 'Construction',
-          revision: 'A',
-          paperSize: 'A1',
-          drawingScale: '1:100'
-        }
-      });
-    }
-  });
-  
-  return documents;
-};
 
 export default function ProjectDocuments() {
   const { projectId = 'P015' } = useParams();
@@ -105,20 +48,26 @@ export default function ProjectDocuments() {
   const [selectedDocument, setSelectedDocument] = useState<Document | null>(null);
   const [showVersionHistory, setShowVersionHistory] = useState(false);
   const [showFilters, setShowFilters] = useState(false);
+  const [sortBy, setSortBy] = useState<DocumentFilter['sortBy']>('date');
+  const [sortOrder, setSortOrder] = useState<DocumentFilter['sortOrder']>('desc');
   
-  // Generate mock documents
-  const documents = useMemo(() => generateMockDocuments(projectId), [projectId]);
+  // Get complete sample data with all features
+  const { documents, relationships: relations, customFields } = useMemo(
+    () => getCompleteDocumentData(projectId), 
+    [projectId]
+  );
   
-  // Filter documents
+  // Filter and sort documents
   const filteredDocuments = useMemo(() => {
-    return documents.filter(doc => {
-      const matchesSearch = doc.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                           doc.documentNumber.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                           doc.description?.toLowerCase().includes(searchQuery.toLowerCase());
-      const matchesCategory = selectedCategory === 'all' || doc.category.id === selectedCategory;
-      return matchesSearch && matchesCategory;
-    });
-  }, [documents, searchQuery, selectedCategory]);
+    const filter: DocumentFilter = {
+      search: searchQuery,
+      categories: selectedCategory === 'all' ? undefined : [selectedCategory],
+      sortBy,
+      sortOrder,
+    };
+    
+    return filterDocuments(documents, filter);
+  }, [documents, searchQuery, selectedCategory, sortBy, sortOrder]);
   
   // Group documents by category
   const groupedDocuments = useMemo(() => {
@@ -289,6 +238,30 @@ export default function ProjectDocuments() {
               ))}
             </SelectContent>
           </Select>
+          
+          {/* Sort Options */}
+          <Select 
+            value={`${sortBy}-${sortOrder}`}
+            onValueChange={(value) => {
+              const [newSortBy, newSortOrder] = value.split('-');
+              setSortBy(newSortBy as DocumentFilter['sortBy']);
+              setSortOrder(newSortOrder as DocumentFilter['sortOrder']);
+            }}
+          >
+            <SelectTrigger className="w-48">
+              <SelectValue placeholder="Sort by" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="date-desc">Newest First</SelectItem>
+              <SelectItem value="date-asc">Oldest First</SelectItem>
+              <SelectItem value="name-asc">Name (A-Z)</SelectItem>
+              <SelectItem value="name-desc">Name (Z-A)</SelectItem>
+              <SelectItem value="size-desc">Largest First</SelectItem>
+              <SelectItem value="size-asc">Smallest First</SelectItem>
+              <SelectItem value="modified-desc">Recently Modified</SelectItem>
+              <SelectItem value="status-asc">Status</SelectItem>
+            </SelectContent>
+          </Select>
         </div>
       </div>
       
@@ -316,7 +289,7 @@ export default function ProjectDocuments() {
             getStatusColor={getStatusColor}
           />
         ) : (
-          <DocumentList
+          <DocumentDataGrid
             documents={filteredDocuments}
             selectedDocuments={selectedDocuments}
             onDocumentSelect={handleDocumentSelect}
