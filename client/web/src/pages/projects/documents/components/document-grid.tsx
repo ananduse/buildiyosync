@@ -14,7 +14,8 @@ import { cn } from '@/lib/utils';
 import type { Document } from '@/types/document.types';
 
 interface DocumentGridProps {
-  documents: Document[];
+  documents?: Document[];
+  groupedDocuments?: Record<string, Document[]> | null;
   selectedDocuments: string[];
   onDocumentSelect: (docId: string, checked: boolean) => void;
   onDocumentClick: (document: Document) => void;
@@ -96,6 +97,7 @@ const generateThumbnail = (doc: Document) => {
 
 export default function DocumentGrid({
   documents,
+  groupedDocuments,
   selectedDocuments,
   onDocumentSelect,
   onDocumentClick,
@@ -147,18 +149,24 @@ export default function DocumentGrid({
     return progress[status] || 0;
   };
   
+  // Use either grouped or flat documents
+  const docsToRender = documents || [];
+  const totalDocuments = groupedDocuments 
+    ? Object.values(groupedDocuments).reduce((sum, docs) => sum + docs.length, 0)
+    : docsToRender.length;
+
   return (
     <TooltipProvider>
       {/* Select All */}
-      {documents.length > 0 && (
+      {totalDocuments > 0 && (
         <div className="mb-4 flex items-center justify-between bg-white p-3 rounded-lg border">
           <div className="flex items-center gap-2">
             <Checkbox
-              checked={selectedDocuments.length === documents.length}
+              checked={selectedDocuments.length === totalDocuments}
               onCheckedChange={onSelectAll}
             />
             <span className="text-sm text-gray-600">
-              Select all {documents.length} documents
+              Select all {totalDocuments} documents
             </span>
           </div>
           {selectedDocuments.length > 0 && (
@@ -169,12 +177,32 @@ export default function DocumentGrid({
         </div>
       )}
       
-      {/* Document Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-4">
-        {documents.map((doc) => {
-          const isSelected = selectedDocuments.includes(doc.id);
-          const hasComments = (doc.currentVersion.comments?.length || 0) > 0;
-          const hasVersions = (doc.versions?.length || 0) > 1;
+      {/* Grouped Documents */}
+      {groupedDocuments ? (
+        <div className="space-y-6">
+          {Object.entries(groupedDocuments).map(([categoryId, categoryDocs]) => {
+            const category = categoryDocs[0]?.category;
+            if (!category || categoryDocs.length === 0) return null;
+            
+            return (
+              <div key={categoryId} className="space-y-3">
+                {/* Category Header */}
+                <div className="flex items-center gap-3 pb-2 border-b">
+                  <div className="flex items-center gap-2">
+                    {getCategoryIcon(category.icon)}
+                    <h3 className="text-lg font-semibold text-gray-800">{category.name}</h3>
+                  </div>
+                  <Badge variant="secondary" className="text-xs">
+                    {categoryDocs.length} {categoryDocs.length === 1 ? 'document' : 'documents'}
+                  </Badge>
+                </div>
+                
+                {/* Documents in Category */}
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-4">
+                  {categoryDocs.map((doc) => {
+                    const isSelected = selectedDocuments.includes(doc.id);
+                    const hasComments = (doc.currentVersion.comments?.length || 0) > 0;
+                    const hasVersions = (doc.versions?.length || 0) > 1;
           
           return (
             <Card 
@@ -396,12 +424,248 @@ export default function DocumentGrid({
                 </div>
               </CardContent>
             </Card>
-          );
-        })}
-      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      ) : (
+        /* Flat Document Grid */
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-4">
+          {docsToRender.map((doc) => {
+            const isSelected = selectedDocuments.includes(doc.id);
+            const hasComments = (doc.currentVersion.comments?.length || 0) > 0;
+            const hasVersions = (doc.versions?.length || 0) > 1;
+            
+            return (
+              <Card 
+                key={doc.id}
+                className={cn(
+                  "relative group hover:shadow-xl transition-all duration-200",
+                  isSelected && "ring-2 ring-primary shadow-lg"
+                )}
+              >
+                {/* Card Header with Checkbox */}
+                <div className="absolute top-2 left-2 z-10">
+                  <div className="bg-white/90 backdrop-blur-sm rounded-lg p-1">
+                    <Checkbox
+                      checked={isSelected}
+                      onCheckedChange={(checked) => onDocumentSelect(doc.id, checked as boolean)}
+                      onClick={(e) => e.stopPropagation()}
+                    />
+                  </div>
+                </div>
+                
+                {/* Dropdown Menu */}
+                <div className="absolute top-2 right-2 z-10">
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button 
+                        variant="ghost" 
+                        size="icon"
+                        className="h-8 w-8 bg-white/90 backdrop-blur-sm hover:bg-white"
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        <MoreVertical className="h-4 w-4" />
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end" className="w-48">
+                      <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                      <DropdownMenuSeparator />
+                      <DropdownMenuItem onClick={() => onDocumentClick(doc)}>
+                        <Eye className="h-4 w-4 mr-2" />
+                        View Document
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => onEdit?.(doc)}>
+                        <Edit className="h-4 w-4 mr-2" />
+                        Edit
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => onDownload?.(doc)}>
+                        <Download className="h-4 w-4 mr-2" />
+                        Download
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => onVersionHistory?.(doc)}>
+                        <History className="h-4 w-4 mr-2" />
+                        Version History
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => onShare?.(doc)}>
+                        <Users className="h-4 w-4 mr-2" />
+                        Share
+                      </DropdownMenuItem>
+                      <DropdownMenuSeparator />
+                      <DropdownMenuItem onClick={() => onArchive?.(doc)}>
+                        <Archive className="h-4 w-4 mr-2" />
+                        Archive
+                      </DropdownMenuItem>
+                      <DropdownMenuItem className="text-red-600">
+                        Delete
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                </div>
+                
+                <CardContent className="p-0">
+                  {/* Document Thumbnail */}
+                  <div 
+                    className="relative h-48 bg-gradient-to-br from-gray-50 to-gray-100 rounded-t-lg overflow-hidden cursor-pointer"
+                    onClick={() => onDocumentClick(doc)}
+                  >
+                    {generateThumbnail(doc)}
+                    
+                    {/* Confidential Badge */}
+                    {doc.confidential && (
+                      <div className="absolute top-3 left-3">
+                        <Badge className="bg-amber-500 text-white">
+                          <Lock className="h-3 w-3 mr-1" />
+                          Confidential
+                        </Badge>
+                      </div>
+                    )}
+                    
+                    {/* Status Badge */}
+                    <div className="absolute bottom-3 right-3">
+                      <Badge className={cn("text-xs", getStatusColor(doc.currentVersion.status))}>
+                        {doc.currentVersion.status}
+                      </Badge>
+                    </div>
+                  </div>
+                  
+                  {/* Document Details */}
+                  <div className="p-4 space-y-3">
+                    {/* Title and Category */}
+                    <div>
+                      <h4 className="font-medium text-gray-900 line-clamp-1 mb-1">
+                        {doc.title}
+                      </h4>
+                      <div className="flex items-center gap-2 text-xs text-gray-500">
+                        <span className="flex items-center gap-1">
+                          {getCategoryIcon(doc.category.icon)}
+                          {doc.category.name}
+                        </span>
+                        <span>•</span>
+                        <span className="font-mono">{doc.documentNumber}</span>
+                      </div>
+                    </div>
+                    
+                    {/* Workflow Progress */}
+                    <div className="space-y-1">
+                      <div className="flex items-center justify-between text-xs">
+                        <span className="text-gray-500">Workflow Progress</span>
+                        <span className="font-medium">{getWorkflowProgress(doc.currentVersion.status)}%</span>
+                      </div>
+                      <Progress value={getWorkflowProgress(doc.currentVersion.status)} className="h-1" />
+                    </div>
+                    
+                    {/* Meta Information */}
+                    <div className="flex items-center justify-between text-xs text-gray-500">
+                      <div className="flex items-center gap-3">
+                        {hasComments && (
+                          <Tooltip>
+                            <TooltipTrigger>
+                              <div className="flex items-center gap-1">
+                                <MessageSquare className="h-3 w-3" />
+                                <span>{doc.currentVersion.comments?.length}</span>
+                              </div>
+                            </TooltipTrigger>
+                            <TooltipContent>
+                              {doc.currentVersion.comments?.length} comments
+                            </TooltipContent>
+                          </Tooltip>
+                        )}
+                        {hasVersions && (
+                          <Tooltip>
+                            <TooltipTrigger>
+                              <div className="flex items-center gap-1">
+                                <History className="h-3 w-3" />
+                                <span>{doc.versions?.length || 1}</span>
+                              </div>
+                            </TooltipTrigger>
+                            <TooltipContent>
+                              {doc.versions?.length || 1} versions
+                            </TooltipContent>
+                          </Tooltip>
+                        )}
+                        <Tooltip>
+                          <TooltipTrigger>
+                            <div className="flex items-center gap-1">
+                              <Clock className="h-3 w-3" />
+                              <span>{getTimeAgo(doc.updatedAt)}</span>
+                            </div>
+                          </TooltipTrigger>
+                          <TooltipContent>
+                            Updated {formatDate(doc.updatedAt)}
+                          </TooltipContent>
+                        </Tooltip>
+                      </div>
+                      <span>{formatFileSize(doc.currentVersion.fileSize)}</span>
+                    </div>
+                    
+                    {/* User Avatar */}
+                    <div className="flex items-center justify-between pt-3 border-t">
+                      <div className="flex items-center gap-2">
+                        <ColorAvatar
+                          name={doc.currentVersion.uploadedBy.name}
+                          email={doc.currentVersion.uploadedBy.email}
+                          size="xs"
+                        />
+                        <div className="flex flex-col">
+                          <span className="text-xs font-medium line-clamp-1">
+                            {doc.currentVersion.uploadedBy.name}
+                          </span>
+                          <span className="text-xs text-gray-400">
+                            {doc.currentVersion.uploadedBy.role}
+                          </span>
+                        </div>
+                      </div>
+                      
+                      {/* Quick Actions */}
+                      <div className="flex items-center gap-1">
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <Button 
+                              variant="ghost" 
+                              size="icon"
+                              className="h-7 w-7"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                onDocumentClick(doc);
+                              }}
+                            >
+                              <Eye className="h-3 w-3" />
+                            </Button>
+                          </TooltipTrigger>
+                          <TooltipContent>View</TooltipContent>
+                        </Tooltip>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <Button 
+                              variant="ghost" 
+                              size="icon"
+                              className="h-7 w-7"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                console.log('Download', doc.id);
+                              }}
+                            >
+                              <Download className="h-3 w-3" />
+                            </Button>
+                          </TooltipTrigger>
+                          <TooltipContent>Download</TooltipContent>
+                        </Tooltip>
+                      </div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            );
+          })}
+        </div>
+      )}
       
       {/* Empty State */}
-      {documents.length === 0 && (
+      {totalDocuments === 0 && (
         <div className="flex flex-col items-center justify-center py-12">
           <FileText className="h-12 w-12 text-gray-300 mb-4" />
           <p className="text-gray-500 text-lg font-medium">No documents found</p>

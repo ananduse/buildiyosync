@@ -53,6 +53,7 @@ export default function ProjectDocuments() {
   const [editingDocument, setEditingDocument] = useState<Document | null>(null);
   const [sortBy, setSortBy] = useState<DocumentFilter['sortBy']>('date');
   const [sortOrder, setSortOrder] = useState<DocumentFilter['sortOrder']>('desc');
+  const [groupByCategory, setGroupByCategory] = useState(false);
   
   // Get complete sample data with all features
   const { documents, relationships: relations, customFields } = useMemo(
@@ -74,6 +75,8 @@ export default function ProjectDocuments() {
   
   // Group documents by category
   const groupedDocuments = useMemo(() => {
+    if (!groupByCategory) return null;
+    
     const grouped: Record<string, Document[]> = {};
     filteredDocuments.forEach(doc => {
       if (!grouped[doc.category.id]) {
@@ -82,7 +85,7 @@ export default function ProjectDocuments() {
       grouped[doc.category.id].push(doc);
     });
     return grouped;
-  }, [filteredDocuments]);
+  }, [filteredDocuments, groupByCategory]);
   
   const handleSelectAll = useCallback((checked: boolean) => {
     if (checked) {
@@ -206,6 +209,15 @@ export default function ProjectDocuments() {
               </Button>
             </div>
             
+            <Button
+              variant={groupByCategory ? 'default' : 'outline'}
+              size="sm"
+              onClick={() => setGroupByCategory(!groupByCategory)}
+            >
+              <Layers className="h-4 w-4 mr-2" />
+              Group by Category
+            </Button>
+            
             <Button onClick={() => setShowUploadDialog(true)}>
               <Upload className="h-4 w-4 mr-2" />
               Upload Document
@@ -283,7 +295,8 @@ export default function ProjectDocuments() {
       <div className="flex-1 overflow-auto p-6 bg-gray-50">
         {viewMode === 'grid' ? (
           <DocumentGrid
-            documents={filteredDocuments}
+            documents={groupByCategory ? undefined : filteredDocuments}
+            groupedDocuments={groupedDocuments}
             selectedDocuments={selectedDocuments}
             onDocumentSelect={handleDocumentSelect}
             onDocumentClick={handleDocumentClick}
@@ -320,7 +333,8 @@ export default function ProjectDocuments() {
           />
         ) : (
           <DocumentDataGrid
-            documents={filteredDocuments}
+            documents={groupByCategory ? undefined : filteredDocuments}
+            groupedDocuments={groupedDocuments}
             selectedDocuments={selectedDocuments}
             onDocumentSelect={handleDocumentSelect}
             onDocumentClick={handleDocumentClick}
