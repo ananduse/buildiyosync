@@ -324,6 +324,32 @@ export default function ProjectDocuments() {
             onSelectAll={handleSelectAll}
             getCategoryIcon={getCategoryIcon}
             getStatusColor={getStatusColor}
+            onEdit={(doc) => {
+              console.log('Edit document:', doc);
+              setSelectedDocument(doc);
+              setShowUploadDialog(true);
+            }}
+            onArchive={(doc) => {
+              console.log('Archive document:', doc);
+              alert(`Document "${doc.title}" has been archived`);
+            }}
+            onShare={(doc) => {
+              console.log('Share document:', doc);
+              setSelectedDocument(doc);
+              setShowDocumentViewer(true);
+            }}
+            onDownload={(doc) => {
+              console.log('Download document:', doc);
+              const link = document.createElement('a');
+              link.href = doc.currentVersion.fileUrl;
+              link.download = doc.currentVersion.fileName || doc.title;
+              link.click();
+            }}
+            onVersionHistory={(doc) => {
+              console.log('Show version history:', doc);
+              setSelectedDocument(doc);
+              setShowVersionHistory(true);
+            }}
           />
         )}
       </div>
@@ -355,6 +381,24 @@ export default function ProjectDocuments() {
             console.log('Archive from viewer:', selectedDocument);
             alert(`Document "${selectedDocument.title}" has been archived`);
             setShowDocumentViewer(false);
+          }}
+        />
+      )}
+      
+      {showVersionHistory && selectedDocument && (
+        <DocumentVersionHistory
+          document={selectedDocument}
+          open={showVersionHistory}
+          onClose={() => setShowVersionHistory(false)}
+          onRestore={(versionId) => {
+            console.log('Restoring version:', versionId);
+            setShowVersionHistory(false);
+          }}
+          onDownload={(versionId) => {
+            console.log('Downloading version:', versionId);
+          }}
+          onCompare={(v1, v2) => {
+            console.log('Comparing versions:', v1, v2);
           }}
         />
       )}

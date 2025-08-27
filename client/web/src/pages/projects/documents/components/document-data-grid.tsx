@@ -33,6 +33,11 @@ interface DocumentDataGridProps {
   onSelectAll: (checked: boolean) => void;
   getCategoryIcon: (iconName: string) => React.ReactNode;
   getStatusColor: (status: string) => string;
+  onEdit?: (document: Document) => void;
+  onArchive?: (document: Document) => void;
+  onShare?: (document: Document) => void;
+  onDownload?: (document: Document) => void;
+  onVersionHistory?: (document: Document) => void;
 }
 
 type SortConfig = {
@@ -47,7 +52,12 @@ export default function DocumentDataGrid({
   onDocumentClick,
   onSelectAll,
   getCategoryIcon,
-  getStatusColor
+  getStatusColor,
+  onEdit,
+  onArchive,
+  onShare,
+  onDownload,
+  onVersionHistory
 }: DocumentDataGridProps) {
   const [sortConfig, setSortConfig] = useState<SortConfig>(null);
   const [hoveredRow, setHoveredRow] = useState<string | null>(null);
@@ -444,19 +454,23 @@ export default function DocumentDataGrid({
                             <Eye className="h-4 w-4 mr-2" />
                             View Document
                           </DropdownMenuItem>
-                          <DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => onEdit?.(doc)}>
                             <Edit className="h-4 w-4 mr-2" />
                             Edit
                           </DropdownMenuItem>
-                          <DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => onShare?.(doc)}>
                             <Share2 className="h-4 w-4 mr-2" />
                             Share
                           </DropdownMenuItem>
-                          <DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => onDownload?.(doc)}>
+                            <Download className="h-4 w-4 mr-2" />
+                            Download
+                          </DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => onVersionHistory?.(doc)}>
                             <History className="h-4 w-4 mr-2" />
                             Version History
                           </DropdownMenuItem>
-                          <DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => onArchive?.(doc)}>
                             <Archive className="h-4 w-4 mr-2" />
                             Archive
                           </DropdownMenuItem>

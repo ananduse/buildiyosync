@@ -168,20 +168,22 @@ export default function DocumentVersionHistory({
   
   return (
     <Dialog open={open} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="max-w-5xl max-h-[80vh]">
+      <DialogContent className="max-w-6xl max-h-[85vh] overflow-hidden flex flex-col">
         <DialogHeader>
-          <DialogTitle className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <Clock className="h-5 w-5" />
-              Version History - {document.title}
+          <DialogTitle>
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Clock className="h-5 w-5" />
+                <span>Version History - {document.title}</span>
+              </div>
+              <Badge variant="outline">
+                {versions.length} versions
+              </Badge>
             </div>
-            <Badge variant="outline">
-              {versions.length} versions
-            </Badge>
           </DialogTitle>
         </DialogHeader>
         
-        <Tabs value={viewMode} onValueChange={(v) => setViewMode(v as 'list' | 'timeline')}>
+        <Tabs value={viewMode} onValueChange={(v) => setViewMode(v as 'list' | 'timeline')} className="flex-1 flex flex-col">
           <div className="flex items-center justify-between mb-4">
             <TabsList>
               <TabsTrigger value="list">List View</TabsTrigger>
@@ -195,8 +197,8 @@ export default function DocumentVersionHistory({
             )}
           </div>
           
-          <TabsContent value="list" className="mt-0">
-            <ScrollArea className="h-[500px]">
+          <TabsContent value="list" className="mt-0 flex-1 overflow-hidden">
+            <div className="h-full overflow-auto">
               <Table>
                 <TableHeader>
                   <TableRow>
@@ -343,11 +345,11 @@ export default function DocumentVersionHistory({
                   })}
                 </TableBody>
               </Table>
-            </ScrollArea>
+            </div>
           </TabsContent>
           
-          <TabsContent value="timeline" className="mt-0">
-            <ScrollArea className="h-[500px]">
+          <TabsContent value="timeline" className="mt-0 flex-1 overflow-hidden">
+            <ScrollArea className="h-full">
               <div className="relative">
                 {/* Timeline line */}
                 <div className="absolute left-8 top-0 bottom-0 w-0.5 bg-gray-200" />

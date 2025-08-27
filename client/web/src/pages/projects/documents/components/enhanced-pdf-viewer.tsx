@@ -4,7 +4,7 @@ import {
   Highlighter, Type, Square, Circle, ArrowRight, Download,
   Maximize2, Minimize2, FileText, Pen, Eraser, Palette,
   MousePointer, Triangle, Hexagon, Star, Hash, MessageSquare,
-  Undo, Redo, Save, Trash2, Copy, Move
+  Undo, Redo, Save, Trash2, Copy, Move, Printer
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
@@ -57,6 +57,7 @@ export default function EnhancedPDFViewer({
   onAnnotationDelete,
   onAnnotationUpdate
 }: EnhancedPDFViewerProps) {
+  const printContentRef = useRef<HTMLDivElement>(null);
   const [currentPage, setCurrentPage] = useState(initialPage);
   const [zoom, setZoom] = useState(100);
   const [rotation, setRotation] = useState(0);
@@ -111,6 +112,43 @@ export default function EnhancedPDFViewer({
       setHistoryIndex(newIndex);
       setAnnotations(history[newIndex]);
     }
+  };
+  
+  const handlePrint = () => {
+    const printWindow = window.open('', '_blank');
+    if (!printWindow) return;
+    
+    const content = printContentRef.current?.innerHTML || '';
+    printWindow.document.write(`
+      <!DOCTYPE html>
+      <html>
+        <head>
+          <title>Print Document - Page ${currentPage}</title>
+          <style>
+            @media print {
+              body { margin: 0; padding: 20px; }
+              .no-print { display: none !important; }
+              .print-only { display: block !important; }
+            }
+            body { font-family: Arial, sans-serif; }
+            h1 { font-size: 24px; margin-bottom: 20px; }
+            .content { max-width: 100%; }
+            svg { max-width: 100%; height: auto; }
+          </style>
+        </head>
+        <body>
+          <h1>Document - Page ${currentPage} of ${totalPages}</h1>
+          <div class="content">${content}</div>
+          <script>
+            window.onload = function() { 
+              window.print(); 
+              setTimeout(function() { window.close(); }, 100);
+            }
+          </script>
+        </body>
+      </html>
+    `);
+    printWindow.document.close();
   };
   
   const addToHistory = (newAnnotations: Annotation[]) => {
@@ -470,6 +508,9 @@ export default function EnhancedPDFViewer({
             <Button variant="ghost" size="sm" onClick={handleRotate}>
               <RotateCw className="h-4 w-4" />
             </Button>
+            <Button variant="ghost" size="sm" onClick={handlePrint}>
+              <Printer className="h-4 w-4" />
+            </Button>
             <Button
               variant="ghost"
               size="sm"
@@ -663,7 +704,7 @@ export default function EnhancedPDFViewer({
           onMouseLeave={() => setIsDrawing(false)}
         >
           {/* Sample PDF Content */}
-          <div className="p-8">
+          <div className="p-8" ref={printContentRef}>
             <h1 className="text-2xl font-bold mb-4">Sample PDF Document - Page {currentPage}</h1>
             <div className="prose max-w-none">
               <p>This is a sample PDF viewer with enhanced annotation capabilities.</p>
