@@ -468,7 +468,7 @@ export function AppRoutingSetup() {
         <Route path="analytics" element={<AnalyticsDashboard />} />
         <Route path="milestones" element={<ProjectTaskManagement />} />
         <Route path="timeline" element={<ProjectTaskManagement />} />
-        <Route path="documents" element={<ProjectDocuments />} />
+        <Route path="documents" element={<Navigate to="/projects" replace />} />
         <Route path="settings" element={<ProjectTaskManagement />} />
         <Route path="create" element={<ProjectListPage />} />
         <Route path="templates" element={<ProjectListPage />} />
@@ -489,7 +489,7 @@ export function AppRoutingSetup() {
         <Route path=":id/team" element={<ProjectDetailsView />} />
         <Route path=":id/tasks" element={<ProjectDetailsView />} />
         <Route path=":id/budget" element={<ProjectDetailsView />} />
-        <Route path=":id/documents" element={<ProjectDocuments />} />
+        <Route path=":id/documents" element={<ProjectDetailsView />} />
         <Route path=":id/calendar" element={<ProjectDetailsView />} />
         <Route path=":id/reports" element={<ProjectDetailsView />} />
         <Route path=":id/details" element={<ProjectDetailsView />} />

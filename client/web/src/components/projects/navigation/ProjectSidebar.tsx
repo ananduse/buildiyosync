@@ -300,19 +300,6 @@ const navigationSections: SidebarSection[] = [
     title: 'Documentation',
     links: [
       {
-        name: 'Document Repository',
-        href: '/projects/documents',
-        icon: FolderOpen,
-        children: [
-          { name: 'Floor Plans', href: '/projects/documents/floor-plans', icon: Ruler },
-          { name: 'Structural', href: '/projects/documents/structural', icon: Building2 },
-          { name: 'Interior Designs', href: '/projects/documents/interior', icon: Palette },
-          { name: 'Drawings', href: '/projects/documents/drawings', icon: FileText },
-          { name: 'Videos', href: '/projects/documents/videos', icon: Camera },
-          { name: 'Version History', href: '/projects/documents/versions', icon: History }
-        ]
-      },
-      {
         name: 'Designs & Approval',
         href: '/projects/designs',
         icon: Palette,

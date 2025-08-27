@@ -20,7 +20,7 @@ const navItems = [
   { value: 'team', path: '/projects/team', label: 'Team', icon: Users },
   { value: 'tasks', path: '/projects/tasks', label: 'Tasks', icon: CheckSquare },
   { value: 'budget', path: '/projects/reports', label: 'Budget', icon: DollarSign },
-  { value: 'documents', path: '/projects/documents', label: 'Documents', icon: FileText },
+  { value: 'documents', path: '/projects', label: 'Documents', icon: FileText },
   { value: 'calendar', path: '/projects/tasks', label: 'Calendar', icon: Calendar },
   { value: 'reports', path: '/projects/reports', label: 'Reports', icon: TrendingUp },
 ];

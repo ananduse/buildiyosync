@@ -39,7 +39,8 @@ import DocumentEditDialog from './components/document-edit-dialog';
 
 
 export default function ProjectDocuments() {
-  const { projectId = 'P015' } = useParams();
+  const { id, projectId } = useParams();
+  const actualProjectId = id || projectId || 'P015';
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
@@ -57,8 +58,8 @@ export default function ProjectDocuments() {
   
   // Get complete sample data with all features
   const { documents, relationships: relations, customFields } = useMemo(
-    () => getCompleteDocumentData(projectId), 
-    [projectId]
+    () => getCompleteDocumentData(actualProjectId), 
+    [actualProjectId]
   );
   
   // Filter and sort documents
@@ -139,7 +140,7 @@ export default function ProjectDocuments() {
         <div className="flex items-center justify-between mb-4">
           <div>
             <h1 className="text-2xl font-bold text-gray-900">Document Management</h1>
-            <p className="text-gray-600 mt-1">Project {projectId} - {filteredDocuments.length} documents</p>
+            <p className="text-gray-600 mt-1">Project {actualProjectId} - {filteredDocuments.length} documents</p>
           </div>
           
           <div className="flex items-center gap-3">
@@ -374,7 +375,7 @@ export default function ProjectDocuments() {
       {/* Dialogs */}
       {showUploadDialog && (
         <DocumentUploadDialog
-          projectId={projectId}
+          projectId={actualProjectId}
           onClose={() => setShowUploadDialog(false)}
           onUpload={(files) => {
             console.log('Uploading files:', files);

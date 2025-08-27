@@ -73,6 +73,7 @@ import {
 
 import { cn } from '@/lib/utils';
 import { ProjectCalendar } from './project-calendar';
+import ProjectDocuments from '../documents/project-documents';
 
 // Helper function to generate random avatar colors matching the team reference
 const getRandomAvatarColor = () => {
@@ -817,82 +818,8 @@ export function TasksTab({ project }: { project: any }) {
 
 export function DocumentsTab({ project }: { project: any }) {
   return (
-    <div className="space-y-6">
-      {/* Documents Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h2 className="text-2xl font-bold">Documents & Files</h2>
-          <p className="text-muted-foreground">
-            {project.documents.total} total files across {project.documents.categories.length} categories
-          </p>
-        </div>
-        <div className="flex gap-2">
-          <Button variant="outline" size="sm">
-            <Search className="h-4 w-4 mr-2" />
-            Search
-          </Button>
-          <Button variant="outline" size="sm">
-            <Filter className="h-4 w-4 mr-2" />
-            Filter
-          </Button>
-          <Button size="sm">
-            <Upload className="h-4 w-4 mr-2" />
-            Upload Files
-          </Button>
-        </div>
-      </div>
-
-      {/* Document Categories */}
-      <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-4">
-        {project.documents.categories.map((category: any) => {
-          const Icon = category.icon;
-          return (
-            <Card key={category.name} className="cursor-pointer hover:shadow-md transition-shadow">
-              <CardContent className="p-4 text-center">
-                <Icon className="h-8 w-8 mx-auto mb-2 text-muted-foreground" />
-                <p className="font-medium text-sm">{category.name}</p>
-                <p className="text-xs text-muted-foreground">{category.count} files</p>
-              </CardContent>
-            </Card>
-          );
-        })}
-      </div>
-
-      {/* Recent Uploads */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Recent Uploads</CardTitle>
-          <CardDescription>Latest documents added to the project</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-4">
-            {project.documents.recentUploads.map((doc: any, index: number) => (
-              <div key={index} className="flex items-center justify-between p-3 border rounded-lg">
-                <div className="flex items-center gap-3">
-                  <File className="h-8 w-8 text-muted-foreground" />
-                  <div>
-                    <p className="font-medium">{doc.name}</p>
-                    <p className="text-sm text-muted-foreground">
-                      {doc.size} • Uploaded by {doc.uploader} on {doc.date}
-                    </p>
-                  </div>
-                </div>
-                <div className="flex gap-2">
-                  <Button variant="ghost" size="icon">
-                    <Eye className="h-4 w-4" />
-                  </Button>
-                  <Button variant="ghost" size="icon">
-                    <Download className="h-4 w-4" />
-                  </Button>
-                  <Button variant="ghost" size="icon">
-                    <Share2 className="h-4 w-4" />
-                  </Button>
-                </div>
-              </div>
-            ))}
-          </div>
-        </CardContent>
-      </Card>
+    <div className="h-full -m-6"> {/* Remove the tab padding to make it full-screen */}
+      <ProjectDocuments />
     </div>
   );
 }

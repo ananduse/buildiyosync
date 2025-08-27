@@ -109,11 +109,6 @@ export const MENU_SIDEBAR: MenuConfig = [
     path: '/projects/team',
   },
   {
-    title: 'Documents',
-    icon: FolderOpen,
-    path: '/projects/documents',
-  },
-  {
     title: 'Reports',
     icon: BarChart3,
     path: '/projects/reports',
