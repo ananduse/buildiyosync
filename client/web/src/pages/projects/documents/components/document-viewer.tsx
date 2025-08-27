@@ -156,26 +156,28 @@ export default function DocumentViewer({
           {/* Sidebar */}
           <div className="w-[420px] bg-white border-l flex flex-col">
             <Tabs defaultValue="comments" className="flex-1 flex flex-col">
-              <TabsList className="w-full rounded-none flex justify-start gap-0.5 p-1 bg-gray-50">
-                <TabsTrigger value="comments" className="text-xs px-2 py-1.5 data-[state=active]:bg-white data-[state=active]:text-primary data-[state=active]:shadow-sm">
-                  Comments ({comments.length})
-                </TabsTrigger>
-                <TabsTrigger value="review" className="text-xs px-2 py-1.5 data-[state=active]:bg-white data-[state=active]:text-primary data-[state=active]:shadow-sm">
-                  Review
-                </TabsTrigger>
-                <TabsTrigger value="workflow" className="text-xs px-2 py-1.5 data-[state=active]:bg-white data-[state=active]:text-primary data-[state=active]:shadow-sm">
-                  Workflow
-                </TabsTrigger>
-                <TabsTrigger value="related" className="text-xs px-2 py-1.5 data-[state=active]:bg-white data-[state=active]:text-primary data-[state=active]:shadow-sm">
-                  Related
-                </TabsTrigger>
-                <TabsTrigger value="metadata" className="text-xs px-2 py-1.5 data-[state=active]:bg-white data-[state=active]:text-primary data-[state=active]:shadow-sm">
-                  Metadata
-                </TabsTrigger>
-                <TabsTrigger value="annotations" className="text-xs px-2 py-1.5 data-[state=active]:bg-white data-[state=active]:text-primary data-[state=active]:shadow-sm">
-                  Annotations
-                </TabsTrigger>
-              </TabsList>
+              <div className="overflow-x-auto bg-gray-50 border-b">
+                <TabsList className="inline-flex rounded-none min-w-full gap-0 p-0.5 bg-gray-50">
+                  <TabsTrigger value="comments" className="text-[11px] px-1.5 py-1 min-w-fit whitespace-nowrap data-[state=active]:bg-white data-[state=active]:text-primary data-[state=active]:shadow-sm">
+                    Comments ({comments.length})
+                  </TabsTrigger>
+                  <TabsTrigger value="review" className="text-[11px] px-1.5 py-1 min-w-fit whitespace-nowrap data-[state=active]:bg-white data-[state=active]:text-primary data-[state=active]:shadow-sm">
+                    Review
+                  </TabsTrigger>
+                  <TabsTrigger value="workflow" className="text-[11px] px-1.5 py-1 min-w-fit whitespace-nowrap data-[state=active]:bg-white data-[state=active]:text-primary data-[state=active]:shadow-sm">
+                    Workflow
+                  </TabsTrigger>
+                  <TabsTrigger value="related" className="text-[11px] px-1.5 py-1 min-w-fit whitespace-nowrap data-[state=active]:bg-white data-[state=active]:text-primary data-[state=active]:shadow-sm">
+                    Related
+                  </TabsTrigger>
+                  <TabsTrigger value="metadata" className="text-[11px] px-1.5 py-1 min-w-fit whitespace-nowrap data-[state=active]:bg-white data-[state=active]:text-primary data-[state=active]:shadow-sm">
+                    Metadata
+                  </TabsTrigger>
+                  <TabsTrigger value="annotations" className="text-[11px] px-1.5 py-1 min-w-fit whitespace-nowrap data-[state=active]:bg-white data-[state=active]:text-primary data-[state=active]:shadow-sm">
+                    Annotations
+                  </TabsTrigger>
+                </TabsList>
+              </div>
               
               <TabsContent value="comments" className="flex-1 flex flex-col mt-0 p-0">
                 <DocumentComments
