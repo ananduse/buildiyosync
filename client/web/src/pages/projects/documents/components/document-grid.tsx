@@ -1,4 +1,4 @@
-import { Eye, Download, MoreVertical, Lock, MessageSquare, Clock, FileText, Users, History, Star, CheckCircle } from 'lucide-react';
+import { Eye, Download, MoreVertical, Lock, MessageSquare, Clock, FileText, Users, History, Star, CheckCircle, Edit, Archive } from 'lucide-react';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Badge } from '@/components/ui/badge';
@@ -21,6 +21,11 @@ interface DocumentGridProps {
   onSelectAll: (checked: boolean) => void;
   getCategoryIcon: (iconName: string) => React.ReactNode;
   getStatusColor: (status: string) => string;
+  onEdit?: (document: Document) => void;
+  onArchive?: (document: Document) => void;
+  onShare?: (document: Document) => void;
+  onDownload?: (document: Document) => void;
+  onVersionHistory?: (document: Document) => void;
 }
 
 // Generate document thumbnail based on category
@@ -96,7 +101,12 @@ export default function DocumentGrid({
   onDocumentClick,
   onSelectAll,
   getCategoryIcon,
-  getStatusColor
+  getStatusColor,
+  onEdit,
+  onArchive,
+  onShare,
+  onDownload,
+  onVersionHistory
 }: DocumentGridProps) {
   const formatFileSize = (bytes: number) => {
     if (bytes < 1024) return bytes + ' B';
@@ -205,19 +215,27 @@ export default function DocumentGrid({
                       <Eye className="h-4 w-4 mr-2" />
                       View Document
                     </DropdownMenuItem>
-                    <DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => onEdit?.(doc)}>
+                      <Edit className="h-4 w-4 mr-2" />
+                      Edit
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => onDownload?.(doc)}>
                       <Download className="h-4 w-4 mr-2" />
                       Download
                     </DropdownMenuItem>
-                    <DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => onVersionHistory?.(doc)}>
                       <History className="h-4 w-4 mr-2" />
                       Version History
                     </DropdownMenuItem>
-                    <DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => onShare?.(doc)}>
                       <Users className="h-4 w-4 mr-2" />
                       Share
                     </DropdownMenuItem>
                     <DropdownMenuSeparator />
+                    <DropdownMenuItem onClick={() => onArchive?.(doc)}>
+                      <Archive className="h-4 w-4 mr-2" />
+                      Archive
+                    </DropdownMenuItem>
                     <DropdownMenuItem className="text-red-600">
                       Delete
                     </DropdownMenuItem>

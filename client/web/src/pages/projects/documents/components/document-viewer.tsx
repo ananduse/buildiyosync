@@ -17,6 +17,8 @@ import EnhancedPDFViewer from './enhanced-pdf-viewer';
 import CADViewer from './cad-viewer';
 import DocumentComments from './document-comments';
 import DocumentReviewHierarchy from './document-review-hierarchy';
+import DocumentVersionHistory from './document-version-history';
+import DocumentShareDialog from './document-share-dialog';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Textarea } from '@/components/ui/textarea';
 import { ColorAvatar } from '@/components/ui/color-avatar';
@@ -30,13 +32,15 @@ import type { Document, DocumentComment, DocumentAnnotation } from '@/types/docu
 interface DocumentViewerProps {
   document: Document;
   onClose: () => void;
-  onShowHistory: () => void;
+  onEdit?: () => void;
+  onArchive?: () => void;
 }
 
 export default function DocumentViewer({
   document,
   onClose,
-  onShowHistory
+  onEdit,
+  onArchive
 }: DocumentViewerProps) {
   const [comments, setComments] = useState<DocumentComment[]>(
     document.currentVersion.comments || []
@@ -47,6 +51,8 @@ export default function DocumentViewer({
     document.currentVersion.annotations || []
   );
   const [currentPage, setCurrentPage] = useState(1);
+  const [showVersionHistory, setShowVersionHistory] = useState(false);
+  const [showShareDialog, setShowShareDialog] = useState(false);
   
   // Determine file type based on extension
   const getFileType = (filename: string): 'pdf' | 'cad' | 'image' | 'other' => {
@@ -127,19 +133,25 @@ export default function DocumentViewer({
           </div>
           
           <div className="flex items-center gap-2">
-            <Button variant="outline" size="sm" onClick={onShowHistory}>
+            <Button variant="outline" size="sm" onClick={() => setShowVersionHistory(true)}>
               <History className="h-4 w-4 mr-2" />
               Version History
             </Button>
-            <Button variant="outline" size="sm">
+            <Button variant="outline" size="sm" onClick={() => setShowShareDialog(true)}>
               <Share2 className="h-4 w-4 mr-2" />
               Share
             </Button>
-            <Button variant="outline" size="sm">
+            <Button variant="outline" size="sm" onClick={() => window.print()}>
               <Printer className="h-4 w-4 mr-2" />
               Print
             </Button>
-            <Button variant="outline" size="sm">
+            <Button variant="outline" size="sm" onClick={() => {
+              // Download functionality
+              const link = document.createElement('a');
+              link.href = document.currentVersion.fileUrl;
+              link.download = document.currentVersion.fileName || document.title;
+              link.click();
+            }}>
               <Download className="h-4 w-4 mr-2" />
               Download
             </Button>
@@ -542,6 +554,47 @@ export default function DocumentViewer({
           </div>
         </div>
       </DialogContent>
+      
+      {/* Version History Dialog */}
+      <DocumentVersionHistory
+        document={document}
+        open={showVersionHistory}
+        onClose={() => setShowVersionHistory(false)}
+        onRestore={(versionId) => {
+          console.log('Restoring version:', versionId);
+          // Implement restore functionality
+          setShowVersionHistory(false);
+        }}
+        onDownload={(versionId) => {
+          console.log('Downloading version:', versionId);
+          // Implement download functionality
+        }}
+        onCompare={(v1, v2) => {
+          console.log('Comparing versions:', v1, v2);
+          // Implement comparison functionality
+        }}
+      />
+      
+      {/* Share Dialog */}
+      <DocumentShareDialog
+        document={document}
+        open={showShareDialog}
+        onClose={() => setShowShareDialog(false)}
+        onShare={(emails, settings, message) => {
+          console.log('Sharing with:', emails, settings, message);
+          // Implement share functionality
+          setShowShareDialog(false);
+        }}
+        onGenerateLink={(settings) => {
+          console.log('Generating link with settings:', settings);
+          // Generate and return share link
+          return 'generated-token-' + Date.now();
+        }}
+        onRevokeAccess={(userId) => {
+          console.log('Revoking access for:', userId);
+          // Implement revoke functionality
+        }}
+      />
     </Dialog>
   );
 }

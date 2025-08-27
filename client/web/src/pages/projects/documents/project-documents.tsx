@@ -287,6 +287,33 @@ export default function ProjectDocuments() {
             onSelectAll={handleSelectAll}
             getCategoryIcon={getCategoryIcon}
             getStatusColor={getStatusColor}
+            onEdit={(doc) => {
+              console.log('Edit document:', doc);
+              setSelectedDocument(doc);
+              setShowUploadDialog(true); // Reuse upload dialog for editing
+            }}
+            onArchive={(doc) => {
+              console.log('Archive document:', doc);
+              // Implement archive functionality
+              alert(`Document "${doc.title}" has been archived`);
+            }}
+            onShare={(doc) => {
+              console.log('Share document:', doc);
+              setSelectedDocument(doc);
+              setShowDocumentViewer(true); // This will open the viewer with share dialog
+            }}
+            onDownload={(doc) => {
+              console.log('Download document:', doc);
+              const link = document.createElement('a');
+              link.href = doc.currentVersion.fileUrl;
+              link.download = doc.currentVersion.fileName || doc.title;
+              link.click();
+            }}
+            onVersionHistory={(doc) => {
+              console.log('Show version history:', doc);
+              setSelectedDocument(doc);
+              setShowVersionHistory(true);
+            }}
           />
         ) : (
           <DocumentDataGrid
@@ -320,16 +347,15 @@ export default function ProjectDocuments() {
             setShowDocumentViewer(false);
             setSelectedDocument(null);
           }}
-          onShowHistory={() => {
-            setShowVersionHistory(true);
+          onEdit={() => {
+            console.log('Edit from viewer:', selectedDocument);
+            setShowUploadDialog(true);
           }}
-        />
-      )}
-      
-      {showVersionHistory && selectedDocument && (
-        <DocumentVersionHistory
-          document={selectedDocument}
-          onClose={() => setShowVersionHistory(false)}
+          onArchive={() => {
+            console.log('Archive from viewer:', selectedDocument);
+            alert(`Document "${selectedDocument.title}" has been archived`);
+            setShowDocumentViewer(false);
+          }}
         />
       )}
     </div>
