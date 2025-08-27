@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { 
   X, Download, Share2, Printer, History, MessageSquare,
-  Edit3, Lock
+  Edit3, Lock, FileText
 } from 'lucide-react';
 import { 
   Dialog, DialogContent, DialogHeader, DialogTitle 
@@ -13,7 +13,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import DocumentWorkflow from './document-workflow';
 import DocumentRelated from './document-related';
 import DocumentMetadataComponent from './document-metadata';
-import SamplePDFViewer from './sample-pdf-viewer';
+import EnhancedPDFViewer from './enhanced-pdf-viewer';
+import CADViewer from './cad-viewer';
 import DocumentComments from './document-comments';
 import DocumentReviewHierarchy from './document-review-hierarchy';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -46,6 +47,17 @@ export default function DocumentViewer({
     document.currentVersion.annotations || []
   );
   const [currentPage, setCurrentPage] = useState(1);
+  
+  // Determine file type based on extension
+  const getFileType = (filename: string): 'pdf' | 'cad' | 'image' | 'other' => {
+    const ext = filename.toLowerCase().split('.').pop();
+    if (['pdf'].includes(ext || '')) return 'pdf';
+    if (['dwg', 'dxf', 'dwf', 'dgn'].includes(ext || '')) return 'cad';
+    if (['jpg', 'jpeg', 'png', 'gif', 'bmp'].includes(ext || '')) return 'image';
+    return 'other';
+  };
+  
+  const fileType = getFileType(document.currentVersion.fileName || document.title);
   
   const handleAddComment = () => {
     if (!newComment.trim()) return;
@@ -141,16 +153,95 @@ export default function DocumentViewer({
         <div className="flex flex-1 overflow-hidden">
           {/* Document Viewer */}
           <div className="flex-1 flex flex-col bg-gray-100">
-            {/* PDF Viewer with built-in toolbar */}
-            <SamplePDFViewer
-              documentUrl={document.currentVersion.fileUrl}
-              initialPage={currentPage}
-              onPageChange={(page) => setCurrentPage(page)}
-              onAnnotation={(annotation) => {
-                setAnnotations(prev => [...prev, annotation]);
-                console.log('New annotation:', annotation);
-              }}
-            />
+            {/* Conditional Viewer based on file type */}
+            {fileType === 'pdf' ? (
+              <EnhancedPDFViewer
+                documentUrl={document.currentVersion.fileUrl}
+                initialPage={currentPage}
+                onPageChange={(page) => setCurrentPage(page)}
+                onAnnotation={(annotation: any) => {
+                  const newAnnotation: DocumentAnnotation = {
+                    id: annotation.id,
+                    documentId: document.id,
+                    versionId: document.currentVersion.id,
+                    userId: 'current-user',
+                    type: annotation.type,
+                    pageNumber: annotation.page,
+                    x: annotation.x,
+                    y: annotation.y,
+                    width: annotation.width,
+                    height: annotation.height,
+                    content: annotation.text || '',
+                    color: annotation.color,
+                    createdAt: new Date().toISOString(),
+                    createdBy: {
+                      id: 'current-user',
+                      name: 'Current User',
+                      email: 'user@buildiyo.com'
+                    }
+                  };
+                  setAnnotations(prev => [...prev, newAnnotation]);
+                  console.log('New PDF annotation:', newAnnotation);
+                }}
+                onAnnotationDelete={(id) => {
+                  setAnnotations(prev => prev.filter(a => a.id !== id));
+                }}
+                onAnnotationUpdate={(id, updates) => {
+                  setAnnotations(prev => prev.map(a => 
+                    a.id === id ? { ...a, ...updates } : a
+                  ));
+                }}
+              />
+            ) : fileType === 'cad' ? (
+              <CADViewer
+                fileUrl={document.currentVersion.fileUrl}
+                onMeasurement={(measurement) => {
+                  console.log('CAD measurement:', measurement);
+                }}
+                onAnnotation={(annotation) => {
+                  const newAnnotation: DocumentAnnotation = {
+                    id: annotation.id,
+                    documentId: document.id,
+                    versionId: document.currentVersion.id,
+                    userId: 'current-user',
+                    type: annotation.type as any,
+                    pageNumber: 1,
+                    x: annotation.points[0]?.x || 0,
+                    y: annotation.points[0]?.y || 0,
+                    content: annotation.text || `${annotation.value} ${annotation.unit}`,
+                    color: annotation.style?.color || '#000',
+                    createdAt: new Date().toISOString(),
+                    createdBy: {
+                      id: 'current-user',
+                      name: 'Current User',
+                      email: 'user@buildiyo.com'
+                    }
+                  };
+                  setAnnotations(prev => [...prev, newAnnotation]);
+                  console.log('CAD annotation:', newAnnotation);
+                }}
+                onExport={(format) => {
+                  console.log('Export CAD as:', format);
+                  // Handle export functionality
+                }}
+              />
+            ) : (
+              <div className="flex-1 flex items-center justify-center">
+                <div className="text-center">
+                  <FileText className="h-16 w-16 mx-auto mb-4 text-gray-400" />
+                  <h3 className="text-lg font-medium mb-2">Document Preview</h3>
+                  <p className="text-gray-500">
+                    {fileType === 'image' 
+                      ? 'Image preview coming soon' 
+                      : 'Preview not available for this file type'}
+                  </p>
+                  <Button variant="outline" className="mt-4">
+                    <Download className="h-4 w-4 mr-2" />
+                    Download File
+                  </Button>
+                </div>
+              </div>
+            )}
           </div>
           
           {/* Sidebar */}
