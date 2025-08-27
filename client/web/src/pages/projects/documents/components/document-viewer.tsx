@@ -16,7 +16,7 @@ import DocumentMetadataComponent from './document-metadata';
 import SamplePDFViewer from './sample-pdf-viewer';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Textarea } from '@/components/ui/textarea';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { ColorAvatar } from '@/components/ui/color-avatar';
 import { 
   DropdownMenu, DropdownMenuContent, DropdownMenuItem, 
   DropdownMenuSeparator, DropdownMenuTrigger 
@@ -185,12 +185,11 @@ export default function DocumentViewer({
                         onClick={() => setSelectedComment(comment.id)}
                       >
                         <div className="flex items-start gap-3">
-                          <Avatar className="h-8 w-8">
-                            <AvatarImage src={comment.user.avatar} />
-                            <AvatarFallback>
-                              {comment.user.name.split(' ').map(n => n[0]).join('')}
-                            </AvatarFallback>
-                          </Avatar>
+                          <ColorAvatar
+                            name={comment.user.name}
+                            email={comment.user.email}
+                            size="sm"
+                          />
                           <div className="flex-1">
                             <div className="flex items-center justify-between">
                               <span className="text-sm font-medium">

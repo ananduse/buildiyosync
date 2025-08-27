@@ -3,7 +3,7 @@ import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { ColorAvatar } from '@/components/ui/color-avatar';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { Progress } from '@/components/ui/progress';
 import { 
@@ -324,12 +324,11 @@ export default function DocumentGrid({
                   {/* User Avatar */}
                   <div className="flex items-center justify-between pt-3 border-t">
                     <div className="flex items-center gap-2">
-                      <Avatar className="h-6 w-6">
-                        <AvatarImage src={doc.currentVersion.uploadedBy.avatar} />
-                        <AvatarFallback className="text-xs">
-                          {doc.currentVersion.uploadedBy.name.split(' ').map(n => n[0]).join('')}
-                        </AvatarFallback>
-                      </Avatar>
+                      <ColorAvatar
+                        name={doc.currentVersion.uploadedBy.name}
+                        email={doc.currentVersion.uploadedBy.email}
+                        size="xs"
+                      />
                       <div className="flex flex-col">
                         <span className="text-xs font-medium line-clamp-1">
                           {doc.currentVersion.uploadedBy.name}

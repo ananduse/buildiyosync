@@ -16,8 +16,7 @@ import {
 import { Checkbox } from '@/components/ui/checkbox';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { AvatarGroup, AvatarGroupList, AvatarOverflowIndicator } from '@/components/ui/avatar-group';
+import { ColorAvatar } from '@/components/ui/color-avatar';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { 
   DropdownMenu, DropdownMenuContent, DropdownMenuItem, 
@@ -299,12 +298,11 @@ export default function DocumentDataGrid({
                   
                   <TableCell>
                     <div className="flex items-center gap-2">
-                      <Avatar className="h-7 w-7">
-                        <AvatarImage src={doc.currentVersion.uploadedBy.avatar} />
-                        <AvatarFallback className="text-xs">
-                          {doc.currentVersion.uploadedBy.name.split(' ').map(n => n[0]).join('')}
-                        </AvatarFallback>
-                      </Avatar>
+                      <ColorAvatar
+                        name={doc.currentVersion.uploadedBy.name}
+                        email={doc.currentVersion.uploadedBy.email}
+                        size="sm"
+                      />
                       <div>
                         <p className="text-sm font-medium line-clamp-1">
                           {doc.currentVersion.uploadedBy.name}
