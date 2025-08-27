@@ -35,6 +35,7 @@ import DocumentVersionHistory from './components/document-version-history';
 import DocumentFilters from './components/document-filters';
 import DocumentGrid from './components/document-grid';
 import DocumentDataGrid from './components/document-data-grid';
+import DocumentEditDialog from './components/document-edit-dialog';
 
 
 export default function ProjectDocuments() {
@@ -48,6 +49,8 @@ export default function ProjectDocuments() {
   const [selectedDocument, setSelectedDocument] = useState<Document | null>(null);
   const [showVersionHistory, setShowVersionHistory] = useState(false);
   const [showFilters, setShowFilters] = useState(false);
+  const [showEditDialog, setShowEditDialog] = useState(false);
+  const [editingDocument, setEditingDocument] = useState<Document | null>(null);
   const [sortBy, setSortBy] = useState<DocumentFilter['sortBy']>('date');
   const [sortOrder, setSortOrder] = useState<DocumentFilter['sortOrder']>('desc');
   
@@ -289,8 +292,8 @@ export default function ProjectDocuments() {
             getStatusColor={getStatusColor}
             onEdit={(doc) => {
               console.log('Edit document:', doc);
-              setSelectedDocument(doc);
-              setShowUploadDialog(true); // Reuse upload dialog for editing
+              setEditingDocument(doc);
+              setShowEditDialog(true);
             }}
             onArchive={(doc) => {
               console.log('Archive document:', doc);
@@ -326,8 +329,8 @@ export default function ProjectDocuments() {
             getStatusColor={getStatusColor}
             onEdit={(doc) => {
               console.log('Edit document:', doc);
-              setSelectedDocument(doc);
-              setShowUploadDialog(true);
+              setEditingDocument(doc);
+              setShowEditDialog(true);
             }}
             onArchive={(doc) => {
               console.log('Archive document:', doc);
@@ -375,7 +378,9 @@ export default function ProjectDocuments() {
           }}
           onEdit={() => {
             console.log('Edit from viewer:', selectedDocument);
-            setShowUploadDialog(true);
+            setEditingDocument(selectedDocument);
+            setShowEditDialog(true);
+            setShowDocumentViewer(false);
           }}
           onArchive={() => {
             console.log('Archive from viewer:', selectedDocument);
@@ -399,6 +404,25 @@ export default function ProjectDocuments() {
           }}
           onCompare={(v1, v2) => {
             console.log('Comparing versions:', v1, v2);
+          }}
+        />
+      )}
+      
+      {showEditDialog && (
+        <DocumentEditDialog
+          document={editingDocument}
+          open={showEditDialog}
+          onClose={() => {
+            setShowEditDialog(false);
+            setEditingDocument(null);
+          }}
+          onSave={(updatedDoc) => {
+            console.log('Saving document:', updatedDoc);
+            // Here you would typically update the document in your state/database
+            // For now, just close the dialog
+            setShowEditDialog(false);
+            setEditingDocument(null);
+            alert('Document saved successfully!');
           }}
         />
       )}

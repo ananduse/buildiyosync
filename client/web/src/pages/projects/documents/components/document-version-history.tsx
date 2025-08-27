@@ -349,13 +349,13 @@ export default function DocumentVersionHistory({
           </TabsContent>
           
           <TabsContent value="timeline" className="mt-0 flex-1 overflow-hidden">
-            <ScrollArea className="h-full">
-              <div className="relative">
+            <div className="h-full overflow-auto">
+              <div className="relative min-h-full pb-4">
                 {/* Timeline line */}
-                <div className="absolute left-8 top-0 bottom-0 w-0.5 bg-gray-200" />
+                <div className="absolute left-8 top-4 bottom-4 w-0.5 bg-gray-200" />
                 
                 {/* Timeline items */}
-                <div className="space-y-6 p-4">
+                <div className="space-y-6 p-4 relative">
                   {versions.map((version, index) => (
                     <div key={version.id} className="relative flex items-start gap-4">
                       {/* Timeline dot */}
@@ -448,7 +448,7 @@ export default function DocumentVersionHistory({
                   ))}
                 </div>
               </div>
-            </ScrollArea>
+            </div>
           </TabsContent>
         </Tabs>
       </DialogContent>
