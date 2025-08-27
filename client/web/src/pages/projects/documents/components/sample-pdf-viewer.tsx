@@ -215,7 +215,7 @@ export default function SamplePDFViewer({
     const page = currentPageData;
     
     return (
-      <div className="absolute inset-0 bg-white p-8">
+      <div className="relative w-full h-full bg-white p-8" style={{ minHeight: '1056px' }}>
         {/* Page Header */}
         <div className="border-b-2 border-black pb-4 mb-6">
           <h2 className="text-2xl font-bold text-center">{page.title}</h2>

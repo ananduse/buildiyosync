@@ -14,6 +14,8 @@ import DocumentWorkflow from './document-workflow';
 import DocumentRelated from './document-related';
 import DocumentMetadataComponent from './document-metadata';
 import SamplePDFViewer from './sample-pdf-viewer';
+import DocumentComments from './document-comments';
+import DocumentReviewHierarchy from './document-review-hierarchy';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Textarea } from '@/components/ui/textarea';
 import { ColorAvatar } from '@/components/ui/color-avatar';
@@ -158,6 +160,9 @@ export default function DocumentViewer({
                 <TabsTrigger value="comments" className="text-xs px-2 py-1.5 data-[state=active]:bg-white data-[state=active]:text-primary data-[state=active]:shadow-sm">
                   Comments ({comments.length})
                 </TabsTrigger>
+                <TabsTrigger value="review" className="text-xs px-2 py-1.5 data-[state=active]:bg-white data-[state=active]:text-primary data-[state=active]:shadow-sm">
+                  Review
+                </TabsTrigger>
                 <TabsTrigger value="workflow" className="text-xs px-2 py-1.5 data-[state=active]:bg-white data-[state=active]:text-primary data-[state=active]:shadow-sm">
                   Workflow
                 </TabsTrigger>
@@ -173,65 +178,127 @@ export default function DocumentViewer({
               </TabsList>
               
               <TabsContent value="comments" className="flex-1 flex flex-col mt-0 p-0">
-                <ScrollArea className="flex-1 px-3 py-3">
-                  <div className="space-y-4">
-                    {comments.map((comment) => (
-                      <div 
-                        key={comment.id}
-                        className={cn(
-                          "p-3 rounded-lg border cursor-pointer hover:bg-gray-50",
-                          selectedComment === comment.id && "bg-blue-50 border-blue-300"
-                        )}
-                        onClick={() => setSelectedComment(comment.id)}
-                      >
-                        <div className="flex items-start gap-3">
-                          <ColorAvatar
-                            name={comment.user.name}
-                            email={comment.user.email}
-                            size="sm"
-                          />
-                          <div className="flex-1">
-                            <div className="flex items-center justify-between">
-                              <span className="text-sm font-medium">
-                                {comment.user.name}
-                              </span>
-                              <span className="text-xs text-gray-500">
-                                {formatDate(comment.createdAt)}
-                              </span>
-                            </div>
-                            <p className="text-sm text-gray-700 mt-1">
-                              {comment.content}
-                            </p>
-                            {comment.pageNumber && (
-                              <span className="text-xs text-gray-500 mt-1">
-                                Page {comment.pageNumber}
-                              </span>
-                            )}
-                          </div>
-                        </div>
-                      </div>
-                    ))}
+                <DocumentComments
+                  comments={comments}
+                  currentUserId="current-user"
+                  onAddComment={(comment, parentId) => {
+                    // Handle adding comment with threading
+                    const newComment: DocumentComment = {
+                      id: Math.random().toString(36).substr(2, 9),
+                      documentId: document.id,
+                      versionId: document.currentVersion.id,
+                      userId: comment.userId || 'current-user',
+                      user: {
+                        id: comment.userId || 'current-user',
+                        name: 'Current User',
+                        email: 'user@buildiyo.com'
+                      },
+                      content: comment.content || '',
+                      pageNumber: currentPage,
+                      createdAt: new Date().toISOString(),
+                      updatedAt: new Date().toISOString(),
+                      resolved: false
+                    };
+                    
+                    if (parentId) {
+                      // Add as reply to parent comment
+                      const updateComments = (comments: DocumentComment[]): DocumentComment[] => {
+                        return comments.map(c => {
+                          if (c.id === parentId) {
+                            return {
+                              ...c,
+                              replies: [...(c.replies || []), newComment]
+                            };
+                          }
+                          if (c.replies) {
+                            return {
+                              ...c,
+                              replies: updateComments(c.replies)
+                            };
+                          }
+                          return c;
+                        });
+                      };
+                      setComments(updateComments(comments));
+                    } else {
+                      setComments([...comments, newComment]);
+                    }
+                  }}
+                  onResolveComment={(commentId) => {
+                    const updateComments = (comments: DocumentComment[]): DocumentComment[] => {
+                      return comments.map(c => {
+                        if (c.id === commentId) {
+                          return {
+                            ...c,
+                            resolved: true,
+                            resolvedBy: {
+                              id: 'current-user',
+                              name: 'Current User',
+                              email: 'user@buildiyo.com'
+                            },
+                            resolvedAt: new Date().toISOString()
+                          };
+                        }
+                        if (c.replies) {
+                          return {
+                            ...c,
+                            replies: updateComments(c.replies)
+                          };
+                        }
+                        return c;
+                      });
+                    };
+                    setComments(updateComments(comments));
+                  }}
+                  onDeleteComment={(commentId) => {
+                    const filterComments = (comments: DocumentComment[]): DocumentComment[] => {
+                      return comments
+                        .filter(c => c.id !== commentId)
+                        .map(c => ({
+                          ...c,
+                          replies: c.replies ? filterComments(c.replies) : undefined
+                        }));
+                    };
+                    setComments(filterComments(comments));
+                  }}
+                  onEditComment={(commentId, content) => {
+                    const updateComments = (comments: DocumentComment[]): DocumentComment[] => {
+                      return comments.map(c => {
+                        if (c.id === commentId) {
+                          return {
+                            ...c,
+                            content,
+                            updatedAt: new Date().toISOString()
+                          };
+                        }
+                        if (c.replies) {
+                          return {
+                            ...c,
+                            replies: updateComments(c.replies)
+                          };
+                        }
+                        return c;
+                      });
+                    };
+                    setComments(updateComments(comments));
+                  }}
+                />
+              </TabsContent>
+              
+              <TabsContent value="review" className="flex-1 overflow-auto mt-0 p-0">
+                <ScrollArea className="h-full">
+                  <div className="px-3 py-3">
+                    <DocumentReviewHierarchy
+                      documentId={document.id}
+                      onSubmitReview={(level, review) => {
+                        console.log('Review submitted:', level, review);
+                      }}
+                      onRequestReview={(reviewerId) => {
+                        console.log('Requesting review from:', reviewerId);
+                      }}
+                    />
                   </div>
                 </ScrollArea>
-                
-                {/* Add Comment */}
-                <div className="p-4 border-t">
-                  <Textarea
-                    placeholder="Add a comment..."
-                    value={newComment}
-                    onChange={(e) => setNewComment(e.target.value)}
-                    rows={3}
-                    className="mb-2"
-                  />
-                  <Button 
-                    className="w-full" 
-                    onClick={handleAddComment}
-                    disabled={!newComment.trim()}
-                  >
-                    <MessageSquare className="h-4 w-4 mr-2" />
-                    Add Comment
-                  </Button>
-                </div>
               </TabsContent>
               
               <TabsContent value="annotations" className="flex-1 px-3 py-3">
