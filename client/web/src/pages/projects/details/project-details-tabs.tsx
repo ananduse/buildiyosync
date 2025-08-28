@@ -73,7 +73,6 @@ import {
   CheckCircle,
   Palette,
   Home,
-  ArrowUp,
 } from 'lucide-react';
 
 import { cn } from '@/lib/utils';
