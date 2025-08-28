@@ -579,7 +579,7 @@ export default function ProjectKanban() {
       >
         <div className="flex gap-6 overflow-x-auto pb-4">
           {columns.map((column) => (
-            <div key={column.id} className="flex-shrink-0 w-[350px]">
+            <div key={column.id} className="flex-shrink-0 w-full sm:w-[350px] min-w-[280px]">
               <div className={cn("p-3 rounded-t-lg", column.bgColor)}>
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">

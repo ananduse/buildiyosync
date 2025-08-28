@@ -223,7 +223,7 @@ export default function AnalyticsDashboard() {
         </div>
         <div className="flex items-center gap-2">
           <Select value={projectFilter} onValueChange={setProjectFilter}>
-            <SelectTrigger className="w-[180px]">
+            <SelectTrigger className="w-full sm:w-[180px]">
               <SelectValue placeholder="Select Project" />
             </SelectTrigger>
             <SelectContent>
@@ -234,7 +234,7 @@ export default function AnalyticsDashboard() {
             </SelectContent>
           </Select>
           <Select value={dateRange} onValueChange={setDateRange}>
-            <SelectTrigger className="w-[150px]">
+            <SelectTrigger className="w-full sm:w-[150px]">
               <SelectValue placeholder="Date Range" />
             </SelectTrigger>
             <SelectContent>

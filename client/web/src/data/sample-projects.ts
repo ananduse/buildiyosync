@@ -1,3 +1,6 @@
+// Integrated Indian Property and Project Management Data
+import { indianPropertyProjects, IndianPropertyProject } from './indian-property-projects';
+
 export interface SampleProject {
   id: string;
   name: string;
@@ -15,281 +18,214 @@ export interface SampleProject {
   location: string;
   category: string;
   tags: string[];
+  // Extended fields for integration
+  projectCode?: string;
+  projectType?: string;
+  currentPhase?: string;
+  nextMilestone?: string;
+  riskLevel?: 'low' | 'medium' | 'high' | 'critical';
+  qualityScore?: number;
+  safetyScore?: number;
 }
 
-export const sampleProjects: SampleProject[] = [
+// Transform Indian Property Projects to Sample Projects format
+const transformToSampleProject = (property: IndianPropertyProject): SampleProject => {
+  // Map project status
+  const getStatus = (status: string): 'active' | 'completed' | 'on-hold' | 'planning' => {
+    switch(status) {
+      case 'construction': return 'active';
+      case 'completed': return 'completed';
+      case 'on-hold': return 'on-hold';
+      case 'initiation':
+      case 'planning':
+      case 'design': return 'planning';
+      default: return 'active';
+    }
+  };
+
+  // Map priority
+  const getPriority = (priority: string): 'high' | 'medium' | 'low' => {
+    switch(priority) {
+      case 'urgent':
+      case 'high': return 'high';
+      case 'medium': return 'medium';
+      case 'low': return 'low';
+      default: return 'medium';
+    }
+  };
+
+  // Format location
+  const formatLocation = (location: any): string => {
+    return `${location.locality}, ${location.city}, ${location.state}`;
+  };
+
+  return {
+    id: property.projectId,
+    name: property.project_name,
+    description: `${property.configuration} ${property.property_type} - ${property.property_details.super_built_up_area_sqft} sqft`,
+    status: getStatus(property.projectStatus),
+    priority: getPriority(property.priority),
+    progress: property.progress,
+    startDate: property.startDate,
+    endDate: property.endDate,
+    budget: property.budget,
+    spent: property.spent,
+    manager: property.manager,
+    team: property.team,
+    client: property.builder,
+    location: formatLocation(property.location),
+    category: property.property_type,
+    tags: property.tags,
+    // Extended fields
+    projectCode: property.projectCode,
+    projectType: property.property_type,
+    currentPhase: property.projectPhase,
+    nextMilestone: property.upcomingMilestones?.[0],
+    riskLevel: property.riskLevel,
+    qualityScore: property.qualityScore,
+    safetyScore: property.safetyScore
+  };
+};
+
+// Transform Indian property projects
+const transformedProjects: SampleProject[] = indianPropertyProjects.map(transformToSampleProject);
+
+// Additional hardcoded projects for variety
+const additionalProjects: SampleProject[] = [
   {
-    id: 'P001',
-    name: 'Sunrise Tower Complex',
-    description: 'Luxury residential tower with 42 floors including amenities and commercial spaces',
-    status: 'active',
-    priority: 'high',
-    progress: 65,
-    startDate: '2024-01-15',
-    endDate: '2025-06-30',
-    budget: 850000000,
-    spent: 552500000,
-    manager: 'Rajesh Kumar',
-    team: ['Team Alpha', 'Team Delta'],
-    client: 'Sunrise Developers Ltd',
-    location: 'Mumbai, Maharashtra',
-    category: 'Residential',
-    tags: ['high-rise', 'luxury', 'mixed-use']
-  },
-  {
-    id: 'P002',
-    name: 'Tech Park Phase 2',
-    description: 'Modern IT park with sustainable design and smart building features',
-    status: 'active',
-    priority: 'high',
-    progress: 45,
-    startDate: '2024-03-01',
-    endDate: '2025-09-30',
-    budget: 650000000,
-    spent: 292500000,
-    manager: 'Priya Sharma',
-    team: ['Team Beta', 'Team Gamma'],
-    client: 'InfoTech Infrastructure',
-    location: 'Bangalore, Karnataka',
-    category: 'Commercial',
-    tags: ['IT-park', 'green-building', 'LEED-certified']
-  },
-  {
-    id: 'P003',
-    name: 'Green Valley Villas',
-    description: 'Eco-friendly villa community with 120 units and recreational facilities',
-    status: 'active',
-    priority: 'medium',
-    progress: 78,
-    startDate: '2023-11-01',
-    endDate: '2025-02-28',
-    budget: 420000000,
-    spent: 327600000,
-    manager: 'Arun Patel',
-    team: ['Team Sigma'],
-    client: 'Green Homes Pvt Ltd',
-    location: 'Pune, Maharashtra',
-    category: 'Residential',
-    tags: ['villas', 'gated-community', 'eco-friendly']
-  },
-  {
-    id: 'P004',
-    name: 'City Hospital Expansion',
-    description: 'Adding new wing with 200 beds and advanced medical facilities',
-    status: 'planning',
-    priority: 'high',
-    progress: 15,
-    startDate: '2024-06-01',
-    endDate: '2026-03-31',
-    budget: 580000000,
-    spent: 87000000,
-    manager: 'Dr. Sunita Reddy',
-    team: ['Team Omega'],
-    client: 'City Healthcare Group',
-    location: 'Chennai, Tamil Nadu',
-    category: 'Healthcare',
-    tags: ['hospital', 'healthcare', 'expansion']
-  },
-  {
-    id: 'P005',
-    name: 'Metro Mall Renovation',
-    description: 'Complete renovation and modernization of existing shopping complex',
-    status: 'active',
-    priority: 'medium',
-    progress: 52,
-    startDate: '2024-02-15',
-    endDate: '2024-11-30',
-    budget: 180000000,
-    spent: 93600000,
-    manager: 'Vikram Singh',
-    team: ['Team Zeta'],
-    client: 'Metro Retail Corporation',
-    location: 'Delhi NCR',
-    category: 'Commercial',
-    tags: ['renovation', 'retail', 'mall']
-  },
-  {
-    id: 'P006',
-    name: 'Industrial Warehouse Complex',
-    description: 'Large-scale warehousing facility with automated storage systems',
-    status: 'active',
-    priority: 'medium',
-    progress: 38,
-    startDate: '2024-04-01',
-    endDate: '2025-03-31',
-    budget: 320000000,
-    spent: 121600000,
-    manager: 'Suresh Nair',
-    team: ['Team Eta'],
-    client: 'LogiSpace Industries',
-    location: 'Ahmedabad, Gujarat',
-    category: 'Industrial',
-    tags: ['warehouse', 'logistics', 'automation']
-  },
-  {
-    id: 'P007',
-    name: 'Riverfront Promenade',
-    description: 'Public infrastructure project with walking paths, gardens, and recreational areas',
-    status: 'completed',
-    priority: 'low',
-    progress: 100,
-    startDate: '2023-06-01',
-    endDate: '2024-05-31',
-    budget: 150000000,
-    spent: 145000000,
-    manager: 'Anjali Mehta',
-    team: ['Team Theta'],
-    client: 'Municipal Corporation',
-    location: 'Surat, Gujarat',
-    category: 'Infrastructure',
-    tags: ['public-space', 'infrastructure', 'recreational']
-  },
-  {
-    id: 'P008',
-    name: 'Smart School Campus',
-    description: 'Modern educational facility with smart classrooms and sports complex',
-    status: 'active',
-    priority: 'high',
-    progress: 60,
-    startDate: '2024-01-01',
-    endDate: '2025-04-30',
-    budget: 280000000,
-    spent: 168000000,
-    manager: 'Prof. Ravi Krishnan',
-    team: ['Team Iota'],
-    client: 'Education Foundation Trust',
-    location: 'Hyderabad, Telangana',
-    category: 'Educational',
-    tags: ['school', 'education', 'smart-campus']
-  },
-  {
-    id: 'P009',
-    name: 'Luxury Beach Resort',
-    description: 'Premium beachfront resort with 150 rooms and world-class amenities',
-    status: 'on-hold',
-    priority: 'low',
-    progress: 25,
-    startDate: '2024-02-01',
-    endDate: '2025-12-31',
-    budget: 450000000,
-    spent: 112500000,
-    manager: 'Deepak Joshi',
-    team: ['Team Kappa'],
-    client: 'Coastal Resorts International',
-    location: 'Goa',
-    category: 'Hospitality',
-    tags: ['resort', 'luxury', 'beachfront']
-  },
-  {
-    id: 'P010',
-    name: 'Township Infrastructure',
-    description: 'Complete infrastructure development for new residential township',
+    id: 'P011',
+    name: 'Metro Rail Extension Project',
+    description: 'Extension of metro line connecting airport to city center',
     status: 'active',
     priority: 'high',
     progress: 42,
-    startDate: '2023-10-01',
-    endDate: '2025-09-30',
-    budget: 920000000,
-    spent: 386400000,
-    manager: 'Amit Saxena',
-    team: ['Team Lambda', 'Team Mu'],
-    client: 'Urban Development Authority',
-    location: 'Noida, Uttar Pradesh',
+    startDate: '2023-07-01',
+    endDate: '2026-06-30',
+    budget: 12500000000,
+    spent: 5250000000,
+    manager: 'Rail Development Authority',
+    team: ['Infrastructure Team', 'Rail Systems Team', 'Station Development Team'],
+    client: 'State Metro Corporation',
+    location: 'Multiple Locations, Mumbai',
     category: 'Infrastructure',
-    tags: ['township', 'infrastructure', 'mixed-development']
-  },
-  {
-    id: 'P011',
-    name: 'Heritage Hotel Restoration',
-    description: 'Restoration and conversion of heritage building into boutique hotel',
-    status: 'active',
-    priority: 'medium',
-    progress: 55,
-    startDate: '2024-01-15',
-    endDate: '2024-12-31',
-    budget: 220000000,
-    spent: 121000000,
-    manager: 'Kavita Desai',
-    team: ['Team Nu'],
-    client: 'Heritage Hotels Group',
-    location: 'Jaipur, Rajasthan',
-    category: 'Hospitality',
-    tags: ['heritage', 'restoration', 'boutique-hotel']
+    tags: ['metro', 'public-transport', 'infrastructure', 'government'],
+    projectCode: 'MRL-2023',
+    projectType: 'Infrastructure',
+    currentPhase: 'Tunneling Work',
+    nextMilestone: 'Tunnel Boring Complete',
+    riskLevel: 'high',
+    qualityScore: 90,
+    safetyScore: 94
   },
   {
     id: 'P012',
-    name: 'Data Center Facility',
-    description: 'Tier-4 data center with advanced cooling and security systems',
-    status: 'active',
-    priority: 'high',
-    progress: 70,
-    startDate: '2023-12-01',
-    endDate: '2024-10-31',
-    budget: 480000000,
-    spent: 336000000,
-    manager: 'Tech Lead Team',
-    team: ['Team Xi'],
-    client: 'CloudServe Technologies',
-    location: 'Pune, Maharashtra',
+    name: 'Smart City Command Center',
+    description: 'Integrated command and control center for smart city operations',
+    status: 'planning',
+    priority: 'medium',
+    progress: 15,
+    startDate: '2024-04-01',
+    endDate: '2025-12-31',
+    budget: 450000000,
+    spent: 67500000,
+    manager: 'Smart City Mission',
+    team: ['IT Infrastructure Team', 'Systems Integration Team'],
+    client: 'Municipal Corporation',
+    location: 'CBD, Navi Mumbai',
     category: 'Technology',
-    tags: ['data-center', 'tier-4', 'technology']
+    tags: ['smart-city', 'IoT', 'command-center', 'government'],
+    projectCode: 'SCC-2024',
+    projectType: 'Technology',
+    currentPhase: 'Design & Architecture',
+    nextMilestone: 'Technical Specifications Approval',
+    riskLevel: 'medium',
+    qualityScore: 0,
+    safetyScore: 0
   },
   {
     id: 'P013',
-    name: 'Sports Complex',
-    description: 'Multi-sport facility with stadium, indoor courts, and training centers',
-    status: 'planning',
-    priority: 'medium',
-    progress: 8,
-    startDate: '2024-07-01',
-    endDate: '2026-06-30',
-    budget: 680000000,
-    spent: 54400000,
-    manager: 'Coach Raj Kumar',
-    team: ['Team Omicron'],
-    client: 'State Sports Authority',
-    location: 'Bhopal, Madhya Pradesh',
-    category: 'Sports',
-    tags: ['sports', 'stadium', 'training-facility']
+    name: 'International Convention Center',
+    description: 'World-class convention center with 5000+ seating capacity',
+    status: 'active',
+    priority: 'high',
+    progress: 68,
+    startDate: '2022-10-01',
+    endDate: '2024-09-30',
+    budget: 2800000000,
+    spent: 1904000000,
+    manager: 'Convention Center Authority',
+    team: ['Main Construction Team', 'Acoustic Team', 'Interior Design Team'],
+    client: 'State Tourism Department',
+    location: 'HITEC City, Hyderabad',
+    category: 'Commercial',
+    tags: ['convention-center', 'commercial', 'tourism', 'events'],
+    projectCode: 'ICC-2022',
+    projectType: 'Commercial',
+    currentPhase: 'Interior Finishing',
+    nextMilestone: 'Acoustic Treatment Complete',
+    riskLevel: 'medium',
+    qualityScore: 93,
+    safetyScore: 96
   },
   {
     id: 'P014',
-    name: 'Airport Terminal Expansion',
-    description: 'New terminal building with increased capacity and modern facilities',
+    name: 'Riverfront Development Phase 2',
+    description: 'Beautification and development of 10km riverfront stretch',
     status: 'active',
-    priority: 'high',
+    priority: 'medium',
     progress: 35,
-    startDate: '2024-01-01',
-    endDate: '2026-12-31',
-    budget: 1500000000,
-    spent: 525000000,
-    manager: 'Aviation Authority',
-    team: ['Team Pi', 'Team Rho'],
-    client: 'Airport Authority of India',
-    location: 'Kolkata, West Bengal',
+    startDate: '2023-11-01',
+    endDate: '2025-03-31',
+    budget: 850000000,
+    spent: 297500000,
+    manager: 'Urban Development Authority',
+    team: ['Landscape Team', 'Civil Works Team', 'Lighting Team'],
+    client: 'State Government',
+    location: 'Sabarmati Riverfront, Ahmedabad',
     category: 'Infrastructure',
-    tags: ['airport', 'terminal', 'infrastructure']
+    tags: ['riverfront', 'public-space', 'urban-development', 'beautification'],
+    projectCode: 'RFD-P2-2023',
+    projectType: 'Infrastructure',
+    currentPhase: 'Embankment Construction',
+    nextMilestone: 'Promenade Section 1 Complete',
+    riskLevel: 'low',
+    qualityScore: 88,
+    safetyScore: 91
   },
   {
     id: 'P015',
-    name: 'Affordable Housing Project',
-    description: 'Government-backed affordable housing with 500 units for economically weaker sections',
+    name: 'Multi-Specialty Hospital Complex',
+    description: '500-bed hospital with advanced medical facilities',
     status: 'active',
     priority: 'high',
-    progress: 48,
-    startDate: '2023-09-01',
-    endDate: '2025-03-31',
-    budget: 350000000,
-    spent: 168000000,
-    manager: 'Social Housing Team',
-    team: ['Team Sigma', 'Team Tau'],
-    client: 'State Housing Board',
-    location: 'Lucknow, Uttar Pradesh',
-    category: 'Residential',
-    tags: ['affordable-housing', 'government-project', 'social-housing']
+    progress: 52,
+    startDate: '2023-01-01',
+    endDate: '2025-06-30',
+    budget: 3600000000,
+    spent: 1872000000,
+    manager: 'Healthcare Infrastructure Ltd',
+    team: ['Hospital Construction Team', 'Medical Systems Team', 'MEP Specialists'],
+    client: 'Apollo Hospitals Group',
+    location: 'Whitefield, Bangalore',
+    category: 'Healthcare',
+    tags: ['hospital', 'healthcare', 'medical', 'multi-specialty'],
+    projectCode: 'AHC-2023',
+    projectType: 'Healthcare',
+    currentPhase: 'MEP Installation',
+    nextMilestone: 'OT Complex Ready',
+    riskLevel: 'medium',
+    qualityScore: 95,
+    safetyScore: 97
   }
 ];
 
+// Combine all projects
+const allProjects = [...transformedProjects, ...additionalProjects];
+
+// Main export - use allProjects as sampleProjects for compatibility
+export const sampleProjects = allProjects;
+
+// Export helper functions
 export const getProjectById = (id: string): SampleProject | undefined => {
   return sampleProjects.find(project => project.id === id);
 };
@@ -308,4 +244,38 @@ export const getProjectsByManager = (manager: string): SampleProject[] => {
 
 export const getHighPriorityProjects = (): SampleProject[] => {
   return sampleProjects.filter(project => project.priority === 'high');
+};
+
+export const getProjectsByLocation = (location: string): SampleProject[] => {
+  return sampleProjects.filter(project => 
+    project.location.toLowerCase().includes(location.toLowerCase())
+  );
+};
+
+export const getProjectStats = () => {
+  const total = sampleProjects.length;
+  const active = sampleProjects.filter(p => p.status === 'active').length;
+  const completed = sampleProjects.filter(p => p.status === 'completed').length;
+  const planning = sampleProjects.filter(p => p.status === 'planning').length;
+  const onHold = sampleProjects.filter(p => p.status === 'on-hold').length;
+  
+  const totalBudget = sampleProjects.reduce((sum, p) => sum + p.budget, 0);
+  const totalSpent = sampleProjects.reduce((sum, p) => sum + p.spent, 0);
+  
+  const categories = [...new Set(sampleProjects.map(p => p.category))];
+  const locations = [...new Set(sampleProjects.map(p => p.location.split(',')[1]?.trim()))].filter(Boolean);
+  
+  return {
+    total,
+    active,
+    completed,
+    planning,
+    onHold,
+    totalBudget,
+    totalSpent,
+    budgetUtilization: (totalSpent / totalBudget) * 100,
+    categories,
+    locations,
+    averageProgress: sampleProjects.reduce((sum, p) => sum + p.progress, 0) / total
+  };
 };

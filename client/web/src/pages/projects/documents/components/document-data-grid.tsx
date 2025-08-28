@@ -156,8 +156,8 @@ export default function DocumentDataGrid({
   
   return (
     <TooltipProvider>
-      <div className="bg-white rounded-lg border shadow-sm">
-        <Table>
+      <div className="bg-white rounded-lg border shadow-sm overflow-x-auto">
+        <Table className="min-w-[1000px]">
           <TableHeader>
             <TableRow className="hover:bg-transparent">
               <TableHead className="w-12">

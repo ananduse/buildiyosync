@@ -1,0 +1,184 @@
+import { useState, lazy, Suspense } from 'react';
+import { format } from 'date-fns';
+import {
+  Users,
+  DollarSign,
+  FileText,
+  CheckSquare,
+  BarChart3,
+  Activity,
+  Plus,
+  Search,
+  Filter,
+  Download,
+  Upload,
+  Eye,
+  Edit,
+  Trash2,
+  Phone,
+  Mail,
+  MessageSquare,
+  Calendar,
+  Clock,
+  UserPlus,
+  UserCheck,
+  Shield,
+  Award,
+  Star,
+  TrendingUp,
+  TrendingDown,
+  AlertTriangle,
+  CheckCircle2,
+  XCircle,
+  MoreVertical,
+  FolderOpen,
+  File,
+  Image,
+  Film,
+  FileX,
+  Paperclip,
+  ExternalLink,
+  Copy,
+  Share2,
+  Printer,
+  Archive,
+  ChevronRight,
+  Building2,
+  MapPin,
+  Briefcase,
+  Target,
+  DollarSignIcon,
+  CircleDollarSign,
+  Receipt,
+  CreditCard,
+  Wallet,
+  Calculator,
+  ArrowUp,
+  ArrowDown,
+  Info,
+  HelpCircle,
+  Settings,
+  ChevronDown,
+  Hash,
+  Percent,
+  Timer,
+  Flag,
+  GitBranch,
+  Zap,
+  MessageCircle,
+  ThumbsUp,
+  Heart,
+  ArrowRight,
+  Save,
+  CheckCircle,
+  Palette,
+  Home,
+  Square,
+} from 'lucide-react';
+
+import { cn } from '@/lib/utils';
+import { ProjectCalendar } from './project-calendar';
+
+// Lazy load the ProjectDocuments component
+const ProjectDocuments = lazy(() => import('@/pages/projects/documents/project-documents'));
+
+// Helper function to generate random avatar colors matching the team reference
+const getRandomAvatarColor = () => {
+  const colors = [
+    'bg-red-600',      // Red
+    'bg-orange-600',   // Orange  
+    'bg-amber-600',    // Amber
+    'bg-yellow-600',   // Yellow
+    'bg-lime-600',     // Lime
+    'bg-green-600',    // Green
+    'bg-emerald-600',  // Emerald
+    'bg-teal-600',     // Teal
+    'bg-cyan-600',     // Cyan
+    'bg-sky-600',      // Sky
+    'bg-blue-600',     // Blue
+    'bg-indigo-600',   // Indigo
+    'bg-violet-600',   // Violet
+    'bg-purple-600',   // Purple
+    'bg-fuchsia-600',  // Fuchsia
+    'bg-pink-600',     // Pink
+    'bg-rose-600',     // Rose
+    'bg-stone-600',    // Stone
+    'bg-neutral-600',  // Neutral
+    'bg-zinc-600',     // Zinc
+    'bg-gray-700',     // Gray (darker)
+    'bg-slate-700',    // Slate (darker)
+  ];
+  return colors[Math.floor(Math.random() * colors.length)];
+};
+
+// Store avatar colors to maintain consistency for the same user
+const avatarColors = new Map<string, string>();
+
+const getAvatarColor = (id: string) => {
+  if (!avatarColors.has(id)) {
+    avatarColors.set(id, getRandomAvatarColor());
+  }
+  return avatarColors.get(id) || 'bg-gray-500';
+};
+
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Progress } from '@/components/ui/progress';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Separator } from '@/components/ui/separator';
+import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from '@/components/ui/dialog';
+import {
+  ResponsiveContainer,
+  AreaChart,
+  Area,
+  BarChart,
+  Bar,
+  LineChart,
+  Line,
+  PieChart,
+  Pie,
+  Cell,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip as RechartsTooltip,
+  Legend,
+} from 'recharts';
+
+interface ProjectDetailsTabsProps {
+  project: any;
+  activeTab: string;
+}
+

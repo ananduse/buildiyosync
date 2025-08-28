@@ -1112,7 +1112,7 @@ export function ProjectCalendar({ project }: ProjectCalendarProps) {
                     variant="outline"
                     size="sm"
                     className={cn(
-                      "justify-start text-left font-normal min-w-[240px]",
+                      "justify-start text-left font-normal w-full sm:min-w-[240px]",
                       !dateRange.from && !dateRange.to && "text-muted-foreground"
                     )}
                   >

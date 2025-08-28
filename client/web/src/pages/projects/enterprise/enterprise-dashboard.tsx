@@ -1178,7 +1178,7 @@ function ProjectKanbanBoard({ projects }: { projects: Project[] }) {
   return (
     <div className="flex gap-4 overflow-x-auto pb-4">
       {columns.map((column) => (
-        <div key={column.id} className="flex-shrink-0 w-80">
+        <div key={column.id} className="flex-shrink-0 w-full sm:w-80 min-w-[280px]">
           <div className={cn(
             "rounded-t-lg px-4 py-2 flex items-center justify-between",
             `bg-${column.color}-100`

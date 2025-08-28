@@ -155,55 +155,61 @@ function stringToHslColor(input: string, saturation = 65, lightness = 55): strin
   return `hsl(${hue} ${saturation}% ${lightness}%)`;
 }
 
-// Generate 200 sample projects
+// Import Indian property projects data
+import { indianPropertyProjects } from '@/data/indian-property-projects';
+import { sampleProjects } from '@/data/sample-projects';
+
+// Generate sample projects using real Indian data
 const generateMockProjects = (): Project[] => {
+  // Use actual Indian property projects as base
+  const baseProjects = [...sampleProjects];
+  
+  // Indian project names for additional variety
   const projectNames = [
-    'Skyline Tower', 'Green Valley Residential', 'Metro Plaza', 'Harbor View Complex', 'Mountain Ridge Homes',
-    'Riverside Apartments', 'Central Business Tower', 'Sunset Boulevard Mall', 'Innovation Hub', 'Tech Park',
-    'Medical Center Expansion', 'University Campus', 'Sports Complex', 'Convention Center', 'Airport Terminal',
-    'Bridge Reconstruction', 'Highway Extension', 'Tunnel Project', 'Railway Station', 'Port Facility',
-    'Shopping District', 'Entertainment Complex', 'Hotel Resort', 'Office Park', 'Industrial Zone',
-    'Warehouse Facility', 'Distribution Center', 'Manufacturing Plant', 'Data Center', 'Research Lab',
-    'School Building', 'Hospital Wing', 'Community Center', 'Library Renovation', 'Museum Extension',
-    'Theater Restoration', 'Stadium Upgrade', 'Arena Development', 'Aquatic Center', 'Recreation Park',
-    'Residential Complex', 'Mixed-Use Development', 'Urban Renewal', 'Historic Preservation', 'Eco Village',
-    'Smart City Project', 'Solar Farm', 'Wind Power Station', 'Water Treatment Plant', 'Power Grid Upgrade'
+    'Godrej Platinum', 'Prestige Silver Oak', 'Lodha Palava City', 'DLF Capital Greens', 'Brigade Gateway',
+    'Sobha Dream Acres', 'Puravankara Skydale', 'Raheja Vivarea', 'Hiranandani Estate', 'Adani Realty Shantigram',
+    'Mahindra Lifespaces', 'Tata Housing Value Homes', 'L&T Emerald Isle', 'Oberoi Realty Garden City',
+    'Unitech Grande', 'Jaypee Greens', 'Amrapali Sapphire', 'Supertech Emerald Court', 'Gaurs Siddhartham',
+    'ATS Greens Village', 'Eldeco Live', 'Omaxe New Heights', 'BPTP Park Grandeura', 'Vatika City',
+    'M3M Marina', 'Ireo Victory Valley', 'Bestech Park View', 'CHD Avenue', 'Hero Homes',
+    'Pareena Heights', 'Signature Global Park', 'ROF Alante', 'Experion Windchants', 'Central Park Flower Valley',
+    'Ashiana Housing', 'Ansal API Valley', 'TDI City', 'Orris Aster Court', 'Spaze Towers',
+    'Max Heights', 'Cosmos Infra', 'SS Group Plaza', 'JMS Marine Square', 'MRG Crown'
   ];
 
   const customerNames = [
-    'Metropolitan Development Corp', 'Global Construction Inc', 'Premier Builders', 'Urban Developers',
-    'Innovative Structures', 'BuildRight Partners', 'Construction Masters', 'Development Solutions',
-    'Property Investments Group', 'Real Estate Ventures', 'Commercial Properties LLC', 'Residential Builders',
-    'Infrastructure Partners', 'City Planning Dept', 'State Development Agency', 'Federal Projects Office',
-    'International Builders', 'Local Contractors Union', 'Regional Development Fund', 'National Construction',
-    'Alpha Builders', 'Beta Development', 'Gamma Properties', 'Delta Construction', 'Epsilon Ventures',
-    'Zeta Holdings', 'Eta Investments', 'Theta Builders', 'Iota Development', 'Kappa Properties',
-    'Lambda Construction', 'Mu Ventures', 'Nu Holdings', 'Xi Investments', 'Omicron Builders',
-    'Pi Development', 'Rho Properties', 'Sigma Construction', 'Tau Ventures', 'Upsilon Holdings',
-    'Phi Investments', 'Chi Builders', 'Psi Development', 'Omega Properties', 'Apex Construction'
+    'DLF Limited', 'Godrej Properties', 'Lodha Group', 'Prestige Estates', 'Brigade Group',
+    'Sobha Limited', 'Puravankara Limited', 'Raheja Developers', 'Hiranandani Group', 'Adani Realty',
+    'Mahindra Lifespaces', 'Tata Housing', 'L&T Realty', 'Oberoi Realty', 'Unitech Group',
+    'Jaypee Group', 'Amrapali Group', 'Supertech Limited', 'Gaursons India', 'ATS Infrastructure',
+    'Eldeco Group', 'Omaxe Ltd', 'BPTP Limited', 'Vatika Group', 'M3M India',
+    'Ireo Private Limited', 'Bestech India', 'CHD Developers', 'Hero Realty', 'Pareena Group',
+    'Signature Global', 'ROF Group', 'Experion Developers', 'Central Park', 'Ashiana Housing',
+    'Ansal API', 'TDI Infratech', 'Orris Infrastructure', 'Spaze Towers', 'Max Estates',
+    'Cosmos Group', 'SS Group', 'JMS Buildtech', 'MRG Group', 'Shapoorji Pallonji'
   ];
 
   const managerNames = [
-    'Sarah Johnson', 'Mike Chen', 'Lisa Wang', 'David Brown', 'Emily Davis',
-    'Robert Wilson', 'Jennifer Lee', 'James Smith', 'Maria Garcia', 'John Anderson',
-    'Patricia Martinez', 'Michael Rodriguez', 'Linda Williams', 'Richard Jones', 'Barbara Taylor',
-    'Thomas Moore', 'Nancy Jackson', 'Christopher White', 'Karen Harris', 'Daniel Martin',
-    'Betty Thompson', 'Mark Lewis', 'Sandra Walker', 'Paul Hall', 'Ashley Allen',
-    'Kenneth Young', 'Dorothy King', 'Steven Wright', 'Helen Lopez', 'Gary Hill',
-    'Amy Scott', 'Brian Green', 'Melissa Adams', 'Ronald Baker', 'Stephanie Nelson',
-    'Eric Carter', 'Anna Mitchell', 'Kevin Perez', 'Brenda Roberts', 'Jason Turner'
+    'Rajesh Kumar', 'Priya Sharma', 'Amit Singh', 'Neha Gupta', 'Vikram Malhotra',
+    'Sunita Patel', 'Arun Verma', 'Pooja Reddy', 'Suresh Menon', 'Anita Desai',
+    'Ravi Shankar', 'Kavita Joshi', 'Manish Agarwal', 'Deepa Nair', 'Santosh Yadav',
+    'Rekha Bhardwaj', 'Vijay Kumar', 'Meera Chopra', 'Ashok Mishra', 'Swati Bansal',
+    'Nikhil Mehta', 'Anjali Saxena', 'Rahul Kapoor', 'Shweta Tiwari', 'Gaurav Jindal',
+    'Nidhi Shah', 'Pankaj Dubey', 'Sonia Arora', 'Karthik Iyer', 'Preeti Chauhan',
+    'Rohit Bhatia', 'Divya Pandey', 'Alok Srivastava', 'Tanvi Kulkarni', 'Varun Dhawan',
+    'Ritika Goyal', 'Sanjay Tripathi', 'Monica Ahuja', 'Harish Chandra', 'Pallavi Jain'
   ];
 
   const locations = [
-    'New York, NY', 'Los Angeles, CA', 'Chicago, IL', 'Houston, TX', 'Phoenix, AZ',
-    'Philadelphia, PA', 'San Antonio, TX', 'San Diego, CA', 'Dallas, TX', 'San Jose, CA',
-    'Austin, TX', 'Jacksonville, FL', 'Fort Worth, TX', 'Columbus, OH', 'Charlotte, NC',
-    'San Francisco, CA', 'Indianapolis, IN', 'Seattle, WA', 'Denver, CO', 'Boston, MA',
-    'El Paso, TX', 'Detroit, MI', 'Nashville, TN', 'Portland, OR', 'Memphis, TN',
-    'Oklahoma City, OK', 'Las Vegas, NV', 'Louisville, KY', 'Baltimore, MD', 'Milwaukee, WI',
-    'Albuquerque, NM', 'Tucson, AZ', 'Fresno, CA', 'Mesa, AZ', 'Sacramento, CA',
-    'Atlanta, GA', 'Kansas City, MO', 'Colorado Springs, CO', 'Miami, FL', 'Raleigh, NC',
-    'Omaha, NE', 'Long Beach, CA', 'Virginia Beach, VA', 'Oakland, CA', 'Minneapolis, MN'
+    'Gurugram, Haryana', 'Noida, Uttar Pradesh', 'Mumbai, Maharashtra', 'Bangalore, Karnataka', 'Chennai, Tamil Nadu',
+    'Pune, Maharashtra', 'Hyderabad, Telangana', 'Kolkata, West Bengal', 'Ahmedabad, Gujarat', 'Delhi NCR',
+    'Thane, Maharashtra', 'Navi Mumbai, Maharashtra', 'Faridabad, Haryana', 'Ghaziabad, Uttar Pradesh', 'Greater Noida, UP',
+    'Whitefield, Bangalore', 'Electronic City, Bangalore', 'Hebbal, Bangalore', 'Marathahalli, Bangalore', 'Yelahanka, Bangalore',
+    'Andheri, Mumbai', 'Powai, Mumbai', 'Bandra, Mumbai', 'Goregaon, Mumbai', 'Malad, Mumbai',
+    'Hinjewadi, Pune', 'Wakad, Pune', 'Kharadi, Pune', 'Baner, Pune', 'Viman Nagar, Pune',
+    'HITEC City, Hyderabad', 'Gachibowli, Hyderabad', 'Madhapur, Hyderabad', 'Kondapur, Hyderabad', 'Jubilee Hills, Hyderabad',
+    'Salt Lake, Kolkata', 'New Town, Kolkata', 'EM Bypass, Kolkata', 'Rajarhat, Kolkata', 'Park Street, Kolkata',
+    'SG Highway, Ahmedabad', 'Vastrapur, Ahmedabad', 'Satellite, Ahmedabad', 'Bopal, Ahmedabad', 'Science City, Ahmedabad'
   ];
 
   const milestones = [
@@ -222,8 +228,98 @@ const generateMockProjects = (): Project[] => {
   const priorities: Project['priority'][] = ['low', 'medium', 'high', 'critical'];
   const customerTypes: ('self-registered' | 'company-created')[] = ['self-registered', 'company-created'];
 
-  // Generate 200 projects
-  for (let i = 1; i <= 200; i++) {
+  // First add all real Indian property projects
+  baseProjects.forEach((project, index) => {
+    const projectNumber = (index + 1).toString().padStart(3, '0');
+    
+    projects.push({
+      id: project.id,
+      projectNumber: `PRJ-${projectNumber}`,
+      projectName: project.name,
+      projectType: project.projectType as any || 'commercial',
+      status: project.status as any,
+      phase: project.currentPhase || 'construction',
+      priority: project.priority as any,
+      location: project.location,
+      progress: project.progress,
+      budget: {
+        total: project.budget,
+        spent: project.spent,
+        allocated: Math.floor(project.budget * 0.85),
+        currency: 'INR'
+      },
+      schedule: {
+        startDate: project.startDate,
+        endDate: project.endDate,
+        actualStartDate: project.startDate,
+        actualEndDate: project.status === 'completed' ? project.endDate : undefined,
+        daysRemaining: Math.floor((new Date(project.endDate).getTime() - Date.now()) / (1000 * 60 * 60 * 24)),
+        variance: project.riskLevel === 'high' ? -15 : project.riskLevel === 'medium' ? -5 : 2
+      },
+      customer: {
+        id: `CUST-${projectNumber}`,
+        name: project.client,
+        type: 'company-created',
+        contact: {
+          email: `contact@${project.client.toLowerCase().replace(/\s+/g, '')}.com`,
+          phone: '+91 98765 43210',
+          address: project.location
+        },
+        rating: 4 + Math.random(),
+        totalProjects: Math.floor(Math.random() * 10) + 1
+      },
+      projectManager: {
+        id: `PM-${projectNumber}`,
+        name: project.manager,
+        email: `${project.manager.toLowerCase().replace(/\s+/g, '.')}@buildiyosync.com`,
+        phone: '+91 98765 12345',
+        department: 'Project Management',
+        avatar: `https://api.dicebear.com/7.x/personas/svg?seed=${project.manager}`
+      },
+      team: {
+        totalMembers: project.team.length + Math.floor(Math.random() * 20) + 10,
+        keyMembers: project.team.map((member, idx) => ({
+          id: `TM-${projectNumber}-${idx}`,
+          name: member,
+          role: 'Team Lead',
+          avatar: `https://api.dicebear.com/7.x/personas/svg?seed=${member}`
+        }))
+      },
+      stats: {
+        tasksTotal: project.totalTasks || Math.floor(Math.random() * 200) + 50,
+        tasksCompleted: project.completedTasks || Math.floor(Math.random() * 100) + 20,
+        issuesOpen: Math.floor(Math.random() * 10),
+        risksIdentified: project.activeRisks || Math.floor(Math.random() * 5),
+        changeRequests: project.pendingApprovals || Math.floor(Math.random() * 3),
+        documentsCount: project.documentsCount || Math.floor(Math.random() * 50) + 10
+      },
+      quality: {
+        score: project.qualityScore || 85 + Math.floor(Math.random() * 15),
+        lastInspection: new Date(Date.now() - Math.random() * 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+        nextInspection: new Date(Date.now() + Math.random() * 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+        certifications: ['ISO 9001', 'ISO 14001']
+      },
+      safety: {
+        score: project.safetyScore || 90 + Math.floor(Math.random() * 10),
+        incidents: 0,
+        lastIncident: null,
+        trainingSessions: Math.floor(Math.random() * 10) + 5
+      },
+      milestones: {
+        next: project.nextMilestone || 'Phase Completion',
+        upcoming: project.upcomingMilestones || [],
+        completed: Math.floor(Math.random() * 10) + 2,
+        total: Math.floor(Math.random() * 20) + 10
+      },
+      tags: project.tags,
+      createdAt: new Date(2023, Math.floor(Math.random() * 12), Math.floor(Math.random() * 28) + 1).toISOString(),
+      updatedAt: new Date(Date.now() - Math.random() * 7 * 24 * 60 * 60 * 1000).toISOString()
+    });
+  });
+
+  // Generate additional projects to reach 200
+  const additionalProjectsNeeded = 200 - projects.length;
+  for (let i = 1; i <= additionalProjectsNeeded; i++) {
     const status = statuses[Math.floor(Math.random() * statuses.length)];
     const phase = phases[Math.floor(Math.random() * phases.length)];
     const projectType = types[Math.floor(Math.random() * types.length)];

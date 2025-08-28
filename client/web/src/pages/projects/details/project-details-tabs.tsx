@@ -1,4 +1,4 @@
-import { useState, lazy, Suspense } from 'react';
+import { useState, useEffect, lazy, Suspense } from 'react';
 import { format } from 'date-fns';
 import {
   Users,
@@ -203,25 +203,28 @@ export function TeamTab({ project }: { project: any }) {
   return (
     <div className="space-y-6">
       {/* Team Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h2 className="text-2xl font-bold">Team & Resources</h2>
-          <p className="text-muted-foreground">
+          <h2 className="text-xl sm:text-2xl font-bold">Team & Resources</h2>
+          <p className="text-sm sm:text-base text-muted-foreground">
             {project.team.totalMembers} total members across {project.team.departments.length} departments
           </p>
         </div>
-        <div className="flex gap-2">
-          <Button variant="outline" size="sm">
+        <div className="flex flex-wrap gap-2">
+          <Button variant="outline" size="sm" className="flex-1 sm:flex-initial">
             <Upload className="h-4 w-4 mr-2" />
-            Import
+            <span className="hidden sm:inline">Import</span>
+            <span className="sm:hidden">Import</span>
           </Button>
-          <Button variant="outline" size="sm">
+          <Button variant="outline" size="sm" className="flex-1 sm:flex-initial">
             <Download className="h-4 w-4 mr-2" />
-            Export
+            <span className="hidden sm:inline">Export</span>
+            <span className="sm:hidden">Export</span>
           </Button>
-          <Button size="sm">
+          <Button size="sm" className="flex-1 sm:flex-initial">
             <UserPlus className="h-4 w-4 mr-2" />
-            Add Member
+            <span className="hidden sm:inline">Add Member</span>
+            <span className="sm:hidden">Add</span>
           </Button>
         </div>
       </div>
@@ -325,23 +328,23 @@ export function TeamTab({ project }: { project: any }) {
       {/* Team Members List */}
       <Card>
         <CardHeader>
-          <div className="flex items-center justify-between">
+          <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
             <div>
               <CardTitle>Team Members</CardTitle>
               <CardDescription>All project team members and their details</CardDescription>
             </div>
-            <div className="flex items-center gap-2">
-              <div className="relative">
+            <div className="flex flex-col sm:flex-row gap-2 w-full lg:w-auto">
+              <div className="relative flex-1 sm:flex-initial">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 <Input
                   placeholder="Search members..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="pl-9 w-64"
+                  className="pl-9 w-full sm:w-64"
                 />
               </div>
               <Select value={selectedDepartment} onValueChange={setSelectedDepartment}>
-                <SelectTrigger className="w-40">
+                <SelectTrigger className="w-full sm:w-40">
                   <SelectValue placeholder="Department" />
                 </SelectTrigger>
                 <SelectContent>
@@ -354,17 +357,18 @@ export function TeamTab({ project }: { project: any }) {
             </div>
           </div>
         </CardHeader>
-        <CardContent>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Member</TableHead>
-                <TableHead>Role</TableHead>
-                <TableHead>Department</TableHead>
-                <TableHead>Allocation</TableHead>
-                <TableHead>Contact</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead className="text-right">Actions</TableHead>
+        <CardContent className="p-0 sm:p-6">
+          <div className="overflow-x-auto">
+            <Table className="min-w-[800px]">
+              <TableHeader>
+                <TableRow>
+                  <TableHead className="min-w-[200px]">Member</TableHead>
+                  <TableHead className="min-w-[120px]">Role</TableHead>
+                  <TableHead className="min-w-[120px]">Department</TableHead>
+                  <TableHead className="min-w-[120px]">Allocation</TableHead>
+                  <TableHead className="min-w-[150px]">Contact</TableHead>
+                  <TableHead className="min-w-[80px]">Status</TableHead>
+                  <TableHead className="text-right min-w-[80px]">Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -442,6 +446,7 @@ export function TeamTab({ project }: { project: any }) {
               ))}
             </TableBody>
           </Table>
+          </div>
         </CardContent>
       </Card>
     </div>
@@ -469,26 +474,30 @@ export function BudgetTab({ project }: { project: any }) {
   return (
     <div className="space-y-6">
       {/* Budget Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h2 className="text-2xl font-bold">Budget & Financials</h2>
-          <p className="text-muted-foreground">
-            Total Budget: ${(project.budget.total / 1000000).toFixed(1)}M | 
-            Spent: ${(project.budget.spent / 1000000).toFixed(1)}M ({((project.budget.spent / project.budget.total) * 100).toFixed(1)}%)
+          <h2 className="text-xl sm:text-2xl font-bold">Budget & Financials</h2>
+          <p className="text-sm sm:text-base text-muted-foreground">
+            <span className="block sm:inline">Total Budget: ${(project.budget.total / 1000000).toFixed(1)}M</span>
+            <span className="hidden sm:inline"> | </span>
+            <span className="block sm:inline">Spent: ${(project.budget.spent / 1000000).toFixed(1)}M ({((project.budget.spent / project.budget.total) * 100).toFixed(1)}%)</span>
           </p>
         </div>
-        <div className="flex gap-2">
-          <Button variant="outline" size="sm">
-            <Calculator className="h-4 w-4 mr-2" />
-            Calculate
+        <div className="flex flex-wrap gap-2">
+          <Button variant="outline" size="sm" className="flex-1 sm:flex-initial">
+            <Calculator className="h-4 w-4 mr-1 sm:mr-2" />
+            <span className="hidden sm:inline">Calculate</span>
+            <span className="sm:hidden">Calc</span>
           </Button>
-          <Button variant="outline" size="sm">
-            <Download className="h-4 w-4 mr-2" />
-            Export Report
+          <Button variant="outline" size="sm" className="flex-1 sm:flex-initial">
+            <Download className="h-4 w-4 mr-1 sm:mr-2" />
+            <span className="hidden sm:inline">Export Report</span>
+            <span className="sm:hidden">Export</span>
           </Button>
-          <Button size="sm">
-            <Plus className="h-4 w-4 mr-2" />
-            Add Transaction
+          <Button size="sm" className="flex-1 sm:flex-initial">
+            <Plus className="h-4 w-4 mr-1 sm:mr-2" />
+            <span className="hidden sm:inline">Add Transaction</span>
+            <span className="sm:hidden">Add</span>
           </Button>
         </div>
       </div>
@@ -842,603 +851,961 @@ export function DocumentsTab({ project }: { project: any }) {
 
 export function DetailsTab({ project }: { project: any }) {
   const [isEditMode, setIsEditMode] = useState(false);
-  const [editedDetails, setEditedDetails] = useState<any>(null);
-  const [activeSection, setActiveSection] = useState<string>('plot');
+  const [isAddMode, setIsAddMode] = useState(false);
+  const [formData, setFormData] = useState<any>(null);
+  const [hasDetails, setHasDetails] = useState(false);
+  const [activeTab, setActiveTab] = useState('general');
 
-  // Initialize with project details or defaults
-  const projectDetails = {
+  // Check if project has existing details
+  useEffect(() => {
+    // Simulate checking for existing details
+    const existingDetails = project?.requirements || null;
+    setHasDetails(!!existingDetails);
+    if (!existingDetails) {
+      setIsAddMode(true);
+    }
+  }, [project]);
+
+  // Comprehensive project requirements structure
+  const defaultRequirements = {
+    // General Information
+    general: {
+      projectName: '',
+      projectType: '',
+      developmentType: '',
+      projectCategory: '',
+      location: '',
+      city: '',
+      state: '',
+      pincode: '',
+      nearbyLandmarks: '',
+      connectivity: ''
+    },
+    
+    // Plot & Land Requirements
     plot: {
-      size: '12,500 sq ft',
-      dimensions: '100 x 125 ft',
-      facing: 'North-East',
-      soilType: 'Clay Loam',
-      topography: 'Level Ground',
-      surveyNumber: 'SV-2024-001',
-      zoning: 'Commercial Mixed Use',
+      totalArea: '',
+      plotDimensions: '',
+      plotShape: '',
+      facing: '',
+      cornerPlot: false,
+      roadWidth: '',
+      approachRoad: '',
+      soilType: '',
+      topography: '',
+      surveyNumber: '',
+      khataNumber: '',
+      zoning: '',
+      landUse: '',
+      fsi: '',
+      groundCoverage: '',
       setbacks: {
-        front: '20 ft',
-        rear: '15 ft',
-        left: '10 ft',
-        right: '10 ft'
+        front: '',
+        rear: '',
+        left: '',
+        right: ''
       }
     },
-    design: {
-      architect: 'Sterling Architecture Inc.',
-      structuralEngineer: 'BuildStrong Consultants',
-      mepConsultant: 'MEP Solutions Ltd.',
-      landscapeDesigner: 'GreenScape Studios',
-      interiorDesigner: 'Elite Interiors',
-      designStyle: 'Modern Contemporary',
-      sustainabilityRating: 'LEED Gold',
-      approvalStatus: 'Approved',
-      approvalDate: '2024-01-10',
-      permitNumber: 'BP-2024-0156'
+    // Building Configuration
+    building: {
+      totalFloors: '',
+      basements: '',
+      stiltFloors: '',
+      typicalFloors: '',
+      towers: '',
+      blocks: '',
+      totalBuiltUpArea: '',
+      totalCarpetArea: '',
+      totalSaleableArea: '',
+      commonAreaPercentage: '',
+      efficiencyRatio: '',
+      buildingHeight: '',
+      floorToFloorHeight: '',
+      ceilingHeight: ''
     },
-    structure: {
-      type: 'RCC Frame Structure',
-      foundation: 'Raft Foundation',
-      floors: 45,
-      basements: 3,
-      towers: 2,
-      totalUnits: 240,
-      parkingLevels: 5,
-      totalParkingSpaces: 480,
-      builtUpArea: '450,000 sq ft',
-      carpetArea: '320,000 sq ft',
-      commonArea: '130,000 sq ft',
-      efficiency: '71%'
-    },
+    
+    // Unit Configuration
     units: {
-      residential: [
-        { type: '1 BHK', count: 60, area: '650 sq ft', price: '$250,000' },
-        { type: '2 BHK', count: 80, area: '1,100 sq ft', price: '$420,000' },
-        { type: '3 BHK', count: 60, area: '1,500 sq ft', price: '$650,000' },
-        { type: '4 BHK', count: 30, area: '2,200 sq ft', price: '$950,000' },
-        { type: 'Penthouse', count: 10, area: '3,500 sq ft', price: '$1,500,000' }
-      ],
-      commercial: [
-        { type: 'Retail Shops', count: 25, area: '200-500 sq ft', price: '$500-1,500/sq ft' },
-        { type: 'Office Spaces', count: 15, area: '1,000-5,000 sq ft', price: '$80/sq ft/month' },
-        { type: 'Food Court', count: 1, area: '8,000 sq ft', price: 'On Lease' }
-      ]
+      totalUnits: '',
+      unitMix: [],
+      typicalFloorPlan: '',
+      unitsPerFloor: '',
+      corePerFloor: ''
     },
-    amenities: [
-      'Swimming Pool', 'Gymnasium', 'Clubhouse', 'Children\'s Play Area',
-      'Jogging Track', 'Basketball Court', 'Tennis Court', 'Amphitheater',
-      'Party Hall', 'Guest Suites', 'Spa & Sauna', 'Yoga Studio',
-      'Library', 'Business Center', 'Cafeteria', 'Medical Center'
-    ],
-    specifications: {
-      flooring: 'Vitrified Tiles / Wooden Flooring',
-      kitchen: 'Modular Kitchen with Granite Platform',
-      bathroom: 'Premium CP Fittings, Anti-skid Tiles',
-      doors: 'Main - Teak Wood, Internal - Flush Doors',
-      windows: 'UPVC with Mosquito Mesh',
-      electricals: 'Concealed Copper Wiring, LED Fixtures',
-      plumbing: 'CPVC Pipes, Premium Fittings',
-      paint: 'Premium Emulsion Paint',
-      elevator: '6 High-speed Elevators per Tower',
-      security: '24x7 CCTV, Access Control, Intercom'
+    // Elevation & Architecture
+    elevation: {
+      architecturalStyle: '',
+      elevationConcept: '',
+      facadeMaterial: '',
+      facadeColor: '',
+      balconyType: '',
+      windowType: '',
+      entranceLobby: '',
+      roofType: '',
+      externalFinish: '',
+      lightingConcept: ''
     },
-    timeline: {
-      projectStart: '2024-01-15',
-      foundationComplete: '2024-04-30',
-      structureComplete: '2024-11-30',
-      mepComplete: '2025-03-15',
-      finishingComplete: '2025-07-30',
-      handover: '2025-12-31',
-      possessionStart: '2026-01-15'
+    
+    // Structural Specifications
+    structure: {
+      structuralSystem: '',
+      foundationType: '',
+      soilBearingCapacity: '',
+      seismicZone: '',
+      windSpeed: '',
+      slabType: '',
+      slabThickness: '',
+      beamSize: '',
+      columnSize: '',
+      wallType: '',
+      wallThickness: '',
+      concreteGrade: '',
+      steelGrade: ''
     },
+    // Interior Specifications
+    interiors: {
+      // Living & Dining
+      livingFlooring: '',
+      livingWalls: '',
+      livingCeiling: '',
+      livingElectrical: '',
+      
+      // Bedrooms
+      bedroomFlooring: '',
+      bedroomWalls: '',
+      bedroomCeiling: '',
+      bedroomWardrobe: '',
+      
+      // Kitchen
+      kitchenPlatform: '',
+      kitchenSink: '',
+      kitchenTiles: '',
+      kitchenCabinets: '',
+      kitchenChimney: '',
+      kitchenAppliances: '',
+      
+      // Bathrooms
+      bathroomFlooring: '',
+      bathroomWallTiles: '',
+      bathroomSanitary: '',
+      bathroomFittings: '',
+      bathroomGeyser: '',
+      bathroomVanity: '',
+      
+      // Doors & Windows
+      mainDoor: '',
+      internalDoors: '',
+      windows: '',
+      windowGrills: '',
+      
+      // Electrical
+      wiringType: '',
+      switchesType: '',
+      mcbType: '',
+      powerBackup: '',
+      
+      // Plumbing
+      waterPipes: '',
+      drainagePipes: '',
+      waterTank: '',
+      pumpType: ''
+    },
+    // Amenities & Facilities
+    amenities: {
+      // Sports & Fitness
+      swimmingPool: false,
+      gymnasium: false,
+      yogaRoom: false,
+      indoorGames: false,
+      outdoorSports: [],
+      joggingTrack: false,
+      cyclingTrack: false,
+      
+      // Community
+      clubhouse: false,
+      partyHall: false,
+      amphitheater: false,
+      library: false,
+      businessCenter: false,
+      conferenceRoom: false,
+      
+      // Children
+      playArea: false,
+      kidsPool: false,
+      daycare: false,
+      
+      // Convenience
+      guestRooms: false,
+      cafeteria: false,
+      miniMart: false,
+      atm: false,
+      pharmacy: false,
+      salon: false,
+      
+      // Wellness
+      spa: false,
+      sauna: false,
+      steamRoom: false,
+      meditationRoom: false,
+      
+      // Security & Safety
+      gatedCommunity: false,
+      securityCabin: false,
+      cctv: false,
+      intercom: false,
+      fireAlarm: false,
+      fireFighting: false,
+      
+      // Utilities
+      powerBackup: '',
+      waterSupply: '',
+      wasteTreatment: false,
+      rainwaterHarvesting: false,
+      solarPanels: false
+    },
+    // Parking & Transportation
+    parking: {
+      totalParkingSpaces: '',
+      coveredParking: '',
+      openParking: '',
+      visitorParking: '',
+      twowheelerParking: '',
+      parkingLevels: '',
+      mechanicalParking: false,
+      evChargingStations: false,
+      valetParking: false
+    },
+    
+    // Green Features
+    sustainability: {
+      greenBuildingCertification: '',
+      energyEfficiency: '',
+      waterConservation: '',
+      wasteManagement: '',
+      landscapedArea: '',
+      treeCount: '',
+      organicWasteConverter: false,
+      solarWaterHeating: false,
+      ledLighting: false,
+      sensorsForLighting: false
+    },
+    // Compliance & Approvals
     compliance: {
-      environmentalClearance: 'EC-2023-1245',
-      fireSafety: 'FS-2024-0089',
-      occupancyCertificate: 'Pending',
-      completionCertificate: 'Pending',
-      buildingPlan: 'BP-2024-0156',
-      waterConnection: 'Applied',
-      electricityConnection: 'Sanctioned',
-      sewerageConnection: 'Approved'
+      landTitle: '',
+      encumbranceCertificate: '',
+      approvedPlan: '',
+      commencementCertificate: '',
+      environmentalClearance: '',
+      fireSafetyCertificate: '',
+      occupancyCertificate: '',
+      completionCertificate: '',
+      reraRegistration: '',
+      waterConnection: '',
+      electricityConnection: '',
+      sewerageConnection: ''
     },
-    financial: {
-      totalProjectCost: '$125,000,000',
-      landCost: '$25,000,000',
-      constructionCost: '$85,000,000',
-      otherCosts: '$15,000,000',
-      expectedRevenue: '$175,000,000',
-      expectedROI: '40%',
-      fundingSource: 'Bank Loan (60%) + Equity (40%)',
-      bankName: 'National Development Bank',
-      loanAmount: '$75,000,000',
-      loanStatus: 'Disbursed - 45%'
+    
+    // Additional Features
+    additional: {
+      smartHomeFeatures: [],
+      accessibilityFeatures: [],
+      petFriendly: false,
+      seniorCitizenFriendly: false,
+      vastuCompliant: false,
+      specialFeatures: ''
     }
   };
 
+  const projectRequirements = project?.requirements || defaultRequirements;
+  const [editedData, setEditedData] = useState(projectRequirements);
+
+  const handleAddDetails = () => {
+    setFormData(defaultRequirements);
+    setIsAddMode(true);
+  };
+
   const handleEdit = () => {
-    setEditedDetails({ ...projectDetails });
+    setFormData(projectRequirements);
     setIsEditMode(true);
   };
 
   const handleSave = () => {
-    // Here you would save the edited details to your backend
-    console.log('Saving details:', editedDetails);
+    // Save to backend
+    console.log('Saving requirements:', formData);
+    setHasDetails(true);
     setIsEditMode(false);
-    // Show success message
+    setIsAddMode(false);
+    // Update project requirements
+    setEditedData(formData);
   };
 
   const handleCancel = () => {
-    setEditedDetails(null);
+    setFormData(null);
     setIsEditMode(false);
+    setIsAddMode(false);
   };
 
-  const details = editedDetails || projectDetails;
+  const handleInputChange = (section: string, field: string, value: any) => {
+    setFormData((prev: any) => ({
+      ...prev,
+      [section]: {
+        ...prev[section],
+        [field]: value
+      }
+    }));
+  };
 
+  const currentData = formData || editedData;
+
+  // If no details exist, show Add Details form
+  if (!hasDetails && !isAddMode) {
+    return (
+      <div className="flex flex-col items-center justify-center py-16">
+        <div className="text-center max-w-md">
+          <div className="mb-6">
+            <div className="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+              <FileText className="h-10 w-10 text-gray-400" />
+            </div>
+            <h3 className="text-xl font-semibold mb-2">No Project Requirements Found</h3>
+            <p className="text-muted-foreground">
+              Add comprehensive project requirements including plot details, building specifications, interiors, and amenities.
+            </p>
+          </div>
+          <Button onClick={handleAddDetails} size="lg" className="gap-2">
+            <Plus className="h-5 w-5" />
+            Add Project Requirements
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
+  // Edit/Add Form
+  if (isEditMode || isAddMode) {
+    return (
+      <div className="space-y-6">
+        {/* Form Header */}
+        <div className="flex items-center justify-between border-b pb-4">
+          <div>
+            <h2 className="text-2xl font-bold">
+              {isAddMode ? 'Add Project Requirements' : 'Edit Project Requirements'}
+            </h2>
+            <p className="text-muted-foreground mt-1">
+              Enter comprehensive project details from plot to interior specifications
+            </p>
+          </div>
+          <div className="flex gap-2">
+            <Button variant="outline" onClick={handleCancel}>
+              Cancel
+            </Button>
+            <Button onClick={handleSave}>
+              <Save className="h-4 w-4 mr-2" />
+              {isAddMode ? 'Add Requirements' : 'Save Changes'}
+            </Button>
+          </div>
+        </div>
+
+        {/* Form Tabs */}
+        <Tabs value={activeTab} onValueChange={setActiveTab}>
+          <TabsList className="grid grid-cols-8 gap-1 h-auto p-1">
+            <TabsTrigger value="general" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
+              <Info className="h-4 w-4 mr-2" />
+              General
+            </TabsTrigger>
+            <TabsTrigger value="plot" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
+              <MapPin className="h-4 w-4 mr-2" />
+              Plot
+            </TabsTrigger>
+            <TabsTrigger value="building" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
+              <Building2 className="h-4 w-4 mr-2" />
+              Building
+            </TabsTrigger>
+            <TabsTrigger value="elevation" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
+              <Palette className="h-4 w-4 mr-2" />
+              Elevation
+            </TabsTrigger>
+            <TabsTrigger value="interiors" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
+              <Home className="h-4 w-4 mr-2" />
+              Interiors
+            </TabsTrigger>
+            <TabsTrigger value="amenities" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
+              <Star className="h-4 w-4 mr-2" />
+              Amenities
+            </TabsTrigger>
+            <TabsTrigger value="compliance" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
+              <Shield className="h-4 w-4 mr-2" />
+              Compliance
+            </TabsTrigger>
+            <TabsTrigger value="additional" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
+              <Zap className="h-4 w-4 mr-2" />
+              Additional
+            </TabsTrigger>
+          </TabsList>
+
+          {/* General Information Tab */}
+          <TabsContent value="general" className="space-y-4">
+            <Card>
+              <CardHeader>
+                <CardTitle>General Information</CardTitle>
+                <CardDescription>Basic project details and location</CardDescription>
+              </CardHeader>
+              <CardContent className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="projectName">Project Name</Label>
+                  <Input
+                    id="projectName"
+                    value={currentData.general.projectName}
+                    onChange={(e) => handleInputChange('general', 'projectName', e.target.value)}
+                    placeholder="Enter project name"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="projectType">Project Type</Label>
+                  <Select
+                    value={currentData.general.projectType}
+                    onValueChange={(value) => handleInputChange('general', 'projectType', value)}
+                  >
+                    <SelectTrigger id="projectType">
+                      <SelectValue placeholder="Select type" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="residential">Residential</SelectItem>
+                      <SelectItem value="commercial">Commercial</SelectItem>
+                      <SelectItem value="mixed">Mixed Use</SelectItem>
+                      <SelectItem value="industrial">Industrial</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="location">Location</Label>
+                  <Input
+                    id="location"
+                    value={currentData.general.location}
+                    onChange={(e) => handleInputChange('general', 'location', e.target.value)}
+                    placeholder="Enter location"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="city">City</Label>
+                  <Input
+                    id="city"
+                    value={currentData.general.city}
+                    onChange={(e) => handleInputChange('general', 'city', e.target.value)}
+                    placeholder="Enter city"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="state">State</Label>
+                  <Input
+                    id="state"
+                    value={currentData.general.state}
+                    onChange={(e) => handleInputChange('general', 'state', e.target.value)}
+                    placeholder="Enter state"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="pincode">Pincode</Label>
+                  <Input
+                    id="pincode"
+                    value={currentData.general.pincode}
+                    onChange={(e) => handleInputChange('general', 'pincode', e.target.value)}
+                    placeholder="Enter pincode"
+                  />
+                </div>
+                <div className="col-span-2 space-y-2">
+                  <Label htmlFor="nearbyLandmarks">Nearby Landmarks</Label>
+                  <Textarea
+                    id="nearbyLandmarks"
+                    value={currentData.general.nearbyLandmarks}
+                    onChange={(e) => handleInputChange('general', 'nearbyLandmarks', e.target.value)}
+                    placeholder="Enter nearby landmarks"
+                    rows={3}
+                  />
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          {/* Plot Tab */}
+          <TabsContent value="plot" className="space-y-4">
+            <Card>
+              <CardHeader>
+                <CardTitle>Plot & Land Details</CardTitle>
+                <CardDescription>Land specifications and setback requirements</CardDescription>
+              </CardHeader>
+              <CardContent className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="totalArea">Total Plot Area</Label>
+                  <Input
+                    id="totalArea"
+                    value={currentData.plot.totalArea}
+                    onChange={(e) => handleInputChange('plot', 'totalArea', e.target.value)}
+                    placeholder="e.g., 12,500 sq ft"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="plotDimensions">Plot Dimensions</Label>
+                  <Input
+                    id="plotDimensions"
+                    value={currentData.plot.plotDimensions}
+                    onChange={(e) => handleInputChange('plot', 'plotDimensions', e.target.value)}
+                    placeholder="e.g., 100 x 125 ft"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="facing">Facing</Label>
+                  <Select
+                    value={currentData.plot.facing}
+                    onValueChange={(value) => handleInputChange('plot', 'facing', value)}
+                  >
+                    <SelectTrigger id="facing">
+                      <SelectValue placeholder="Select facing" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="north">North</SelectItem>
+                      <SelectItem value="south">South</SelectItem>
+                      <SelectItem value="east">East</SelectItem>
+                      <SelectItem value="west">West</SelectItem>
+                      <SelectItem value="northeast">North-East</SelectItem>
+                      <SelectItem value="northwest">North-West</SelectItem>
+                      <SelectItem value="southeast">South-East</SelectItem>
+                      <SelectItem value="southwest">South-West</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="soilType">Soil Type</Label>
+                  <Input
+                    id="soilType"
+                    value={currentData.plot.soilType}
+                    onChange={(e) => handleInputChange('plot', 'soilType', e.target.value)}
+                    placeholder="e.g., Clay Loam"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="surveyNumber">Survey Number</Label>
+                  <Input
+                    id="surveyNumber"
+                    value={currentData.plot.surveyNumber}
+                    onChange={(e) => handleInputChange('plot', 'surveyNumber', e.target.value)}
+                    placeholder="Enter survey number"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="zoning">Zoning</Label>
+                  <Input
+                    id="zoning"
+                    value={currentData.plot.zoning}
+                    onChange={(e) => handleInputChange('plot', 'zoning', e.target.value)}
+                    placeholder="e.g., Commercial Mixed Use"
+                  />
+                </div>
+                <div className="col-span-2">
+                  <h4 className="font-medium mb-3">Setbacks</h4>
+                  <div className="grid grid-cols-4 gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="frontSetback">Front (ft)</Label>
+                      <Input
+                        id="frontSetback"
+                        value={currentData.plot.setbacks.front}
+                        onChange={(e) => handleInputChange('plot', 'setbacks', {...currentData.plot.setbacks, front: e.target.value})}
+                        placeholder="20"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="rearSetback">Rear (ft)</Label>
+                      <Input
+                        id="rearSetback"
+                        value={currentData.plot.setbacks.rear}
+                        onChange={(e) => handleInputChange('plot', 'setbacks', {...currentData.plot.setbacks, rear: e.target.value})}
+                        placeholder="15"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="leftSetback">Left (ft)</Label>
+                      <Input
+                        id="leftSetback"
+                        value={currentData.plot.setbacks.left}
+                        onChange={(e) => handleInputChange('plot', 'setbacks', {...currentData.plot.setbacks, left: e.target.value})}
+                        placeholder="10"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="rightSetback">Right (ft)</Label>
+                      <Input
+                        id="rightSetback"
+                        value={currentData.plot.setbacks.right}
+                        onChange={(e) => handleInputChange('plot', 'setbacks', {...currentData.plot.setbacks, right: e.target.value})}
+                        placeholder="10"
+                      />
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          {/* Add more TabsContent for other tabs (building, elevation, interiors, etc.) */}
+          {/* ... Similar implementation for other tabs ... */}
+
+        </Tabs>
+      </div>
+    );
+  }
+
+  // View Mode - Display saved requirements
   return (
-    <div className="space-y-8">
-      {/* Clean Header */}
-      <div className="flex items-center justify-between pb-6 border-b">
+    <div className="space-y-6">
+      {/* Header */}
+      <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-2xl font-semibold text-gray-900">Project Details</h2>
-          <p className="text-sm text-gray-500 mt-1">
-            Complete project information and specifications
+          <h2 className="text-2xl font-bold">Project Requirements</h2>
+          <p className="text-muted-foreground">
+            Complete project specifications from plot to interior details
           </p>
         </div>
-        <div className="flex items-center gap-3">
-          {!isEditMode ? (
-            <>
-              <Button variant="outline" size="sm">
-                <Download className="h-4 w-4 mr-2" />
-                Export
-              </Button>
-              <Button size="sm" onClick={handleEdit}>
-                <Edit className="h-4 w-4 mr-2" />
-                Edit
-              </Button>
-            </>
-          ) : (
-            <>
-              <Button variant="outline" size="sm" onClick={handleCancel}>
-                Cancel
-              </Button>
-              <Button size="sm" onClick={handleSave}>
-                <CheckCircle className="h-4 w-4 mr-2" />
-                Save
-              </Button>
-            </>
-          )}
+        <div className="flex gap-2">
+          <Button variant="outline" size="sm">
+            <Download className="h-4 w-4 mr-2" />
+            Export
+          </Button>
+          <Button size="sm" onClick={handleEdit}>
+            <Edit className="h-4 w-4 mr-2" />
+            Edit Requirements
+          </Button>
         </div>
       </div>
 
-      {/* Main Content Grid */}
-      <div className="grid grid-cols-12 gap-6">
-        {/* Left Column - Key Metrics */}
-        <div className="col-span-12 lg:col-span-3 space-y-6">
-          {/* Quick Stats */}
-          <Card>
-            <CardHeader className="pb-3">
-              <CardTitle className="text-base font-medium">Quick Stats</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
+      {/* Requirements Grid View */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* General Information */}
+        <Card>
+          <CardHeader className="pb-3">
+            <CardTitle className="text-lg flex items-center gap-2">
+              <Info className="h-5 w-5" />
+              General Information
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            <div className="grid grid-cols-2 gap-4">
               <div>
-                <p className="text-sm text-gray-500">Total Area</p>
-                <p className="text-xl font-semibold">{details.plot.size}</p>
+                <p className="text-sm text-muted-foreground">Project Name</p>
+                <p className="font-medium">{currentData.general.projectName || 'Sky Tower Complex'}</p>
               </div>
               <div>
-                <p className="text-sm text-gray-500">Total Units</p>
-                <p className="text-xl font-semibold">{details.structure.totalUnits}</p>
+                <p className="text-sm text-muted-foreground">Project Type</p>
+                <p className="font-medium">{currentData.general.projectType || 'Mixed Use'}</p>
               </div>
               <div>
-                <p className="text-sm text-gray-500">Total Floors</p>
-                <p className="text-xl font-semibold">{details.structure.floors}</p>
+                <p className="text-sm text-muted-foreground">Location</p>
+                <p className="font-medium">{currentData.general.location || 'Manhattan, New York'}</p>
               </div>
               <div>
-                <p className="text-sm text-gray-500">Project Value</p>
-                <p className="text-xl font-semibold">{details.financial.totalProjectCost}</p>
+                <p className="text-sm text-muted-foreground">City</p>
+                <p className="font-medium">{currentData.general.city || 'New York'}</p>
               </div>
-              <div>
-                <p className="text-sm text-gray-500">Expected ROI</p>
-                <p className="text-xl font-semibold text-green-600">{details.financial.expectedROI}</p>
-              </div>
-            </CardContent>
-          </Card>
+            </div>
+          </CardContent>
+        </Card>
 
-          {/* Project Status */}
-          <Card>
-            <CardHeader className="pb-3">
-              <CardTitle className="text-base font-medium">Project Status</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-3">
-                <div className="flex items-center justify-between">
-                  <span className="text-sm">Design</span>
-                  <Badge variant="outline" className="text-xs">Approved</Badge>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-sm">Permits</span>
-                  <Badge variant="outline" className="text-xs">Active</Badge>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-sm">Construction</span>
-                  <Badge variant="outline" className="text-xs">In Progress</Badge>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-sm">Handover</span>
-                  <Badge variant="outline" className="text-xs">Dec 2025</Badge>
-                </div>
+        {/* Plot Details */}
+        <Card>
+          <CardHeader className="pb-3">
+            <CardTitle className="text-lg flex items-center gap-2">
+              <MapPin className="h-5 w-5" />
+              Plot & Land
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <p className="text-sm text-muted-foreground">Total Area</p>
+                <p className="font-medium">{currentData.plot.totalArea || '12,500 sq ft'}</p>
               </div>
-            </CardContent>
-          </Card>
-        </div>
+              <div>
+                <p className="text-sm text-muted-foreground">Dimensions</p>
+                <p className="font-medium">{currentData.plot.plotDimensions || '100 x 125 ft'}</p>
+              </div>
+              <div>
+                <p className="text-sm text-muted-foreground">Facing</p>
+                <p className="font-medium">{currentData.plot.facing || 'North-East'}</p>
+              </div>
+              <div>
+                <p className="text-sm text-muted-foreground">Zoning</p>
+                <p className="font-medium">{currentData.plot.zoning || 'Commercial Mixed Use'}</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
 
-        {/* Right Column - Detailed Information */}
-        <div className="col-span-12 lg:col-span-9 space-y-6">
-          {/* Plot Information */}
-          <Card>
-            <CardHeader>
-              <div className="flex items-center gap-2">
-                <MapPin className="h-4 w-4 text-gray-500" />
-                <CardTitle className="text-lg">Plot Information</CardTitle>
+        {/* Building Configuration */}
+        <Card>
+          <CardHeader className="pb-3">
+            <CardTitle className="text-lg flex items-center gap-2">
+              <Building2 className="h-5 w-5" />
+              Building Configuration
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            <div className="grid grid-cols-3 gap-4">
+              <div className="text-center p-3 bg-gray-50 rounded">
+                <p className="text-2xl font-bold">{currentData.building.totalFloors || '45'}</p>
+                <p className="text-xs text-muted-foreground">Floors</p>
               </div>
-            </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-2 md:grid-cols-3 gap-x-8 gap-y-4">
-                <div>
-                  <dt className="text-sm text-gray-500">Plot Size</dt>
-                  <dd className="mt-1 text-sm font-medium">{details.plot.size}</dd>
-                </div>
-                <div>
-                  <dt className="text-sm text-gray-500">Dimensions</dt>
-                  <dd className="mt-1 text-sm font-medium">{details.plot.dimensions}</dd>
-                </div>
-                <div>
-                  <dt className="text-sm text-gray-500">Facing</dt>
-                  <dd className="mt-1 text-sm font-medium">{details.plot.facing}</dd>
-                </div>
-                <div>
-                  <dt className="text-sm text-gray-500">Soil Type</dt>
-                  <dd className="mt-1 text-sm font-medium">{details.plot.soilType}</dd>
-                </div>
-                <div>
-                  <dt className="text-sm text-gray-500">Survey Number</dt>
-                  <dd className="mt-1 text-sm font-medium">{details.plot.surveyNumber}</dd>
-                </div>
-                <div>
-                  <dt className="text-sm text-gray-500">Zoning</dt>
-                  <dd className="mt-1 text-sm font-medium">{details.plot.zoning}</dd>
-                </div>
+              <div className="text-center p-3 bg-gray-50 rounded">
+                <p className="text-2xl font-bold">{currentData.units.totalUnits || '240'}</p>
+                <p className="text-xs text-muted-foreground">Units</p>
               </div>
-            </CardContent>
-          </Card>
+              <div className="text-center p-3 bg-gray-50 rounded">
+                <p className="text-2xl font-bold">{currentData.building.towers || '2'}</p>
+                <p className="text-xs text-muted-foreground">Towers</p>
+              </div>
+            </div>
+            <div className="grid grid-cols-2 gap-4 mt-3">
+              <div>
+                <p className="text-sm text-muted-foreground">Built-up Area</p>
+                <p className="font-medium">{currentData.building.totalBuiltUpArea || '450,000 sq ft'}</p>
+              </div>
+              <div>
+                <p className="text-sm text-muted-foreground">Carpet Area</p>
+                <p className="font-medium">{currentData.building.totalCarpetArea || '320,000 sq ft'}</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
 
-          {/* Design & Architecture */}
-          <Card>
-            <CardHeader>
-              <div className="flex items-center gap-2">
-                <Palette className="h-4 w-4 text-gray-500" />
-                <CardTitle className="text-lg">Design & Architecture</CardTitle>
+        {/* Elevation & Design */}
+        <Card>
+          <CardHeader className="pb-3">
+            <CardTitle className="text-lg flex items-center gap-2">
+              <Palette className="h-5 w-5" />
+              Elevation & Design
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <p className="text-sm text-muted-foreground">Architectural Style</p>
+                <p className="font-medium">{currentData.elevation.architecturalStyle || 'Modern Contemporary'}</p>
               </div>
-            </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-2 md:grid-cols-3 gap-x-8 gap-y-4">
-                <div>
-                  <dt className="text-sm text-gray-500">Architect</dt>
-                  <dd className="mt-1 text-sm font-medium">{details.design.architect}</dd>
-                </div>
-                <div>
-                  <dt className="text-sm text-gray-500">Structural Engineer</dt>
-                  <dd className="mt-1 text-sm font-medium">{details.design.structuralEngineer}</dd>
-                </div>
-                <div>
-                  <dt className="text-sm text-gray-500">Design Style</dt>
-                  <dd className="mt-1 text-sm font-medium">{details.design.designStyle}</dd>
-                </div>
-                <div>
-                  <dt className="text-sm text-gray-500">MEP Consultant</dt>
-                  <dd className="mt-1 text-sm font-medium">{details.design.mepConsultant}</dd>
-                </div>
-                <div>
-                  <dt className="text-sm text-gray-500">Sustainability Rating</dt>
-                  <dd className="mt-1">
-                    <Badge variant="secondary" className="text-xs">
-                      {details.design.sustainabilityRating}
-                    </Badge>
-                  </dd>
-                </div>
-                <div>
-                  <dt className="text-sm text-gray-500">Permit Number</dt>
-                  <dd className="mt-1 text-sm font-medium">{details.design.permitNumber}</dd>
-                </div>
+              <div>
+                <p className="text-sm text-muted-foreground">Facade Material</p>
+                <p className="font-medium">{currentData.elevation.facadeMaterial || 'Glass & ACP'}</p>
               </div>
-            </CardContent>
-          </Card>
+              <div>
+                <p className="text-sm text-muted-foreground">Entrance Lobby</p>
+                <p className="font-medium">{currentData.elevation.entranceLobby || 'Double Height'}</p>
+              </div>
+              <div>
+                <p className="text-sm text-muted-foreground">External Finish</p>
+                <p className="font-medium">{currentData.elevation.externalFinish || 'Premium Texture Paint'}</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
 
-          {/* Structure & Construction */}
-          <Card>
-            <CardHeader>
-              <div className="flex items-center gap-2">
-                <Building2 className="h-4 w-4 text-gray-500" />
-                <CardTitle className="text-lg">Structure & Construction</CardTitle>
-              </div>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-6">
-                {/* Area Breakdown */}
-                <div>
-                  <h4 className="text-sm font-medium text-gray-700 mb-3">Area Breakdown</h4>
-                  <div className="grid grid-cols-3 gap-4">
-                    <div className="bg-gray-50 p-3 rounded">
-                      <p className="text-xs text-gray-500">Built-up</p>
-                      <p className="text-sm font-semibold mt-1">{details.structure.builtUpArea}</p>
-                    </div>
-                    <div className="bg-gray-50 p-3 rounded">
-                      <p className="text-xs text-gray-500">Carpet</p>
-                      <p className="text-sm font-semibold mt-1">{details.structure.carpetArea}</p>
-                    </div>
-                    <div className="bg-gray-50 p-3 rounded">
-                      <p className="text-xs text-gray-500">Common</p>
-                      <p className="text-sm font-semibold mt-1">{details.structure.commonArea}</p>
-                    </div>
+        {/* Interior Specifications */}
+        <Card className="lg:col-span-2">
+          <CardHeader className="pb-3">
+            <CardTitle className="text-lg flex items-center gap-2">
+              <Home className="h-5 w-5" />
+              Interior Specifications
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <Tabs defaultValue="living" className="w-full">
+              <TabsList className="grid grid-cols-5 w-full">
+                <TabsTrigger value="living">Living</TabsTrigger>
+                <TabsTrigger value="bedrooms">Bedrooms</TabsTrigger>
+                <TabsTrigger value="kitchen">Kitchen</TabsTrigger>
+                <TabsTrigger value="bathrooms">Bathrooms</TabsTrigger>
+                <TabsTrigger value="electrical">Electrical</TabsTrigger>
+              </TabsList>
+              <TabsContent value="living" className="space-y-3 mt-4">
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <p className="text-sm text-muted-foreground">Flooring</p>
+                    <p className="font-medium">{currentData.interiors.livingFlooring || 'Vitrified Tiles'}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-muted-foreground">Walls</p>
+                    <p className="font-medium">{currentData.interiors.livingWalls || 'Premium Emulsion Paint'}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-muted-foreground">Ceiling</p>
+                    <p className="font-medium">{currentData.interiors.livingCeiling || 'POP False Ceiling'}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-muted-foreground">Electrical</p>
+                    <p className="font-medium">{currentData.interiors.livingElectrical || 'Modular Switches'}</p>
                   </div>
                 </div>
-
-                {/* Structure Details */}
-                <div>
-                  <h4 className="text-sm font-medium text-gray-700 mb-3">Structure Details</h4>
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                    <div>
-                      <dt className="text-sm text-gray-500">Type</dt>
-                      <dd className="mt-1 text-sm font-medium">{details.structure.type}</dd>
-                    </div>
-                    <div>
-                      <dt className="text-sm text-gray-500">Foundation</dt>
-                      <dd className="mt-1 text-sm font-medium">{details.structure.foundation}</dd>
-                    </div>
-                    <div>
-                      <dt className="text-sm text-gray-500">Floors</dt>
-                      <dd className="mt-1 text-sm font-medium">{details.structure.floors}</dd>
-                    </div>
-                    <div>
-                      <dt className="text-sm text-gray-500">Basements</dt>
-                      <dd className="mt-1 text-sm font-medium">{details.structure.basements}</dd>
-                    </div>
+              </TabsContent>
+              <TabsContent value="kitchen" className="space-y-3 mt-4">
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <p className="text-sm text-muted-foreground">Platform</p>
+                    <p className="font-medium">{currentData.interiors.kitchenPlatform || 'Granite Platform'}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-muted-foreground">Sink</p>
+                    <p className="font-medium">{currentData.interiors.kitchenSink || 'Stainless Steel Sink'}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-muted-foreground">Cabinets</p>
+                    <p className="font-medium">{currentData.interiors.kitchenCabinets || 'Modular Kitchen'}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-muted-foreground">Appliances</p>
+                    <p className="font-medium">{currentData.interiors.kitchenAppliances || 'Chimney & Hob'}</p>
                   </div>
                 </div>
-              </div>
-            </CardContent>
-          </Card>
+              </TabsContent>
+              <TabsContent value="bathrooms" className="space-y-3 mt-4">
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <p className="text-sm text-muted-foreground">Flooring</p>
+                    <p className="font-medium">{currentData.interiors.bathroomFlooring || 'Anti-skid Tiles'}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-muted-foreground">Sanitary</p>
+                    <p className="font-medium">{currentData.interiors.bathroomSanitary || 'Premium Sanitary Ware'}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-muted-foreground">Fittings</p>
+                    <p className="font-medium">{currentData.interiors.bathroomFittings || 'CP Fittings'}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-muted-foreground">Geyser</p>
+                    <p className="font-medium">{currentData.interiors.bathroomGeyser || 'Provision for Geyser'}</p>
+                  </div>
+                </div>
+              </TabsContent>
+            </Tabs>
+          </CardContent>
+        </Card>
 
-          {/* Unit Types */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <Card>
-              <CardHeader>
-                <div className="flex items-center gap-2">
-                  <Home className="h-4 w-4 text-gray-500" />
-                  <CardTitle className="text-lg">Residential Units</CardTitle>
-                </div>
-              </CardHeader>
-              <CardContent>
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead className="text-xs">Type</TableHead>
-                      <TableHead className="text-xs text-center">Units</TableHead>
-                      <TableHead className="text-xs">Area</TableHead>
-                      <TableHead className="text-xs text-right">Price</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {details.units.residential.map((unit: any, index: number) => (
-                      <TableRow key={index}>
-                        <TableCell className="font-medium text-sm">{unit.type}</TableCell>
-                        <TableCell className="text-center text-sm">{unit.count}</TableCell>
-                        <TableCell className="text-sm">{unit.area}</TableCell>
-                        <TableCell className="text-right text-sm font-medium">{unit.price}</TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader>
-                <div className="flex items-center gap-2">
-                  <Briefcase className="h-4 w-4 text-gray-500" />
-                  <CardTitle className="text-lg">Commercial Units</CardTitle>
-                </div>
-              </CardHeader>
-              <CardContent>
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead className="text-xs">Type</TableHead>
-                      <TableHead className="text-xs text-center">Units</TableHead>
-                      <TableHead className="text-xs">Area</TableHead>
-                      <TableHead className="text-xs text-right">Price</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {details.units.commercial.map((unit: any, index: number) => (
-                      <TableRow key={index}>
-                        <TableCell className="font-medium text-sm">{unit.type}</TableCell>
-                        <TableCell className="text-center text-sm">{unit.count}</TableCell>
-                        <TableCell className="text-sm">{unit.area}</TableCell>
-                        <TableCell className="text-right text-sm font-medium">{unit.price}</TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </CardContent>
-            </Card>
-          </div>
-
-          {/* Specifications & Amenities */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <Card>
-              <CardHeader>
-                <div className="flex items-center gap-2">
-                  <Settings className="h-4 w-4 text-gray-500" />
-                  <CardTitle className="text-lg">Specifications</CardTitle>
-                </div>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-3">
-                  {Object.entries(details.specifications).slice(0, 5).map(([key, value]) => (
-                    <div key={key} className="flex justify-between items-start py-2 border-b last:border-0">
-                      <span className="text-sm text-gray-600 capitalize">
-                        {key.replace(/([A-Z])/g, ' $1').trim()}
-                      </span>
-                      <span className="text-sm font-medium text-gray-900 text-right max-w-[60%]">
-                        {value}
-                      </span>
-                    </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader>
-                <div className="flex items-center gap-2">
-                  <Star className="h-4 w-4 text-gray-500" />
-                  <CardTitle className="text-lg">Amenities</CardTitle>
-                </div>
-              </CardHeader>
-              <CardContent>
+        {/* Amenities */}
+        <Card className="lg:col-span-2">
+          <CardHeader className="pb-3">
+            <CardTitle className="text-lg flex items-center gap-2">
+              <Star className="h-5 w-5" />
+              Amenities & Facilities
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              <div>
+                <h4 className="font-medium text-sm mb-2">Sports & Fitness</h4>
                 <div className="flex flex-wrap gap-2">
-                  {details.amenities.slice(0, 12).map((amenity: string, index: number) => (
-                    <Badge key={index} variant="secondary" className="text-xs">
-                      {amenity}
-                    </Badge>
-                  ))}
+                  {currentData.amenities.swimmingPool && <Badge variant="secondary">Swimming Pool</Badge>}
+                  {currentData.amenities.gymnasium && <Badge variant="secondary">Gymnasium</Badge>}
+                  {currentData.amenities.yogaRoom && <Badge variant="secondary">Yoga Room</Badge>}
+                  {currentData.amenities.joggingTrack && <Badge variant="secondary">Jogging Track</Badge>}
                 </div>
-              </CardContent>
-            </Card>
-          </div>
-
-          {/* Timeline & Financial */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <Card>
-              <CardHeader>
-                <div className="flex items-center gap-2">
-                  <Clock className="h-4 w-4 text-gray-500" />
-                  <CardTitle className="text-lg">Project Timeline</CardTitle>
-                </div>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-sm font-medium">Project Start</p>
-                      <p className="text-xs text-gray-500">Foundation & Structure</p>
-                    </div>
-                    <span className="text-sm font-medium">
-                      {format(new Date(details.timeline.projectStart), 'MMM yyyy')}
-                    </span>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-sm font-medium">Structure Complete</p>
-                      <p className="text-xs text-gray-500">Main Building Work</p>
-                    </div>
-                    <span className="text-sm font-medium">
-                      {format(new Date(details.timeline.structureComplete), 'MMM yyyy')}
-                    </span>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-sm font-medium">Finishing Works</p>
-                      <p className="text-xs text-gray-500">Interior & Exterior</p>
-                    </div>
-                    <span className="text-sm font-medium">
-                      {format(new Date(details.timeline.finishingComplete), 'MMM yyyy')}
-                    </span>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-sm font-medium">Handover</p>
-                      <p className="text-xs text-gray-500">Ready for Possession</p>
-                    </div>
-                    <span className="text-sm font-medium text-green-600">
-                      {format(new Date(details.timeline.handover), 'MMM yyyy')}
-                    </span>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader>
-                <div className="flex items-center gap-2">
-                  <DollarSign className="h-4 w-4 text-gray-500" />
-                  <CardTitle className="text-lg">Financial Summary</CardTitle>
-                </div>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  <div className="flex justify-between items-center">
-                    <span className="text-sm text-gray-600">Land Cost</span>
-                    <span className="text-sm font-medium">{details.financial.landCost}</span>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className="text-sm text-gray-600">Construction Cost</span>
-                    <span className="text-sm font-medium">{details.financial.constructionCost}</span>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className="text-sm text-gray-600">Other Costs</span>
-                    <span className="text-sm font-medium">{details.financial.otherCosts}</span>
-                  </div>
-                  <div className="pt-3 border-t">
-                    <div className="flex justify-between items-center">
-                      <span className="text-sm font-medium">Total Investment</span>
-                      <span className="text-base font-semibold">{details.financial.totalProjectCost}</span>
-                    </div>
-                    <div className="flex justify-between items-center mt-2">
-                      <span className="text-sm font-medium">Expected Revenue</span>
-                      <span className="text-base font-semibold text-green-600">{details.financial.expectedRevenue}</span>
-                    </div>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-
-          {/* Compliance Grid */}
-          {(
-          <Card>
-            <CardHeader>
-              <div className="flex items-center gap-2">
-                <Shield className="h-4 w-4 text-gray-500" />
-                <CardTitle className="text-lg">Compliance & Approvals</CardTitle>
               </div>
-            </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                {Object.entries(details.compliance).map(([key, value]: [string, any]) => (
-                  <div key={key} className="">
-                    <dt className="text-xs text-gray-500 mb-1">
-                      {key.replace(/([A-Z])/g, ' $1').trim()}
-                    </dt>
-                    <dd className="flex items-center gap-2">
-                      <span className="text-sm font-medium">{value}</span>
-                      {value === 'Approved' && (
-                        <CheckCircle className="h-3 w-3 text-green-500" />
-                      )}
-                      {value === 'Pending' && (
-                        <Clock className="h-3 w-3 text-yellow-500" />
-                      )}
-                    </dd>
-                  </div>
-                ))}
+              <div>
+                <h4 className="font-medium text-sm mb-2">Community</h4>
+                <div className="flex flex-wrap gap-2">
+                  {currentData.amenities.clubhouse && <Badge variant="secondary">Clubhouse</Badge>}
+                  {currentData.amenities.partyHall && <Badge variant="secondary">Party Hall</Badge>}
+                  {currentData.amenities.library && <Badge variant="secondary">Library</Badge>}
+                  {currentData.amenities.businessCenter && <Badge variant="secondary">Business Center</Badge>}
+                </div>
               </div>
-            </CardContent>
-          </Card>
-        </div>
+              <div>
+                <h4 className="font-medium text-sm mb-2">Security & Safety</h4>
+                <div className="flex flex-wrap gap-2">
+                  {currentData.amenities.gatedCommunity && <Badge variant="secondary">Gated Community</Badge>}
+                  {currentData.amenities.cctv && <Badge variant="secondary">CCTV Surveillance</Badge>}
+                  {currentData.amenities.intercom && <Badge variant="secondary">Intercom</Badge>}
+                  {currentData.amenities.fireAlarm && <Badge variant="secondary">Fire Safety</Badge>}
+                </div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Parking */}
+        <Card>
+          <CardHeader className="pb-3">
+            <CardTitle className="text-lg flex items-center gap-2">
+              <Square className="h-5 w-5" />
+              Parking & Transportation
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <p className="text-sm text-muted-foreground">Total Parking</p>
+                <p className="font-medium">{currentData.parking.totalParkingSpaces || '480 Spaces'}</p>
+              </div>
+              <div>
+                <p className="text-sm text-muted-foreground">Covered Parking</p>
+                <p className="font-medium">{currentData.parking.coveredParking || '400 Spaces'}</p>
+              </div>
+              <div>
+                <p className="text-sm text-muted-foreground">Visitor Parking</p>
+                <p className="font-medium">{currentData.parking.visitorParking || '50 Spaces'}</p>
+              </div>
+              <div>
+                <p className="text-sm text-muted-foreground">Two-wheeler</p>
+                <p className="font-medium">{currentData.parking.twowheelerParking || '100 Spaces'}</p>
+              </div>
+            </div>
+            {currentData.parking.evChargingStations && (
+              <Badge variant="outline" className="mt-2">
+                <Zap className="h-3 w-3 mr-1" />
+                EV Charging Stations Available
+              </Badge>
+            )}
+          </CardContent>
+        </Card>
+
+        {/* Compliance */}
+        <Card>
+          <CardHeader className="pb-3">
+            <CardTitle className="text-lg flex items-center gap-2">
+              <Shield className="h-5 w-5" />
+              Compliance & Approvals
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            <div className="space-y-2">
+              <div className="flex items-center justify-between">
+                <span className="text-sm text-muted-foreground">RERA Registration</span>
+                <Badge variant="outline" className="text-xs">
+                  {currentData.compliance.reraRegistration || 'RERA/2024/001'}
+                </Badge>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-sm text-muted-foreground">Environmental Clearance</span>
+                <Badge variant="outline" className="text-xs">
+                  {currentData.compliance.environmentalClearance || 'EC-2024-123'}
+                </Badge>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-sm text-muted-foreground">Fire Safety</span>
+                <Badge variant="outline" className="text-xs">
+                  {currentData.compliance.fireSafetyCertificate || 'Approved'}
+                </Badge>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-sm text-muted-foreground">Occupancy Certificate</span>
+                <Badge variant="outline" className="text-xs">
+                  {currentData.compliance.occupancyCertificate || 'Pending'}
+                </Badge>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
       </div>
     </div>
   );
 }
 
-export function ReportsTab({ project }: { project: any }) {
+export function ReportsTab
+({ project }: { project: any }) {
   return (
     <div className="space-y-6">
       {/* Reports Header */}
@@ -1504,40 +1871,302 @@ export function ReportsTab({ project }: { project: any }) {
           </CardContent>
         </Card>
       </div>
+      {/* Unit Types */}
+      {(activeSection === 'units' || activeSection === 'all') && (
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <Card className="overflow-hidden border-0 shadow-xl hover:shadow-2xl transition-shadow duration-300">
+            <div className="bg-gradient-to-r from-indigo-500 to-indigo-600 p-1" />
+            <CardHeader className="bg-gradient-to-br from-indigo-50 to-white">
+              <CardTitle className="flex items-center gap-3">
+                <div className="p-2 bg-indigo-100 rounded-lg">
+                  <Home className="h-5 w-5 text-indigo-600" />
+                </div>
+                <span className="text-xl">Residential Units</span>
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="p-0">
+              <Table>
+                <TableHeader>
+                  <TableRow className="bg-gray-50">
+                    <TableHead className="font-semibold">Type</TableHead>
+                    <TableHead className="font-semibold text-center">Count</TableHead>
+                    <TableHead className="font-semibold">Area</TableHead>
+                    <TableHead className="font-semibold">Price</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {details.units.residential.map((unit: any, index: number) => (
+                    <TableRow key={index} className="hover:bg-indigo-50/50 transition-colors">
+                      <TableCell className="font-medium">
+                        <div className="flex items-center gap-2">
+                          {unit.type === 'Penthouse' && <Star className="h-4 w-4 text-yellow-500" />}
+                          {unit.type}
+                        </div>
+                      </TableCell>
+                      <TableCell className="text-center">
+                        <Badge variant="secondary">{unit.count}</Badge>
+                      </TableCell>
+                      <TableCell className="text-sm">{unit.area}</TableCell>
+                      <TableCell className="font-semibold text-indigo-600">{unit.price}</TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </CardContent>
+          </Card>
 
-      {/* Available Reports */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        <Card className="cursor-pointer hover:shadow-md transition-shadow">
-          <CardContent className="p-6">
-            <BarChart3 className="h-12 w-12 mb-4 text-blue-600" />
-            <h3 className="font-semibold mb-2">Weekly Progress Report</h3>
-            <p className="text-sm text-muted-foreground mb-4">
-              Detailed weekly progress analysis with milestone tracking
-            </p>
-            <Button className="w-full">Generate Report</Button>
+          <Card className="overflow-hidden border-0 shadow-xl hover:shadow-2xl transition-shadow duration-300">
+            <div className="bg-gradient-to-r from-teal-500 to-teal-600 p-1" />
+            <CardHeader className="bg-gradient-to-br from-teal-50 to-white">
+              <CardTitle className="flex items-center gap-3">
+                <div className="p-2 bg-teal-100 rounded-lg">
+                  <Briefcase className="h-5 w-5 text-teal-600" />
+                </div>
+                <span className="text-xl">Commercial Units</span>
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="p-0">
+              <Table>
+                <TableHeader>
+                  <TableRow className="bg-gray-50">
+                    <TableHead className="font-semibold">Type</TableHead>
+                    <TableHead className="font-semibold text-center">Count</TableHead>
+                    <TableHead className="font-semibold">Area</TableHead>
+                    <TableHead className="font-semibold">Price</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {details.units.commercial.map((unit: any, index: number) => (
+                    <TableRow key={index} className="hover:bg-teal-50/50 transition-colors">
+                      <TableCell className="font-medium">{unit.type}</TableCell>
+                      <TableCell className="text-center">
+                        <Badge variant="secondary">{unit.count}</Badge>
+                      </TableCell>
+                      <TableCell className="text-sm">{unit.area}</TableCell>
+                      <TableCell className="font-semibold text-teal-600">{unit.price}</TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </CardContent>
+          </Card>
+        </div>
+      )}
+
+      {/* Specifications */}
+      {(activeSection === 'specs' || activeSection === 'all') && (
+        <Card className="overflow-hidden border-0 shadow-xl hover:shadow-2xl transition-shadow duration-300">
+          <div className="bg-gradient-to-r from-gray-600 to-gray-700 p-1" />
+          <CardHeader className="bg-gradient-to-br from-gray-50 to-white">
+            <CardTitle className="flex items-center gap-3">
+              <div className="p-2 bg-gray-100 rounded-lg">
+                <Settings className="h-5 w-5 text-gray-600" />
+              </div>
+              <span className="text-xl">Technical Specifications</span>
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="pt-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {Object.entries(details.specifications).map(([key, value]) => (
+                <div key={key} className="group p-4 border rounded-lg hover:border-primary hover:bg-gray-50 transition-all">
+                  <Label className="text-xs uppercase tracking-wide text-muted-foreground mb-2 flex items-center gap-1">
+                    {key === 'security' && <Shield className="h-3 w-3" />}
+                    {key === 'elevator' && <ArrowUp className="h-3 w-3" />}
+                    {key.replace(/([A-Z])/g, ' $1').trim()}
+                  </Label>
+                  <p className="font-medium text-gray-800 group-hover:text-primary transition-colors">{value}</p>
+                </div>
+              ))}
+            </div>
           </CardContent>
         </Card>
-        <Card className="cursor-pointer hover:shadow-md transition-shadow">
-          <CardContent className="p-6">
-            <DollarSign className="h-12 w-12 mb-4 text-green-600" />
-            <h3 className="font-semibold mb-2">Financial Summary</h3>
-            <p className="text-sm text-muted-foreground mb-4">
-              Complete financial overview with budget analysis
-            </p>
-            <Button className="w-full">Generate Report</Button>
+      )}
+
+      {/* Amenities */}
+      {(activeSection === 'amenities' || activeSection === 'all') && (
+        <Card className="overflow-hidden border-0 shadow-xl hover:shadow-2xl transition-shadow duration-300">
+          <div className="bg-gradient-to-r from-emerald-500 to-emerald-600 p-1" />
+          <CardHeader className="bg-gradient-to-br from-emerald-50 to-white">
+            <CardTitle className="flex items-center gap-3">
+              <div className="p-2 bg-emerald-100 rounded-lg">
+                <Star className="h-5 w-5 text-emerald-600" />
+              </div>
+              <span className="text-xl">Premium Amenities</span>
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="pt-6">
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+              {details.amenities.map((amenity: string, index: number) => (
+                <div
+                  key={index}
+                  className="flex items-center gap-3 p-3 bg-gradient-to-r from-emerald-50 to-green-50 rounded-lg hover:from-emerald-100 hover:to-green-100 transition-colors cursor-pointer"
+                >
+                  <CheckCircle className="h-5 w-5 text-emerald-600 flex-shrink-0" />
+                  <span className="text-sm font-medium text-gray-700">{amenity}</span>
+                </div>
+              ))}
+            </div>
           </CardContent>
         </Card>
-        <Card className="cursor-pointer hover:shadow-md transition-shadow">
-          <CardContent className="p-6">
-            <Shield className="h-12 w-12 mb-4 text-orange-600" />
-            <h3 className="font-semibold mb-2">Safety & Compliance</h3>
-            <p className="text-sm text-muted-foreground mb-4">
-              Safety incidents and compliance status report
-            </p>
-            <Button className="w-full">Generate Report</Button>
+      )}
+
+      {/* Timeline */}
+      {(activeSection === 'timeline' || activeSection === 'all') && (
+        <Card className="overflow-hidden border-0 shadow-xl hover:shadow-2xl transition-shadow duration-300">
+          <div className="bg-gradient-to-r from-cyan-500 to-cyan-600 p-1" />
+          <CardHeader className="bg-gradient-to-br from-cyan-50 to-white">
+            <CardTitle className="flex items-center gap-3">
+              <div className="p-2 bg-cyan-100 rounded-lg">
+                <Clock className="h-5 w-5 text-cyan-600" />
+              </div>
+              <span className="text-xl">Project Timeline</span>
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="pt-6">
+            <div className="relative">
+              <div className="absolute left-0 right-0 h-1 bg-gradient-to-r from-cyan-200 via-cyan-300 to-cyan-400 rounded-full top-12" />
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 relative">
+                <div className="text-center">
+                  <div className="w-8 h-8 bg-cyan-500 rounded-full mx-auto mb-3 border-4 border-white shadow-lg" />
+                  <Badge variant="secondary" className="mb-2">Start</Badge>
+                  <p className="font-bold text-lg">{format(new Date(details.timeline.projectStart), 'MMM dd')}</p>
+                  <p className="text-sm text-muted-foreground">{format(new Date(details.timeline.projectStart), 'yyyy')}</p>
+                </div>
+                <div className="text-center">
+                  <div className="w-8 h-8 bg-cyan-500 rounded-full mx-auto mb-3 border-4 border-white shadow-lg" />
+                  <Badge variant="secondary" className="mb-2">Structure</Badge>
+                  <p className="font-bold text-lg">{format(new Date(details.timeline.structureComplete), 'MMM dd')}</p>
+                  <p className="text-sm text-muted-foreground">{format(new Date(details.timeline.structureComplete), 'yyyy')}</p>
+                </div>
+                <div className="text-center">
+                  <div className="w-8 h-8 bg-cyan-500 rounded-full mx-auto mb-3 border-4 border-white shadow-lg" />
+                  <Badge variant="secondary" className="mb-2">Finishing</Badge>
+                  <p className="font-bold text-lg">{format(new Date(details.timeline.finishingComplete), 'MMM dd')}</p>
+                  <p className="text-sm text-muted-foreground">{format(new Date(details.timeline.finishingComplete), 'yyyy')}</p>
+                </div>
+                <div className="text-center">
+                  <div className="w-8 h-8 bg-green-500 rounded-full mx-auto mb-3 border-4 border-white shadow-lg" />
+                  <Badge className="mb-2 bg-green-100 text-green-700">Handover</Badge>
+                  <p className="font-bold text-lg">{format(new Date(details.timeline.handover), 'MMM dd')}</p>
+                  <p className="text-sm text-muted-foreground">{format(new Date(details.timeline.handover), 'yyyy')}</p>
+                </div>
+              </div>
+            </div>
           </CardContent>
         </Card>
-      </div>
+      )}
+
+      {/* Financial Details */}
+      {(activeSection === 'financial' || activeSection === 'all') && (
+        <Card className="overflow-hidden border-0 shadow-xl hover:shadow-2xl transition-shadow duration-300">
+          <div className="bg-gradient-to-r from-yellow-500 to-yellow-600 p-1" />
+          <CardHeader className="bg-gradient-to-br from-yellow-50 to-white">
+            <CardTitle className="flex items-center gap-3">
+              <div className="p-2 bg-yellow-100 rounded-lg">
+                <DollarSign className="h-5 w-5 text-yellow-600" />
+              </div>
+              <span className="text-xl">Financial Information</span>
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="pt-6">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+              <div className="text-center p-6 bg-gradient-to-br from-yellow-50 to-amber-50 rounded-xl">
+                <Label className="text-xs uppercase tracking-wide text-muted-foreground mb-2">Total Cost</Label>
+                <p className="text-3xl font-bold text-gray-800">{details.financial.totalProjectCost}</p>
+              </div>
+              <div className="text-center p-6 bg-gradient-to-br from-green-50 to-emerald-50 rounded-xl">
+                <Label className="text-xs uppercase tracking-wide text-muted-foreground mb-2">Expected Revenue</Label>
+                <p className="text-3xl font-bold text-green-600">{details.financial.expectedRevenue}</p>
+              </div>
+              <div className="text-center p-6 bg-gradient-to-br from-blue-50 to-indigo-50 rounded-xl">
+                <Label className="text-xs uppercase tracking-wide text-muted-foreground mb-2">Expected ROI</Label>
+                <p className="text-3xl font-bold text-blue-600">{details.financial.expectedROI}</p>
+              </div>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="p-4 border rounded-lg">
+                <Label className="text-xs uppercase tracking-wide text-muted-foreground">Land Cost</Label>
+                <p className="font-semibold text-lg mt-1">{details.financial.landCost}</p>
+              </div>
+              <div className="p-4 border rounded-lg">
+                <Label className="text-xs uppercase tracking-wide text-muted-foreground">Construction</Label>
+                <p className="font-semibold text-lg mt-1">{details.financial.constructionCost}</p>
+              </div>
+              <div className="p-4 border rounded-lg">
+                <Label className="text-xs uppercase tracking-wide text-muted-foreground">Loan Status</Label>
+                <p className="font-semibold text-lg mt-1">{details.financial.loanStatus}</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Compliance & Approvals */}
+      {(activeSection === 'compliance' || activeSection === 'all') && (
+        <Card className="overflow-hidden border-0 shadow-xl hover:shadow-2xl transition-shadow duration-300">
+          <div className="bg-gradient-to-r from-red-500 to-red-600 p-1" />
+          <CardHeader className="bg-gradient-to-br from-red-50 to-white">
+            <CardTitle className="flex items-center gap-3">
+              <div className="p-2 bg-red-100 rounded-lg">
+                <Shield className="h-5 w-5 text-red-600" />
+              </div>
+              <span className="text-xl">Compliance & Approvals</span>
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="pt-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {Object.entries(details.compliance).map(([key, value]: [string, any]) => (
+                <div key={key} className="p-4 border rounded-lg hover:shadow-md transition-shadow">
+                  <Label className="text-xs uppercase tracking-wide text-muted-foreground mb-2">
+                    {key.replace(/([A-Z])/g, ' $1').trim()}
+                  </Label>
+                  <div className="flex items-center justify-between">
+                    <p className="font-semibold">{value}</p>
+                    {value === 'Approved' && (
+                      <Badge className="bg-green-100 text-green-700">
+                        <CheckCircle className="h-3 w-3 mr-1" />
+                        Active
+                      </Badge>
+                    )}
+                    {value === 'Pending' && (
+                      <Badge className="bg-yellow-100 text-yellow-700">
+                        <Clock className="h-3 w-3 mr-1" />
+                        Pending
+                      </Badge>
+                    )}
+                    {value === 'Applied' && (
+                      <Badge className="bg-blue-100 text-blue-700">
+                        <ArrowRight className="h-3 w-3 mr-1" />
+                        Applied
+                      </Badge>
+                    )}
+                    {value === 'Sanctioned' && (
+                      <Badge className="bg-indigo-100 text-indigo-700">
+                        <CheckCircle className="h-3 w-3 mr-1" />
+                        Done
+                      </Badge>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* View All Button */}
+      {activeSection !== 'all' && (
+        <div className="text-center pt-4">
+          <Button
+            onClick={() => setActiveSection('all')}
+            variant="outline"
+            className="px-8"
+          >
+            View All Sections
+            <ArrowRight className="h-4 w-4 ml-2" />
+          </Button>
+        </div>
+      )}
     </div>
   );
 }

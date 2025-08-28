@@ -826,7 +826,8 @@ export default function TeamManagement() {
       {viewMode === 'table' && (
         <Card>
           <CardContent className="p-0">
-            <Table>
+            <div className="overflow-x-auto">
+              <Table className="min-w-[900px]">
               <TableHeader>
                 <TableRow>
                   <TableHead className="w-[50px]">
@@ -965,6 +966,7 @@ export default function TeamManagement() {
                 })}
               </TableBody>
             </Table>
+            </div>
           </CardContent>
         </Card>
       )}
