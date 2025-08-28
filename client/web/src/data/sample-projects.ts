@@ -1,5 +1,5 @@
-// Integrated Indian Property and Project Management Data
-import { indianPropertyProjects, IndianPropertyProject } from './indian-property-projects';
+// Integrated Tamil/South Indian Property and Project Management Data
+import { tamilPropertyProjects, TamilPropertyProject } from './tamil-property-projects';
 
 export interface SampleProject {
   id: string;
@@ -28,8 +28,8 @@ export interface SampleProject {
   safetyScore?: number;
 }
 
-// Transform Indian Property Projects to Sample Projects format
-const transformToSampleProject = (property: IndianPropertyProject): SampleProject => {
+// Transform Tamil Property Projects to Sample Projects format
+const transformToSampleProject = (property: TamilPropertyProject): SampleProject => {
   // Map project status
   const getStatus = (status: string): 'active' | 'completed' | 'on-hold' | 'planning' => {
     switch(status) {
@@ -62,7 +62,7 @@ const transformToSampleProject = (property: IndianPropertyProject): SampleProjec
   return {
     id: property.projectId,
     name: property.project_name,
-    description: `${property.configuration} ${property.property_type} - ${property.property_details.super_built_up_area_sqft} sqft`,
+    description: `${property.configuration} ${property.property_type} - ${property.property_details.super_built_up_area_sqft || property.property_details.plot_area_sqft} sqft`,
     status: getStatus(property.projectStatus),
     priority: getPriority(property.priority),
     progress: property.progress,
@@ -70,7 +70,7 @@ const transformToSampleProject = (property: IndianPropertyProject): SampleProjec
     endDate: property.endDate,
     budget: property.budget,
     spent: property.spent,
-    manager: property.manager,
+    manager: property.owner,
     team: property.team,
     client: property.builder,
     location: formatLocation(property.location),
@@ -80,15 +80,15 @@ const transformToSampleProject = (property: IndianPropertyProject): SampleProjec
     projectCode: property.projectCode,
     projectType: property.property_type,
     currentPhase: property.projectPhase,
-    nextMilestone: property.upcomingMilestones?.[0],
+    nextMilestone: property.projectPhase,
     riskLevel: property.riskLevel,
     qualityScore: property.qualityScore,
     safetyScore: property.safetyScore
   };
 };
 
-// Transform Indian property projects
-const transformedProjects: SampleProject[] = indianPropertyProjects.map(transformToSampleProject);
+// Transform Tamil property projects  
+const transformedProjects: SampleProject[] = tamilPropertyProjects.map(transformToSampleProject);
 
 // Additional hardcoded projects for variety
 const additionalProjects: SampleProject[] = [

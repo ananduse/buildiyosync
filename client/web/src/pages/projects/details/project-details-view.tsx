@@ -298,6 +298,10 @@ import {
 } from './project-details-tabs';
 import { TimelineTabEnhanced } from './timeline-tab-enhanced';
 
+// Import Tamil property data
+import { tamilPropertyProjects } from '@/data/tamil-property-projects';
+import { sampleProjects, getProjectById } from '@/data/sample-projects';
+
 // Helper function to generate random avatar colors matching the team reference
 const getRandomAvatarColor = () => {
   const colors = [
@@ -337,8 +341,368 @@ const getAvatarColor = (id: string) => {
   return avatarColors.get(id) || 'bg-gray-500';
 };
 
-// Mock project data - in real app, this would come from API
-const generateMockProjectDetails = () => {
+// Generate project details from Tamil property data
+const generateMockProjectDetails = (projectId?: string) => {
+  // Try to get project from sampleProjects (which includes Tamil projects)
+  const sampleProject = projectId ? getProjectById(projectId) : null;
+  
+  if (sampleProject) {
+    // Find corresponding Tamil property project for extended data
+    const tamilProject = tamilPropertyProjects.find(p => p.projectId === sampleProject.id);
+    
+    if (tamilProject) {
+      // Use Tamil project data
+      return {
+        id: tamilProject.projectId,
+        name: tamilProject.project_name,
+        description: `${tamilProject.configuration} ${tamilProject.property_type} project in ${tamilProject.location.locality}, ${tamilProject.location.city}. ${tamilProject.property_details.super_built_up_area_sqft || tamilProject.property_details.plot_area_sqft} sqft with ${tamilProject.amenities.join(', ')}.`,
+        type: tamilProject.property_type.toLowerCase(),
+        status: sampleProject.status,
+        priority: sampleProject.priority,
+        phase: tamilProject.projectPhase,
+        
+        customer: {
+          id: `CUST-${tamilProject.property_id}`,
+          name: tamilProject.builder,
+          type: 'enterprise',
+          contact: {
+            name: tamilProject.owner,
+            email: `${tamilProject.owner.toLowerCase().replace(/[^a-z]/g, '')}@${tamilProject.builder.toLowerCase().replace(/[^a-z]/g, '')}.com`,
+            phone: tamilProject.contact_details?.phone || '+91 98765 43210',
+            position: 'Project Director'
+          },
+          logo: '',
+          rating: 4.8,
+          totalProjects: 12,
+          activeProjects: 3
+        },
+
+        location: {
+          address: tamilProject.location.address || tamilProject.location.locality,
+          city: tamilProject.location.city,
+          state: tamilProject.location.state,
+          country: 'India',
+          zipCode: tamilProject.location.pincode || '600001',
+          coordinates: {
+            lat: tamilProject.location.coordinates?.lat || 13.0827,
+            lng: tamilProject.location.coordinates?.lng || 80.2707
+          }
+        },
+
+        timeline: {
+          startDate: tamilProject.startDate,
+          endDate: tamilProject.endDate,
+          actualStartDate: tamilProject.startDate,
+          estimatedEndDate: tamilProject.endDate,
+          progress: tamilProject.progress,
+          duration: Math.ceil((new Date(tamilProject.endDate).getTime() - new Date(tamilProject.startDate).getTime()) / (1000 * 60 * 60 * 24)),
+          daysElapsed: Math.ceil((Date.now() - new Date(tamilProject.startDate).getTime()) / (1000 * 60 * 60 * 24)),
+          daysRemaining: Math.ceil((new Date(tamilProject.endDate).getTime() - Date.now()) / (1000 * 60 * 60 * 24)),
+          isDelayed: false,
+          delayDays: 0,
+          workingDays: Math.ceil((new Date(tamilProject.endDate).getTime() - new Date(tamilProject.startDate).getTime()) / (1000 * 60 * 60 * 24) * 0.7),
+          holidays: 45,
+          weatherDays: 15,
+          milestones: tamilProject.milestones || [
+            { id: 'M1', name: 'Site Preparation', status: 'completed', date: tamilProject.startDate },
+            { id: 'M2', name: 'Foundation Complete', status: tamilProject.progress > 20 ? 'completed' : 'pending', date: '2024-04-30' },
+            { id: 'M3', name: 'Structure Complete', status: tamilProject.progress > 50 ? 'completed' : 'in-progress', date: '2024-08-15' },
+            { id: 'M4', name: 'MEP Installation', status: 'pending', date: '2025-03-15' },
+            { id: 'M5', name: 'Interior Finishing', status: 'pending', date: '2025-07-30' },
+            { id: 'M6', name: 'Final Inspection', status: 'pending', date: '2025-11-15' },
+            { id: 'M7', name: 'Project Handover', status: 'pending', date: tamilProject.endDate }
+          ]
+        },
+
+        milestones: tamilProject.milestones || [
+          { id: 1, name: 'Site Preparation', status: 'completed', date: tamilProject.startDate, completedDate: tamilProject.startDate },
+          { id: 2, name: 'Foundation Complete', status: tamilProject.progress > 20 ? 'completed' : 'pending', date: '2024-04-30', progress: tamilProject.progress > 20 ? 100 : 0 },
+          { id: 3, name: 'Structure Complete', status: tamilProject.progress > 50 ? 'completed' : tamilProject.progress > 30 ? 'in-progress' : 'pending', date: '2024-08-15', progress: tamilProject.progress > 50 ? 100 : tamilProject.progress * 2 },
+          { id: 4, name: 'MEP Installation', status: tamilProject.progress > 70 ? 'completed' : tamilProject.progress > 60 ? 'in-progress' : 'pending', date: '2025-03-15' },
+          { id: 5, name: 'Interior Finishing', status: tamilProject.progress > 85 ? 'completed' : tamilProject.progress > 75 ? 'in-progress' : 'pending', date: '2025-07-30' },
+          { id: 6, name: 'Final Inspection', status: tamilProject.progress > 95 ? 'completed' : tamilProject.progress > 90 ? 'in-progress' : 'pending', date: '2025-11-15' },
+          { id: 7, name: 'Project Handover', status: tamilProject.progress >= 100 ? 'completed' : 'pending', date: tamilProject.endDate }
+        ],
+
+        budget: {
+          total: tamilProject.budget,
+          allocated: tamilProject.budget * 0.96,
+          spent: tamilProject.spent,
+          committed: tamilProject.budget * 0.28,
+          remaining: tamilProject.budget - tamilProject.spent,
+          contingency: tamilProject.budget * 0.04,
+          currency: 'INR',
+          lastUpdated: '2024-11-20',
+          costVariance: -2500000,
+          costPerformanceIndex: 0.98,
+          earnedValue: tamilProject.spent * 0.98,
+          plannedValue: tamilProject.budget * (tamilProject.progress / 100),
+          actualCost: tamilProject.spent
+        },
+
+        financials: {
+          revenue: tamilProject.pricing?.base_price || tamilProject.budget * 1.2,
+          profit: (tamilProject.pricing?.base_price || tamilProject.budget * 1.2) * 0.167,
+          margin: 16.67,
+          invoiced: tamilProject.spent * 0.82,
+          received: tamilProject.spent * 0.75,
+          outstanding: tamilProject.spent * 0.07,
+          retentions: tamilProject.spent * 0.035,
+          penalties: 0,
+          bonuses: 500000
+        },
+
+        team: {
+          projectManager: {
+            id: 'PM-001',
+            name: tamilProject.owner,
+            avatar: '',
+            email: `${tamilProject.owner.toLowerCase().replace(/[^a-z]/g, '')}@company.com`,
+            phone: tamilProject.contact_details?.phone || '+91 98765 43210',
+            experience: '15 years',
+            certification: ['PMP', 'LEED AP']
+          },
+          siteManager: {
+            id: 'SM-001',
+            name: tamilProject.team?.[0] || 'Mr. A. Kumar',
+            avatar: '',
+            email: `${(tamilProject.team?.[0] || 'kumar').toLowerCase().replace(/[^a-z]/g, '')}@company.com`,
+            phone: '+91 98765 43211'
+          },
+          totalMembers: tamilProject.team?.length || 145,
+          employees: 85,
+          contractors: 45,
+          vendors: 15,
+          departments: [
+            { name: 'Engineering', count: 35 },
+            { name: 'Construction', count: 65 },
+            { name: 'Safety', count: 12 },
+            { name: 'Quality', count: 8 },
+            { name: 'Administration', count: 10 },
+            { name: 'Finance', count: 5 },
+            { name: 'Procurement', count: 10 }
+          ]
+        },
+
+        tasks: tamilProject.tasks || {
+          total: 245,
+          completed: Math.floor(245 * tamilProject.progress / 100),
+          inProgress: 45,
+          pending: Math.floor(245 * (100 - tamilProject.progress) / 100),
+          overdue: 20,
+          critical: 8,
+          todaysDue: 5,
+          weekDue: 22
+        },
+
+        risks: {
+          total: 18,
+          high: tamilProject.riskLevel === 'high' ? 6 : tamilProject.riskLevel === 'critical' ? 8 : 3,
+          medium: tamilProject.riskLevel === 'medium' ? 8 : 5,
+          low: 7,
+          mitigated: 12,
+          active: 6,
+          level: tamilProject.riskLevel || 'medium',
+          categories: [
+            { name: 'Weather', count: 3 },
+            { name: 'Supply Chain', count: 5 },
+            { name: 'Technical', count: 4 },
+            { name: 'Financial', count: 2 },
+            { name: 'Regulatory', count: 2 },
+            { name: 'Safety', count: 2 }
+          ]
+        },
+
+        issues: {
+          total: 25,
+          critical: 2,
+          major: 5,
+          minor: 18,
+          resolved: 20,
+          open: 5,
+          avgResolutionTime: '3.5 days'
+        },
+
+        compliance: {
+          safety: tamilProject.safetyScore || 95,
+          quality: tamilProject.qualityScore || 92,
+          environmental: 88,
+          regulatory: 94,
+          overall: ((tamilProject.safetyScore || 95) + (tamilProject.qualityScore || 92) + 88 + 94) / 4,
+          certifications: tamilProject.compliance?.certifications || ['ISO 9001', 'ISO 14001', 'OHSAS 18001'],
+          lastAudit: '2024-10-15',
+          nextAudit: '2024-12-15',
+          violations: 0,
+          warnings: 2
+        },
+
+        resources: {
+          equipment: tamilProject.resources?.equipment || [
+            { name: 'Tower Cranes', total: 4, active: 3, maintenance: 1 },
+            { name: 'Excavators', total: 6, active: 4, maintenance: 2 },
+            { name: 'Concrete Pumps', total: 3, active: 2, maintenance: 1 },
+            { name: 'Generators', total: 8, active: 6, maintenance: 2 }
+          ],
+          materials: tamilProject.resources?.materials || [
+            { name: 'Concrete', unit: 'm³', used: 12500, total: 35000, percentage: 35.7 },
+            { name: 'Steel', unit: 'tons', used: 3200, total: 8500, percentage: 37.6 },
+            { name: 'Glass', unit: 'm²', used: 5000, total: 25000, percentage: 20 },
+            { name: 'Cables', unit: 'km', used: 45, total: 150, percentage: 30 }
+          ]
+        },
+
+        documents: {
+          total: 342,
+          categories: [
+            { name: 'Contracts', count: 15, icon: FileText },
+            { name: 'Drawings', count: 125, icon: FileCheck },
+            { name: 'Reports', count: 45, icon: ClipboardCheck },
+            { name: 'Permits', count: 22, icon: Shield },
+            { name: 'Photos', count: 85, icon: Image },
+            { name: 'Videos', count: 12, icon: Film },
+            { name: 'Specifications', count: 38, icon: FileText }
+          ],
+          recentUploads: [
+            { name: 'Structural_Analysis_Report_Nov.pdf', size: '2.4 MB', date: '2024-11-20', uploader: tamilProject.owner },
+            { name: 'Site_Photos_Week_47.zip', size: '145 MB', date: '2024-11-19', uploader: tamilProject.team?.[0] || 'Site Manager' },
+            { name: 'Safety_Inspection_Report.pdf', size: '1.2 MB', date: '2024-11-18', uploader: tamilProject.owner }
+          ]
+        },
+
+        weather: {
+          current: { condition: 'Clear', temp: 28, humidity: 65, wind: 8 },
+          forecast: [
+            { day: 'Mon', condition: 'Sunny', high: 32, low: 24, rainChance: 0 },
+            { day: 'Tue', condition: 'Partly Cloudy', high: 31, low: 23, rainChance: 10 },
+            { day: 'Wed', condition: 'Rain', high: 28, low: 22, rainChance: 80 },
+            { day: 'Thu', condition: 'Cloudy', high: 29, low: 23, rainChance: 30 },
+            { day: 'Fri', condition: 'Sunny', high: 31, low: 24, rainChance: 5 }
+          ],
+          impactDays: 3,
+          delayRisk: 'low'
+        },
+
+        quality: {
+          score: tamilProject.qualityScore || 94,
+          inspections: {
+            total: 125,
+            passed: 118,
+            failed: 7,
+            pending: 5
+          },
+          defects: {
+            total: 45,
+            critical: 2,
+            major: 12,
+            minor: 31,
+            resolved: 40
+          },
+          rework: {
+            instances: 8,
+            cost: 125000,
+            percentage: 0.29
+          }
+        },
+
+        safety: {
+          score: tamilProject.safetyScore || 96,
+          incidents: {
+            total: 3,
+            major: 0,
+            minor: 3,
+            nearMiss: 12
+          },
+          daysWithoutIncident: 45,
+          trainingSessions: 24,
+          toolboxTalks: 156,
+          safetyAudits: 12,
+          complianceRate: 98.5
+        },
+
+        communications: {
+          meetings: {
+            total: 145,
+            upcoming: 5,
+            minutes: 140
+          },
+          rfi: {
+            total: 89,
+            open: 12,
+            closed: 77,
+            avgResponseTime: '2.3 days'
+          },
+          submittals: {
+            total: 156,
+            approved: 142,
+            rejected: 8,
+            pending: 6
+          },
+          changeOrders: {
+            total: 18,
+            approved: 14,
+            pending: 3,
+            rejected: 1,
+            value: 2500000
+          }
+        },
+
+        performance: {
+          spi: 0.98,
+          cpi: 0.97,
+          productivity: 92,
+          efficiency: 89,
+          qualityIndex: tamilProject.qualityScore || 94,
+          safetyIndex: tamilProject.safetyScore || 96,
+          overallHealth: tamilProject.qualityScore >= 90 ? 'good' : 'fair'
+        },
+
+        activities: [
+          {
+            id: 1,
+            type: 'milestone',
+            title: 'Foundation work completed',
+            description: 'Successfully completed foundation work as per schedule',
+            user: tamilProject.owner,
+            timestamp: '2024-11-20 14:30',
+            icon: CheckCircle2,
+            color: 'text-green-600'
+          },
+          {
+            id: 2,
+            type: 'issue',
+            title: 'Material delivery update',
+            description: 'Construction materials delivered on time',
+            user: tamilProject.team?.[0] || 'Site Manager',
+            timestamp: '2024-11-20 11:15',
+            icon: AlertTriangle,
+            color: 'text-yellow-600'
+          },
+          {
+            id: 3,
+            type: 'document',
+            title: 'Safety report uploaded',
+            description: 'Weekly safety inspection report has been uploaded',
+            user: tamilProject.owner,
+            timestamp: '2024-11-20 09:00',
+            icon: FileText,
+            color: 'text-blue-600'
+          },
+          {
+            id: 4,
+            type: 'meeting',
+            title: 'Client meeting scheduled',
+            description: 'Progress review meeting with client scheduled',
+            user: tamilProject.owner,
+            timestamp: '2024-11-19 16:45',
+            icon: Calendar,
+            color: 'text-purple-600'
+          }
+        ]
+      };
+    }
+  }
+
+  // Fallback to default mock data if project not found
   return {
     id: 'PRJ-2024-001',
     name: 'Skyline Tower Complex',
@@ -717,8 +1081,8 @@ export default function ProjectDetailsView() {
     setActiveTab(getActiveTab());
   }, [location.pathname]);
   
-  // Mock data - in real app, fetch based on ID
-  const project = useMemo(() => generateMockProjectDetails(), []);
+  // Get project data based on ID from Tamil projects
+  const project = useMemo(() => generateMockProjectDetails(id), [id]);
 
   // Calculate various metrics
   const scheduleVariance = differenceInDays(new Date(project.timeline.estimatedEndDate), new Date(project.timeline.endDate));
@@ -926,7 +1290,7 @@ export default function ProjectDetailsView() {
 
       {/* Tab Navigation - Moved to top */}
       <div className="bg-white border-b">
-        <div className="container mx-auto max-w-[1600px]">
+        <div className="container mx-auto max-w-[1600px] px-0">
           <Tabs 
             value={activeTab} 
             onValueChange={(value) => {
@@ -938,77 +1302,87 @@ export default function ProjectDetailsView() {
             <TabsList 
               variant="line" 
               size="md"
-              className="flex items-center shrink-0 border-b border-border px-4 lg:px-6 gap-6 bg-transparent w-full justify-start overflow-x-auto [&_button]:border-b-2 [&_button_svg]:size-4 [&_button]:text-secondary-foreground"
+              className="flex items-center border-b-0 border-border px-2 sm:px-4 lg:px-6 gap-0 sm:gap-2 md:gap-4 lg:gap-6 bg-transparent w-full justify-start overflow-x-auto scrollbar-none [&_button]:border-b-2 [&_button_svg]:size-4 [&_button]:text-secondary-foreground min-h-[48px]"
             >
               <TabsTrigger 
                 value="overview" 
-                className="shrink-0 cursor-pointer whitespace-nowrap inline-flex justify-center items-center font-medium ring-offset-background transition-colors focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 data-disabled:pointer-events-none data-disabled:opacity-50 [&_svg]:shrink-0 [&_svg]:text-muted-foreground [&:hover_svg]:text-primary [&[data-state=active]_svg]:text-primary border-b-2 text-muted-foreground border-transparent hover:text-primary data-[state=active]:border-primary data-[state=active]:text-primary gap-2 [&_svg]:size-4 text-sm py-2.5"
+                className="flex-shrink-0 cursor-pointer whitespace-nowrap inline-flex justify-center items-center font-medium ring-offset-background transition-colors focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 data-disabled:pointer-events-none data-disabled:opacity-50 [&_svg]:shrink-0 [&_svg]:text-muted-foreground [&:hover_svg]:text-primary [&[data-state=active]_svg]:text-primary border-b-2 text-muted-foreground border-transparent hover:text-primary data-[state=active]:border-primary data-[state=active]:text-primary gap-1 sm:gap-1.5 lg:gap-2 [&_svg]:size-3 sm:[&_svg]:size-4 text-xs sm:text-sm py-2.5 sm:py-2.5 px-2 sm:px-3 lg:px-4 min-w-fit"
               >
-                <LayoutGrid className="h-4 w-4" />
-                Overview
+                <LayoutGrid className="h-3 w-3 sm:h-4 sm:w-4" />
+                <span className="hidden sm:inline">Overview</span>
+                <span className="inline sm:hidden">View</span>
               </TabsTrigger>
               <TabsTrigger 
                 value="activity"
-                className="shrink-0 cursor-pointer whitespace-nowrap inline-flex justify-center items-center font-medium ring-offset-background transition-colors focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 data-disabled:pointer-events-none data-disabled:opacity-50 [&_svg]:shrink-0 [&_svg]:text-muted-foreground [&:hover_svg]:text-primary [&[data-state=active]_svg]:text-primary border-b-2 text-muted-foreground border-transparent hover:text-primary data-[state=active]:border-primary data-[state=active]:text-primary gap-2 [&_svg]:size-4 text-sm py-2.5"
+                className="flex-shrink-0 cursor-pointer whitespace-nowrap inline-flex justify-center items-center font-medium ring-offset-background transition-colors focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 data-disabled:pointer-events-none data-disabled:opacity-50 [&_svg]:shrink-0 [&_svg]:text-muted-foreground [&:hover_svg]:text-primary [&[data-state=active]_svg]:text-primary border-b-2 text-muted-foreground border-transparent hover:text-primary data-[state=active]:border-primary data-[state=active]:text-primary gap-1 sm:gap-1.5 lg:gap-2 [&_svg]:size-3 sm:[&_svg]:size-4 text-xs sm:text-sm py-2.5 sm:py-2.5 px-2 sm:px-3 lg:px-4 min-w-fit"
               >
-                <Activity className="h-4 w-4" />
-                Activity
+                <Activity className="h-3 w-3 sm:h-4 sm:w-4" />
+                <span className="hidden sm:inline">Activity</span>
+                <span className="inline sm:hidden">Act</span>
               </TabsTrigger>
               <TabsTrigger 
                 value="timeline"
-                className="shrink-0 cursor-pointer whitespace-nowrap inline-flex justify-center items-center font-medium ring-offset-background transition-colors focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 data-disabled:pointer-events-none data-disabled:opacity-50 [&_svg]:shrink-0 [&_svg]:text-muted-foreground [&:hover_svg]:text-primary [&[data-state=active]_svg]:text-primary border-b-2 text-muted-foreground border-transparent hover:text-primary data-[state=active]:border-primary data-[state=active]:text-primary gap-2 [&_svg]:size-4 text-sm py-2.5"
+                className="flex-shrink-0 cursor-pointer whitespace-nowrap inline-flex justify-center items-center font-medium ring-offset-background transition-colors focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 data-disabled:pointer-events-none data-disabled:opacity-50 [&_svg]:shrink-0 [&_svg]:text-muted-foreground [&:hover_svg]:text-primary [&[data-state=active]_svg]:text-primary border-b-2 text-muted-foreground border-transparent hover:text-primary data-[state=active]:border-primary data-[state=active]:text-primary gap-1 sm:gap-1.5 lg:gap-2 [&_svg]:size-3 sm:[&_svg]:size-4 text-xs sm:text-sm py-2.5 sm:py-2.5 px-2 sm:px-3 lg:px-4 min-w-fit"
               >
-                <Clock className="h-4 w-4" />
-                Timeline
+                <Clock className="h-3 w-3 sm:h-4 sm:w-4" />
+                <span className="hidden sm:inline">Timeline</span>
+                <span className="inline sm:hidden">Time</span>
               </TabsTrigger>
               <TabsTrigger 
                 value="team"
-                className="shrink-0 cursor-pointer whitespace-nowrap inline-flex justify-center items-center font-medium ring-offset-background transition-colors focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 data-disabled:pointer-events-none data-disabled:opacity-50 [&_svg]:shrink-0 [&_svg]:text-muted-foreground [&:hover_svg]:text-primary [&[data-state=active]_svg]:text-primary border-b-2 text-muted-foreground border-transparent hover:text-primary data-[state=active]:border-primary data-[state=active]:text-primary gap-2 [&_svg]:size-4 text-sm py-2.5"
+                className="flex-shrink-0 cursor-pointer whitespace-nowrap inline-flex justify-center items-center font-medium ring-offset-background transition-colors focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 data-disabled:pointer-events-none data-disabled:opacity-50 [&_svg]:shrink-0 [&_svg]:text-muted-foreground [&:hover_svg]:text-primary [&[data-state=active]_svg]:text-primary border-b-2 text-muted-foreground border-transparent hover:text-primary data-[state=active]:border-primary data-[state=active]:text-primary gap-1 sm:gap-1.5 lg:gap-2 [&_svg]:size-3 sm:[&_svg]:size-4 text-xs sm:text-sm py-2.5 sm:py-2.5 px-2 sm:px-3 lg:px-4 min-w-fit"
               >
-                <Users className="h-4 w-4" />
-                Team
+                <Users className="h-3 w-3 sm:h-4 sm:w-4" />
+                <span className="hidden sm:inline">Team</span>
+                <span className="inline sm:hidden">Team</span>
               </TabsTrigger>
               <TabsTrigger 
                 value="tasks"
-                className="shrink-0 cursor-pointer whitespace-nowrap inline-flex justify-center items-center font-medium ring-offset-background transition-colors focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 data-disabled:pointer-events-none data-disabled:opacity-50 [&_svg]:shrink-0 [&_svg]:text-muted-foreground [&:hover_svg]:text-primary [&[data-state=active]_svg]:text-primary border-b-2 text-muted-foreground border-transparent hover:text-primary data-[state=active]:border-primary data-[state=active]:text-primary gap-2 [&_svg]:size-4 text-sm py-2.5"
+                className="flex-shrink-0 cursor-pointer whitespace-nowrap inline-flex justify-center items-center font-medium ring-offset-background transition-colors focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 data-disabled:pointer-events-none data-disabled:opacity-50 [&_svg]:shrink-0 [&_svg]:text-muted-foreground [&:hover_svg]:text-primary [&[data-state=active]_svg]:text-primary border-b-2 text-muted-foreground border-transparent hover:text-primary data-[state=active]:border-primary data-[state=active]:text-primary gap-1 sm:gap-1.5 lg:gap-2 [&_svg]:size-3 sm:[&_svg]:size-4 text-xs sm:text-sm py-2.5 sm:py-2.5 px-2 sm:px-3 lg:px-4 min-w-fit"
               >
-                <CheckSquare className="h-4 w-4" />
-                Tasks
+                <CheckSquare className="h-3 w-3 sm:h-4 sm:w-4" />
+                <span className="hidden sm:inline">Tasks</span>
+                <span className="inline sm:hidden">Task</span>
               </TabsTrigger>
               <TabsTrigger 
                 value="budget"
-                className="shrink-0 cursor-pointer whitespace-nowrap inline-flex justify-center items-center font-medium ring-offset-background transition-colors focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 data-disabled:pointer-events-none data-disabled:opacity-50 [&_svg]:shrink-0 [&_svg]:text-muted-foreground [&:hover_svg]:text-primary [&[data-state=active]_svg]:text-primary border-b-2 text-muted-foreground border-transparent hover:text-primary data-[state=active]:border-primary data-[state=active]:text-primary gap-2 [&_svg]:size-4 text-sm py-2.5"
+                className="flex-shrink-0 cursor-pointer whitespace-nowrap inline-flex justify-center items-center font-medium ring-offset-background transition-colors focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 data-disabled:pointer-events-none data-disabled:opacity-50 [&_svg]:shrink-0 [&_svg]:text-muted-foreground [&:hover_svg]:text-primary [&[data-state=active]_svg]:text-primary border-b-2 text-muted-foreground border-transparent hover:text-primary data-[state=active]:border-primary data-[state=active]:text-primary gap-1 sm:gap-1.5 lg:gap-2 [&_svg]:size-3 sm:[&_svg]:size-4 text-xs sm:text-sm py-2.5 sm:py-2.5 px-2 sm:px-3 lg:px-4 min-w-fit"
               >
-                <DollarSign className="h-4 w-4" />
-                Budget
+                <DollarSign className="h-3 w-3 sm:h-4 sm:w-4" />
+                <span className="hidden sm:inline">Budget</span>
+                <span className="inline sm:hidden">$$</span>
               </TabsTrigger>
               <TabsTrigger 
                 value="documents"
-                className="shrink-0 cursor-pointer whitespace-nowrap inline-flex justify-center items-center font-medium ring-offset-background transition-colors focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 data-disabled:pointer-events-none data-disabled:opacity-50 [&_svg]:shrink-0 [&_svg]:text-muted-foreground [&:hover_svg]:text-primary [&[data-state=active]_svg]:text-primary border-b-2 text-muted-foreground border-transparent hover:text-primary data-[state=active]:border-primary data-[state=active]:text-primary gap-2 [&_svg]:size-4 text-sm py-2.5"
+                className="flex-shrink-0 cursor-pointer whitespace-nowrap inline-flex justify-center items-center font-medium ring-offset-background transition-colors focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 data-disabled:pointer-events-none data-disabled:opacity-50 [&_svg]:shrink-0 [&_svg]:text-muted-foreground [&:hover_svg]:text-primary [&[data-state=active]_svg]:text-primary border-b-2 text-muted-foreground border-transparent hover:text-primary data-[state=active]:border-primary data-[state=active]:text-primary gap-1 sm:gap-1.5 lg:gap-2 [&_svg]:size-3 sm:[&_svg]:size-4 text-xs sm:text-sm py-2.5 sm:py-2.5 px-2 sm:px-3 lg:px-4 min-w-fit"
               >
-                <FolderOpen className="h-4 w-4" />
-                Documents
+                <FolderOpen className="h-3 w-3 sm:h-4 sm:w-4" />
+                <span className="hidden sm:inline">Documents</span>
+                <span className="inline sm:hidden">Docs</span>
               </TabsTrigger>
               <TabsTrigger 
                 value="calendar"
-                className="shrink-0 cursor-pointer whitespace-nowrap inline-flex justify-center items-center font-medium ring-offset-background transition-colors focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 data-disabled:pointer-events-none data-disabled:opacity-50 [&_svg]:shrink-0 [&_svg]:text-muted-foreground [&:hover_svg]:text-primary [&[data-state=active]_svg]:text-primary border-b-2 text-muted-foreground border-transparent hover:text-primary data-[state=active]:border-primary data-[state=active]:text-primary gap-2 [&_svg]:size-4 text-sm py-2.5"
+                className="flex-shrink-0 cursor-pointer whitespace-nowrap inline-flex justify-center items-center font-medium ring-offset-background transition-colors focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 data-disabled:pointer-events-none data-disabled:opacity-50 [&_svg]:shrink-0 [&_svg]:text-muted-foreground [&:hover_svg]:text-primary [&[data-state=active]_svg]:text-primary border-b-2 text-muted-foreground border-transparent hover:text-primary data-[state=active]:border-primary data-[state=active]:text-primary gap-1 sm:gap-1.5 lg:gap-2 [&_svg]:size-3 sm:[&_svg]:size-4 text-xs sm:text-sm py-2.5 sm:py-2.5 px-2 sm:px-3 lg:px-4 min-w-fit"
               >
-                <CalendarDays className="h-4 w-4" />
-                Calendar
+                <CalendarDays className="h-3 w-3 sm:h-4 sm:w-4" />
+                <span className="hidden sm:inline">Calendar</span>
+                <span className="inline sm:hidden">Cal</span>
               </TabsTrigger>
               <TabsTrigger 
                 value="reports"
-                className="shrink-0 cursor-pointer whitespace-nowrap inline-flex justify-center items-center font-medium ring-offset-background transition-colors focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 data-disabled:pointer-events-none data-disabled:opacity-50 [&_svg]:shrink-0 [&_svg]:text-muted-foreground [&:hover_svg]:text-primary [&[data-state=active]_svg]:text-primary border-b-2 text-muted-foreground border-transparent hover:text-primary data-[state=active]:border-primary data-[state=active]:text-primary gap-2 [&_svg]:size-4 text-sm py-2.5"
+                className="flex-shrink-0 cursor-pointer whitespace-nowrap inline-flex justify-center items-center font-medium ring-offset-background transition-colors focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 data-disabled:pointer-events-none data-disabled:opacity-50 [&_svg]:shrink-0 [&_svg]:text-muted-foreground [&:hover_svg]:text-primary [&[data-state=active]_svg]:text-primary border-b-2 text-muted-foreground border-transparent hover:text-primary data-[state=active]:border-primary data-[state=active]:text-primary gap-1 sm:gap-1.5 lg:gap-2 [&_svg]:size-3 sm:[&_svg]:size-4 text-xs sm:text-sm py-2.5 sm:py-2.5 px-2 sm:px-3 lg:px-4 min-w-fit"
               >
-                <BarChart3 className="h-4 w-4" />
-                Reports
+                <BarChart3 className="h-3 w-3 sm:h-4 sm:w-4" />
+                <span className="hidden sm:inline">Reports</span>
+                <span className="inline sm:hidden">Rep</span>
               </TabsTrigger>
               <TabsTrigger 
                 value="details"
-                className="shrink-0 cursor-pointer whitespace-nowrap inline-flex justify-center items-center font-medium ring-offset-background transition-colors focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 data-disabled:pointer-events-none data-disabled:opacity-50 [&_svg]:shrink-0 [&_svg]:text-muted-foreground [&:hover_svg]:text-primary [&[data-state=active]_svg]:text-primary border-b-2 text-muted-foreground border-transparent hover:text-primary data-[state=active]:border-primary data-[state=active]:text-primary gap-2 [&_svg]:size-4 text-sm py-2.5"
+                className="flex-shrink-0 cursor-pointer whitespace-nowrap inline-flex justify-center items-center font-medium ring-offset-background transition-colors focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 data-disabled:pointer-events-none data-disabled:opacity-50 [&_svg]:shrink-0 [&_svg]:text-muted-foreground [&:hover_svg]:text-primary [&[data-state=active]_svg]:text-primary border-b-2 text-muted-foreground border-transparent hover:text-primary data-[state=active]:border-primary data-[state=active]:text-primary gap-1 sm:gap-1.5 lg:gap-2 [&_svg]:size-3 sm:[&_svg]:size-4 text-xs sm:text-sm py-2.5 sm:py-2.5 px-2 sm:px-3 lg:px-4 min-w-fit"
               >
-                <Info className="h-4 w-4" />
-                Details
+                <Info className="h-3 w-3 sm:h-4 sm:w-4" />
+                <span className="hidden sm:inline">Details</span>
+                <span className="inline sm:hidden">Info</span>
               </TabsTrigger>
             </TabsList>
           </Tabs>
@@ -1016,7 +1390,7 @@ export default function ProjectDetailsView() {
       </div>
 
       {/* Content Area */}
-      <div className="container mx-auto max-w-[1600px] p-4">
+      <div className="container mx-auto max-w-[1600px] p-2 sm:p-4 lg:p-6">
         <Tabs value={activeTab} className="space-y-6">
           {/* Overview Tab */}
           <TabsContent value="overview" className="space-y-6">

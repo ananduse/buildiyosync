@@ -73,6 +73,7 @@ import {
   CheckCircle,
   Palette,
   Home,
+  Square,
 } from 'lucide-react';
 
 import { cn } from '@/lib/utils';
@@ -595,20 +596,21 @@ export function BudgetTab({ project }: { project: any }) {
           <CardTitle>Budget Breakdown by Category</CardTitle>
           <CardDescription>Allocation and spending by category</CardDescription>
         </CardHeader>
-        <CardContent>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Category</TableHead>
-                <TableHead>Allocated</TableHead>
-                <TableHead>Spent</TableHead>
-                <TableHead>Remaining</TableHead>
-                <TableHead>Utilization</TableHead>
-                <TableHead>Status</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {budgetBreakdown.map((item) => (
+        <CardContent className="p-0 sm:p-6">
+          <div className="overflow-x-auto">
+            <Table className="min-w-[700px]">
+              <TableHeader>
+                <TableRow>
+                  <TableHead className="min-w-[120px]">Category</TableHead>
+                  <TableHead className="min-w-[100px]">Allocated</TableHead>
+                  <TableHead className="min-w-[100px]">Spent</TableHead>
+                  <TableHead className="min-w-[100px]">Remaining</TableHead>
+                  <TableHead className="min-w-[120px]">Utilization</TableHead>
+                  <TableHead className="min-w-[80px]">Status</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {budgetBreakdown.map((item) => (
                 <TableRow key={item.category}>
                   <TableCell className="font-medium">{item.category}</TableCell>
                   <TableCell>${(item.allocated / 1000000).toFixed(1)}M</TableCell>
@@ -629,6 +631,7 @@ export function BudgetTab({ project }: { project: any }) {
               ))}
             </TableBody>
           </Table>
+          </div>
         </CardContent>
       </Card>
     </div>
@@ -735,24 +738,25 @@ export function TasksTab({ project }: { project: any }) {
           <CardTitle>Active Tasks</CardTitle>
           <CardDescription>Current and upcoming project tasks</CardDescription>
         </CardHeader>
-        <CardContent>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead className="w-12">
-                  <Checkbox />
-                </TableHead>
-                <TableHead>Task</TableHead>
-                <TableHead>Assignee</TableHead>
-                <TableHead>Due Date</TableHead>
-                <TableHead>Priority</TableHead>
-                <TableHead>Progress</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead className="text-right">Actions</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {tasks.map((task) => (
+        <CardContent className="p-0 sm:p-6">
+          <div className="overflow-x-auto">
+            <Table className="min-w-[900px]">
+              <TableHeader>
+                <TableRow>
+                  <TableHead className="w-12">
+                    <Checkbox />
+                  </TableHead>
+                  <TableHead className="min-w-[200px]">Task</TableHead>
+                  <TableHead className="min-w-[120px]">Assignee</TableHead>
+                  <TableHead className="min-w-[100px]">Due Date</TableHead>
+                  <TableHead className="min-w-[80px]">Priority</TableHead>
+                  <TableHead className="min-w-[120px]">Progress</TableHead>
+                  <TableHead className="min-w-[80px]">Status</TableHead>
+                  <TableHead className="text-right min-w-[80px]">Actions</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {tasks.map((task) => (
                 <TableRow key={task.id}>
                   <TableCell>
                     <Checkbox checked={task.status === 'completed'} />
@@ -825,6 +829,7 @@ export function TasksTab({ project }: { project: any }) {
               ))}
             </TableBody>
           </Table>
+          </div>
         </CardContent>
       </Card>
     </div>
@@ -1180,147 +1185,355 @@ export function DetailsTab({ project }: { project: any }) {
     );
   }
 
-  // Edit/Add Form
+  // Edit/Add Form - Enhanced Enterprise UI
   if (isEditMode || isAddMode) {
     return (
-      <div className="space-y-6">
-        {/* Form Header */}
-        <div className="flex items-center justify-between border-b pb-4">
-          <div>
-            <h2 className="text-2xl font-bold">
-              {isAddMode ? 'Add Project Requirements' : 'Edit Project Requirements'}
-            </h2>
-            <p className="text-muted-foreground mt-1">
-              Enter comprehensive project details from plot to interior specifications
-            </p>
+      <div className="max-w-7xl mx-auto space-y-6">
+        {/* Enhanced Form Header */}
+        <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg shadow-sm border border-blue-200 p-6">
+          <div className="flex items-center justify-between">
+            <div>
+              <div className="flex items-center gap-3 mb-2">
+                <div className="p-2 bg-blue-100 rounded-lg">
+                  {isAddMode ? <Plus className="h-5 w-5 text-blue-600" /> : <Edit className="h-5 w-5 text-blue-600" />}
+                </div>
+                <h2 className="text-2xl font-bold text-gray-900">
+                  {isAddMode ? 'Create Project Requirements' : 'Edit Project Requirements'}
+                </h2>
+              </div>
+              <p className="text-muted-foreground">
+                Complete all sections to define comprehensive project specifications and requirements
+              </p>
+            </div>
+            <div className="flex gap-3">
+              <Button variant="outline" onClick={handleCancel} size="lg" className="hover:bg-red-50 hover:text-red-600 hover:border-red-200">
+                <XCircle className="h-4 w-4 mr-2" />
+                Cancel
+              </Button>
+              <Button onClick={handleSave} size="lg" className="bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 shadow-lg">
+                <CheckCircle className="h-4 w-4 mr-2" />
+                {isAddMode ? 'Create Requirements' : 'Update Requirements'}
+              </Button>
+            </div>
           </div>
-          <div className="flex gap-2">
-            <Button variant="outline" onClick={handleCancel}>
-              Cancel
-            </Button>
-            <Button onClick={handleSave}>
-              <Save className="h-4 w-4 mr-2" />
-              {isAddMode ? 'Add Requirements' : 'Save Changes'}
-            </Button>
+          
+          {/* Form Progress Indicator */}
+          <div className="mt-6 bg-white rounded-lg p-4 border">
+            <div className="flex items-center justify-between text-sm text-muted-foreground mb-2">
+              <span className="font-medium">Form Completion Progress</span>
+              <span className="bg-blue-100 text-blue-800 px-2 py-1 rounded-md text-xs font-medium">2 of 8 sections</span>
+            </div>
+            <Progress value={25} className="h-2" />
+            <p className="text-xs text-muted-foreground mt-2">
+              Complete all required sections to save your project requirements
+            </p>
           </div>
         </div>
 
-        {/* Form Tabs */}
-        <Tabs value={activeTab} onValueChange={setActiveTab}>
-          <TabsList className="grid grid-cols-8 gap-1 h-auto p-1">
-            <TabsTrigger value="general" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
-              <Info className="h-4 w-4 mr-2" />
-              General
-            </TabsTrigger>
-            <TabsTrigger value="plot" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
-              <MapPin className="h-4 w-4 mr-2" />
-              Plot
-            </TabsTrigger>
-            <TabsTrigger value="building" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
-              <Building2 className="h-4 w-4 mr-2" />
-              Building
-            </TabsTrigger>
-            <TabsTrigger value="elevation" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
-              <Palette className="h-4 w-4 mr-2" />
-              Elevation
-            </TabsTrigger>
-            <TabsTrigger value="interiors" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
-              <Home className="h-4 w-4 mr-2" />
-              Interiors
-            </TabsTrigger>
-            <TabsTrigger value="amenities" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
-              <Star className="h-4 w-4 mr-2" />
-              Amenities
-            </TabsTrigger>
-            <TabsTrigger value="compliance" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
-              <Shield className="h-4 w-4 mr-2" />
-              Compliance
-            </TabsTrigger>
-            <TabsTrigger value="additional" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
-              <Zap className="h-4 w-4 mr-2" />
-              Additional
-            </TabsTrigger>
-          </TabsList>
+        {/* Enhanced Form Tabs */}
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
+          <div className="bg-white rounded-lg shadow-sm border">
+            <div className="p-2">
+              <TabsList className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-1 h-auto bg-gray-50 p-1 rounded-lg">
+                <TabsTrigger 
+                  value="general" 
+                  className="data-[state=active]:bg-white data-[state=active]:text-blue-700 data-[state=active]:shadow-sm flex flex-col sm:flex-row items-center gap-1.5 p-3 rounded-md transition-all"
+                >
+                  <Info className="h-4 w-4" />
+                  <span className="text-xs sm:text-sm font-medium">General</span>
+                </TabsTrigger>
+                <TabsTrigger 
+                  value="plot" 
+                  className="data-[state=active]:bg-white data-[state=active]:text-blue-700 data-[state=active]:shadow-sm flex flex-col sm:flex-row items-center gap-1.5 p-3 rounded-md transition-all"
+                >
+                  <MapPin className="h-4 w-4" />
+                  <span className="text-xs sm:text-sm font-medium">Plot</span>
+                </TabsTrigger>
+                <TabsTrigger 
+                  value="building" 
+                  className="data-[state=active]:bg-white data-[state=active]:text-blue-700 data-[state=active]:shadow-sm flex flex-col sm:flex-row items-center gap-1.5 p-3 rounded-md transition-all"
+                >
+                  <Building2 className="h-4 w-4" />
+                  <span className="text-xs sm:text-sm font-medium">Building</span>
+                </TabsTrigger>
+                <TabsTrigger 
+                  value="elevation" 
+                  className="data-[state=active]:bg-white data-[state=active]:text-blue-700 data-[state=active]:shadow-sm flex flex-col sm:flex-row items-center gap-1.5 p-3 rounded-md transition-all"
+                >
+                  <Palette className="h-4 w-4" />
+                  <span className="text-xs sm:text-sm font-medium">Elevation</span>
+                </TabsTrigger>
+                <TabsTrigger 
+                  value="interiors" 
+                  className="data-[state=active]:bg-white data-[state=active]:text-blue-700 data-[state=active]:shadow-sm flex flex-col sm:flex-row items-center gap-1.5 p-3 rounded-md transition-all"
+                >
+                  <Home className="h-4 w-4" />
+                  <span className="text-xs sm:text-sm font-medium">Interiors</span>
+                </TabsTrigger>
+                <TabsTrigger 
+                  value="amenities" 
+                  className="data-[state=active]:bg-white data-[state=active]:text-blue-700 data-[state=active]:shadow-sm flex flex-col sm:flex-row items-center gap-1.5 p-3 rounded-md transition-all"
+                >
+                  <Star className="h-4 w-4" />
+                  <span className="text-xs sm:text-sm font-medium">Amenities</span>
+                </TabsTrigger>
+                <TabsTrigger 
+                  value="compliance" 
+                  className="data-[state=active]:bg-white data-[state=active]:text-blue-700 data-[state=active]:shadow-sm flex flex-col sm:flex-row items-center gap-1.5 p-3 rounded-md transition-all"
+                >
+                  <Shield className="h-4 w-4" />
+                  <span className="text-xs sm:text-sm font-medium">Compliance</span>
+                </TabsTrigger>
+                <TabsTrigger 
+                  value="additional" 
+                  className="data-[state=active]:bg-white data-[state=active]:text-blue-700 data-[state=active]:shadow-sm flex flex-col sm:flex-row items-center gap-1.5 p-3 rounded-md transition-all"
+                >
+                  <Zap className="h-4 w-4" />
+                  <span className="text-xs sm:text-sm font-medium">Additional</span>
+                </TabsTrigger>
+              </TabsList>
+            </div>
+          </div>
 
-          {/* General Information Tab */}
+          {/* Enhanced General Information Tab */}
           <TabsContent value="general" className="space-y-4">
-            <Card>
-              <CardHeader>
-                <CardTitle>General Information</CardTitle>
-                <CardDescription>Basic project details and location</CardDescription>
+            <Card className="shadow-sm border-0 ring-1 ring-gray-200">
+              <CardHeader className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-t-lg border-b">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <CardTitle className="text-xl flex items-center gap-3">
+                      <div className="p-2 bg-blue-100 rounded-lg">
+                        <Info className="h-5 w-5 text-blue-600" />
+                      </div>
+                      General Information
+                    </CardTitle>
+                    <CardDescription className="mt-1 text-gray-600">
+                      Provide basic project details and location information
+                    </CardDescription>
+                  </div>
+                  <Badge variant="outline" className="bg-white border-blue-200 text-blue-700">
+                    Step 1 of 8
+                  </Badge>
+                </div>
               </CardHeader>
-              <CardContent className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="projectName">Project Name</Label>
-                  <Input
-                    id="projectName"
-                    value={currentData.general.projectName}
-                    onChange={(e) => handleInputChange('general', 'projectName', e.target.value)}
-                    placeholder="Enter project name"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="projectType">Project Type</Label>
-                  <Select
-                    value={currentData.general.projectType}
-                    onValueChange={(value) => handleInputChange('general', 'projectType', value)}
-                  >
-                    <SelectTrigger id="projectType">
-                      <SelectValue placeholder="Select type" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="residential">Residential</SelectItem>
-                      <SelectItem value="commercial">Commercial</SelectItem>
-                      <SelectItem value="mixed">Mixed Use</SelectItem>
-                      <SelectItem value="industrial">Industrial</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="location">Location</Label>
-                  <Input
-                    id="location"
-                    value={currentData.general.location}
-                    onChange={(e) => handleInputChange('general', 'location', e.target.value)}
-                    placeholder="Enter location"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="city">City</Label>
-                  <Input
-                    id="city"
-                    value={currentData.general.city}
-                    onChange={(e) => handleInputChange('general', 'city', e.target.value)}
-                    placeholder="Enter city"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="state">State</Label>
-                  <Input
-                    id="state"
-                    value={currentData.general.state}
-                    onChange={(e) => handleInputChange('general', 'state', e.target.value)}
-                    placeholder="Enter state"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="pincode">Pincode</Label>
-                  <Input
-                    id="pincode"
-                    value={currentData.general.pincode}
-                    onChange={(e) => handleInputChange('general', 'pincode', e.target.value)}
-                    placeholder="Enter pincode"
-                  />
-                </div>
-                <div className="col-span-2 space-y-2">
-                  <Label htmlFor="nearbyLandmarks">Nearby Landmarks</Label>
-                  <Textarea
-                    id="nearbyLandmarks"
-                    value={currentData.general.nearbyLandmarks}
-                    onChange={(e) => handleInputChange('general', 'nearbyLandmarks', e.target.value)}
-                    placeholder="Enter nearby landmarks"
-                    rows={3}
-                  />
+              <CardContent className="pt-8 pb-6">
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                  <div className="space-y-3">
+                    <Label htmlFor="projectName" className="text-sm font-semibold text-gray-700 flex items-center gap-2">
+                      Project Name 
+                      <span className="text-red-500 text-lg">*</span>
+                      <HelpCircle className="h-3 w-3 text-gray-400" />
+                    </Label>
+                    <Input
+                      id="projectName"
+                      value={currentData.general.projectName}
+                      onChange={(e) => handleInputChange('general', 'projectName', e.target.value)}
+                      placeholder="e.g., Sky Tower Residential Complex"
+                      className="w-full h-11 border-gray-300 focus:border-blue-500 focus:ring-blue-500"
+                      required
+                    />
+                    <p className="text-xs text-gray-500">
+                      Official project name as per approved documentation
+                    </p>
+                  </div>
+                  <div className="space-y-3">
+                    <Label htmlFor="projectType" className="text-sm font-semibold text-gray-700 flex items-center gap-2">
+                      Project Type 
+                      <span className="text-red-500 text-lg">*</span>
+                    </Label>
+                    <Select
+                      value={currentData.general.projectType}
+                      onValueChange={(value) => handleInputChange('general', 'projectType', value)}
+                    >
+                      <SelectTrigger id="projectType" className="h-11 border-gray-300 focus:border-blue-500 focus:ring-blue-500">
+                        <SelectValue placeholder="Choose primary project type" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="residential">
+                          <div className="flex items-center gap-2">
+                            <Home className="h-4 w-4" />
+                            Residential
+                          </div>
+                        </SelectItem>
+                        <SelectItem value="commercial">
+                          <div className="flex items-center gap-2">
+                            <Building2 className="h-4 w-4" />
+                            Commercial
+                          </div>
+                        </SelectItem>
+                        <SelectItem value="mixed">
+                          <div className="flex items-center gap-2">
+                            <Square className="h-4 w-4" />
+                            Mixed Use
+                          </div>
+                        </SelectItem>
+                        <SelectItem value="industrial">
+                          <div className="flex items-center gap-2">
+                            <Settings className="h-4 w-4" />
+                            Industrial
+                          </div>
+                        </SelectItem>
+                        <SelectItem value="institutional">Institutional</SelectItem>
+                        <SelectItem value="hospitality">Hospitality</SelectItem>
+                        <SelectItem value="healthcare">Healthcare</SelectItem>
+                        <SelectItem value="infrastructure">Infrastructure</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <p className="text-xs text-gray-500">
+                      Select the primary category that best describes your project
+                    </p>
+                  </div>
+
+                  <div className="space-y-3">
+                    <Label htmlFor="developmentType" className="text-sm font-semibold text-gray-700">
+                      Development Type
+                    </Label>
+                    <Select
+                      value={currentData.general.developmentType}
+                      onValueChange={(value) => handleInputChange('general', 'developmentType', value)}
+                    >
+                      <SelectTrigger id="developmentType" className="h-11 border-gray-300 focus:border-blue-500 focus:ring-blue-500">
+                        <SelectValue placeholder="Select development approach" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="greenfield">Greenfield Development</SelectItem>
+                        <SelectItem value="brownfield">Brownfield Redevelopment</SelectItem>
+                        <SelectItem value="renovation">Renovation/Upgrade</SelectItem>
+                        <SelectItem value="extension">Extension/Addition</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div className="space-y-3">
+                    <Label htmlFor="projectCategory" className="text-sm font-semibold text-gray-700">
+                      Market Segment
+                    </Label>
+                    <Select
+                      value={currentData.general.projectCategory}
+                      onValueChange={(value) => handleInputChange('general', 'projectCategory', value)}
+                    >
+                      <SelectTrigger id="projectCategory" className="h-11 border-gray-300 focus:border-blue-500 focus:ring-blue-500">
+                        <SelectValue placeholder="Choose market segment" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="luxury">Luxury (₹8+ Cr)</SelectItem>
+                        <SelectItem value="premium">Premium (₹3-8 Cr)</SelectItem>
+                        <SelectItem value="midSegment">Mid-Segment (₹1-3 Cr)</SelectItem>
+                        <SelectItem value="affordable">Affordable (₹50L-1 Cr)</SelectItem>
+                        <SelectItem value="budget">Budget (Below ₹50L)</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  {/* Location Section */}
+                  <div className="col-span-1 lg:col-span-2">
+                    <div className="flex items-center gap-2 mb-4">
+                      <MapPin className="h-5 w-5 text-blue-600" />
+                      <h4 className="text-base font-semibold text-gray-800">Location Details</h4>
+                    </div>
+                    <Separator className="mb-6" />
+                  </div>
+
+                  <div className="space-y-3">
+                    <Label htmlFor="location" className="text-sm font-semibold text-gray-700 flex items-center gap-2">
+                      Project Address 
+                      <span className="text-red-500 text-lg">*</span>
+                    </Label>
+                    <Input
+                      id="location"
+                      value={currentData.general.location}
+                      onChange={(e) => handleInputChange('general', 'location', e.target.value)}
+                      placeholder="e.g., Plot No. 123, MG Road"
+                      className="h-11 border-gray-300 focus:border-blue-500 focus:ring-blue-500"
+                      required
+                    />
+                    <p className="text-xs text-gray-500">Complete project address with plot/survey number</p>
+                  </div>
+
+                  <div className="space-y-3">
+                    <Label htmlFor="city" className="text-sm font-semibold text-gray-700 flex items-center gap-2">
+                      City 
+                      <span className="text-red-500 text-lg">*</span>
+                    </Label>
+                    <Input
+                      id="city"
+                      value={currentData.general.city}
+                      onChange={(e) => handleInputChange('general', 'city', e.target.value)}
+                      placeholder="e.g., Chennai"
+                      className="h-11 border-gray-300 focus:border-blue-500 focus:ring-blue-500"
+                      required
+                    />
+                  </div>
+
+                  <div className="space-y-3">
+                    <Label htmlFor="state" className="text-sm font-semibold text-gray-700 flex items-center gap-2">
+                      State 
+                      <span className="text-red-500 text-lg">*</span>
+                    </Label>
+                    <Select
+                      value={currentData.general.state}
+                      onValueChange={(value) => handleInputChange('general', 'state', value)}
+                    >
+                      <SelectTrigger id="state" className="h-11 border-gray-300 focus:border-blue-500 focus:ring-blue-500">
+                        <SelectValue placeholder="Select state" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="tamil-nadu">Tamil Nadu</SelectItem>
+                        <SelectItem value="karnataka">Karnataka</SelectItem>
+                        <SelectItem value="kerala">Kerala</SelectItem>
+                        <SelectItem value="andhra-pradesh">Andhra Pradesh</SelectItem>
+                        <SelectItem value="telangana">Telangana</SelectItem>
+                        <SelectItem value="maharashtra">Maharashtra</SelectItem>
+                        <SelectItem value="delhi">Delhi NCR</SelectItem>
+                        <SelectItem value="gujarat">Gujarat</SelectItem>
+                        <SelectItem value="rajasthan">Rajasthan</SelectItem>
+                        <SelectItem value="uttar-pradesh">Uttar Pradesh</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div className="space-y-3">
+                    <Label htmlFor="pincode" className="text-sm font-semibold text-gray-700 flex items-center gap-2">
+                      Pincode 
+                      <span className="text-red-500 text-lg">*</span>
+                    </Label>
+                    <Input
+                      id="pincode"
+                      type="text"
+                      pattern="[0-9]{6}"
+                      maxLength={6}
+                      value={currentData.general.pincode}
+                      onChange={(e) => {
+                        const value = e.target.value.replace(/\D/g, ''); // Only digits
+                        handleInputChange('general', 'pincode', value);
+                      }}
+                      placeholder="600001"
+                      className="h-11 border-gray-300 focus:border-blue-500 focus:ring-blue-500"
+                      required
+                    />
+                    <p className="text-xs text-gray-500">6-digit Indian postal code</p>
+                  </div>
+
+                  <div className="col-span-1 lg:col-span-2 space-y-3">
+                    <Label htmlFor="nearbyLandmarks" className="text-sm font-semibold text-gray-700">
+                      Connectivity & Landmarks
+                    </Label>
+                    <Textarea
+                      id="nearbyLandmarks"
+                      value={currentData.general.nearbyLandmarks}
+                      onChange={(e) => handleInputChange('general', 'nearbyLandmarks', e.target.value)}
+                      placeholder="e.g., 2km from Chennai Central Station, Adjacent to Express Avenue Mall, Near Apollo Hospital, IT Corridor connectivity"
+                      rows={4}
+                      className="border-gray-300 focus:border-blue-500 focus:ring-blue-500 resize-none"
+                    />
+                    <div className="flex items-start gap-2 p-3 bg-blue-50 rounded-lg">
+                      <Info className="h-4 w-4 text-blue-600 mt-0.5 flex-shrink-0" />
+                      <p className="text-xs text-blue-700">
+                        Include proximity to transport hubs, educational institutions, healthcare facilities, 
+                        shopping centers, and employment hubs within 5km radius
+                      </p>
+                    </div>
+                  </div>
                 </div>
               </CardContent>
             </Card>
@@ -1445,10 +1658,231 @@ export function DetailsTab({ project }: { project: any }) {
             </Card>
           </TabsContent>
 
-          {/* Add more TabsContent for other tabs (building, elevation, interiors, etc.) */}
-          {/* ... Similar implementation for other tabs ... */}
+          {/* Plot Details Tab */}
+          <TabsContent value="plot" className="space-y-4">
+            <Card className="shadow-sm border-0 ring-1 ring-gray-200">
+              <CardHeader className="bg-gradient-to-r from-green-50 to-emerald-50 rounded-t-lg border-b">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <CardTitle className="text-xl flex items-center gap-3">
+                      <div className="p-2 bg-green-100 rounded-lg">
+                        <MapPin className="h-5 w-5 text-green-600" />
+                      </div>
+                      Plot & Land Details
+                    </CardTitle>
+                    <CardDescription className="mt-1 text-gray-600">
+                      Specify land specifications and regulatory requirements
+                    </CardDescription>
+                  </div>
+                  <Badge variant="outline" className="bg-white border-green-200 text-green-700">
+                    Step 2 of 8
+                  </Badge>
+                </div>
+              </CardHeader>
+              <CardContent className="pt-8 pb-6">
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                  <div className="space-y-3">
+                    <Label htmlFor="totalArea" className="text-sm font-semibold text-gray-700 flex items-center gap-2">
+                      Total Plot Area 
+                      <span className="text-red-500 text-lg">*</span>
+                    </Label>
+                    <Input
+                      id="totalArea"
+                      value={currentData.plot.totalArea}
+                      onChange={(e) => handleInputChange('plot', 'totalArea', e.target.value)}
+                      placeholder="e.g., 12,500 sq ft"
+                      className="h-11 border-gray-300 focus:border-blue-500 focus:ring-blue-500"
+                      required
+                    />
+                    <p className="text-xs text-gray-500">Total land area including all boundaries</p>
+                  </div>
+
+                  <div className="space-y-3">
+                    <Label htmlFor="plotDimensions" className="text-sm font-semibold text-gray-700">
+                      Plot Dimensions
+                    </Label>
+                    <Input
+                      id="plotDimensions"
+                      value={currentData.plot.plotDimensions}
+                      onChange={(e) => handleInputChange('plot', 'plotDimensions', e.target.value)}
+                      placeholder="e.g., 100 x 125 ft"
+                      className="h-11 border-gray-300 focus:border-blue-500 focus:ring-blue-500"
+                    />
+                    <p className="text-xs text-gray-500">Length x Width in feet or meters</p>
+                  </div>
+
+                  <div className="space-y-3">
+                    <Label htmlFor="facing" className="text-sm font-semibold text-gray-700 flex items-center gap-2">
+                      Plot Facing 
+                      <span className="text-red-500 text-lg">*</span>
+                    </Label>
+                    <Select
+                      value={currentData.plot.facing}
+                      onValueChange={(value) => handleInputChange('plot', 'facing', value)}
+                    >
+                      <SelectTrigger id="facing" className="h-11 border-gray-300 focus:border-blue-500 focus:ring-blue-500">
+                        <SelectValue placeholder="Select plot facing direction" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="north">North</SelectItem>
+                        <SelectItem value="south">South</SelectItem>
+                        <SelectItem value="east">East</SelectItem>
+                        <SelectItem value="west">West</SelectItem>
+                        <SelectItem value="northeast">North-East</SelectItem>
+                        <SelectItem value="northwest">North-West</SelectItem>
+                        <SelectItem value="southeast">South-East</SelectItem>
+                        <SelectItem value="southwest">South-West</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div className="space-y-3">
+                    <Label htmlFor="soilType" className="text-sm font-semibold text-gray-700">
+                      Soil Type
+                    </Label>
+                    <Input
+                      id="soilType"
+                      value={currentData.plot.soilType}
+                      onChange={(e) => handleInputChange('plot', 'soilType', e.target.value)}
+                      placeholder="e.g., Clay Loam, Sandy Soil, Black Cotton"
+                      className="h-11 border-gray-300 focus:border-blue-500 focus:ring-blue-500"
+                    />
+                    <p className="text-xs text-gray-500">Based on soil test report</p>
+                  </div>
+
+                  <div className="space-y-3">
+                    <Label htmlFor="surveyNumber" className="text-sm font-semibold text-gray-700">
+                      Survey Number
+                    </Label>
+                    <Input
+                      id="surveyNumber"
+                      value={currentData.plot.surveyNumber}
+                      onChange={(e) => handleInputChange('plot', 'surveyNumber', e.target.value)}
+                      placeholder="e.g., S.F. No. 123/4A"
+                      className="h-11 border-gray-300 focus:border-blue-500 focus:ring-blue-500"
+                    />
+                  </div>
+
+                  <div className="space-y-3">
+                    <Label htmlFor="zoning" className="text-sm font-semibold text-gray-700">
+                      Zoning Classification
+                    </Label>
+                    <Input
+                      id="zoning"
+                      value={currentData.plot.zoning}
+                      onChange={(e) => handleInputChange('plot', 'zoning', e.target.value)}
+                      placeholder="e.g., Commercial Mixed Use, Residential"
+                      className="h-11 border-gray-300 focus:border-blue-500 focus:ring-blue-500"
+                    />
+                  </div>
+
+                  {/* Setbacks Section */}
+                  <div className="col-span-1 lg:col-span-2">
+                    <div className="flex items-center gap-2 mb-4">
+                      <Square className="h-5 w-5 text-blue-600" />
+                      <h4 className="text-base font-semibold text-gray-800">Mandatory Setbacks (as per local bylaws)</h4>
+                    </div>
+                    <Separator className="mb-6" />
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                      <div className="space-y-2">
+                        <Label htmlFor="frontSetback" className="text-sm font-medium text-gray-600">Front (ft)</Label>
+                        <Input
+                          id="frontSetback"
+                          type="number"
+                          value={currentData.plot.setbacks.front}
+                          onChange={(e) => handleInputChange('plot', 'setbacks', {...currentData.plot.setbacks, front: e.target.value})}
+                          placeholder="20"
+                          className="h-10 text-center"
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="rearSetback" className="text-sm font-medium text-gray-600">Rear (ft)</Label>
+                        <Input
+                          id="rearSetback"
+                          type="number"
+                          value={currentData.plot.setbacks.rear}
+                          onChange={(e) => handleInputChange('plot', 'setbacks', {...currentData.plot.setbacks, rear: e.target.value})}
+                          placeholder="15"
+                          className="h-10 text-center"
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="leftSetback" className="text-sm font-medium text-gray-600">Left (ft)</Label>
+                        <Input
+                          id="leftSetback"
+                          type="number"
+                          value={currentData.plot.setbacks.left}
+                          onChange={(e) => handleInputChange('plot', 'setbacks', {...currentData.plot.setbacks, left: e.target.value})}
+                          placeholder="10"
+                          className="h-10 text-center"
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="rightSetback" className="text-sm font-medium text-gray-600">Right (ft)</Label>
+                        <Input
+                          id="rightSetback"
+                          type="number"
+                          value={currentData.plot.setbacks.right}
+                          onChange={(e) => handleInputChange('plot', 'setbacks', {...currentData.plot.setbacks, right: e.target.value})}
+                          placeholder="10"
+                          className="h-10 text-center"
+                        />
+                      </div>
+                    </div>
+                    <div className="mt-4 p-3 bg-amber-50 rounded-lg">
+                      <div className="flex items-start gap-2">
+                        <AlertTriangle className="h-4 w-4 text-amber-600 mt-0.5 flex-shrink-0" />
+                        <p className="text-xs text-amber-700">
+                          Setbacks must comply with local building bylaws. Consult with local municipal authority for accurate requirements.
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          {/* Add placeholder for other tabs */}
+          <TabsContent value="building">
+            <div className="text-center py-12">
+              <Building2 className="h-12 w-12 mx-auto text-gray-400 mb-4" />
+              <h3 className="text-lg font-medium text-gray-900 mb-2">Building Configuration</h3>
+              <p className="text-gray-500">This section will contain building specifications and floor plans.</p>
+            </div>
+          </TabsContent>
+
+          <TabsContent value="elevation">
+            <div className="text-center py-12">
+              <Palette className="h-12 w-12 mx-auto text-gray-400 mb-4" />
+              <h3 className="text-lg font-medium text-gray-900 mb-2">Elevation & Design</h3>
+              <p className="text-gray-500">This section will contain architectural design and elevation details.</p>
+            </div>
+          </TabsContent>
 
         </Tabs>
+        
+        {/* Form Actions Footer */}
+        <div className="bg-white rounded-lg shadow-sm border p-6 sticky bottom-0">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-4">
+              <Button variant="outline" size="sm">
+                <Save className="h-4 w-4 mr-2" />
+                Save Draft
+              </Button>
+              <span className="text-sm text-muted-foreground">Auto-save enabled</span>
+            </div>
+            <div className="flex gap-3">
+              <Button variant="outline" onClick={handleCancel} size="lg">
+                Cancel Changes
+              </Button>
+              <Button onClick={handleSave} size="lg" className="bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800">
+                <CheckCircle className="h-4 w-4 mr-2" />
+                {isAddMode ? 'Create Project Requirements' : 'Update Requirements'}
+              </Button>
+            </div>
+          </div>
+        </div>
       </div>
     );
   }
@@ -1885,17 +2319,18 @@ export function ReportsTab
               </CardTitle>
             </CardHeader>
             <CardContent className="p-0">
-              <Table>
-                <TableHeader>
-                  <TableRow className="bg-gray-50">
-                    <TableHead className="font-semibold">Type</TableHead>
-                    <TableHead className="font-semibold text-center">Count</TableHead>
-                    <TableHead className="font-semibold">Area</TableHead>
-                    <TableHead className="font-semibold">Price</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {details.units.residential.map((unit: any, index: number) => (
+              <div className="overflow-x-auto">
+                <Table className="min-w-[500px]">
+                  <TableHeader>
+                    <TableRow className="bg-gray-50">
+                      <TableHead className="font-semibold min-w-[120px]">Type</TableHead>
+                      <TableHead className="font-semibold text-center min-w-[80px]">Count</TableHead>
+                      <TableHead className="font-semibold min-w-[100px]">Area</TableHead>
+                      <TableHead className="font-semibold min-w-[120px]">Price</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {details.units.residential.map((unit: any, index: number) => (
                     <TableRow key={index} className="hover:bg-indigo-50/50 transition-colors">
                       <TableCell className="font-medium">
                         <div className="flex items-center gap-2">
@@ -1912,6 +2347,7 @@ export function ReportsTab
                   ))}
                 </TableBody>
               </Table>
+              </div>
             </CardContent>
           </Card>
 
@@ -1926,17 +2362,18 @@ export function ReportsTab
               </CardTitle>
             </CardHeader>
             <CardContent className="p-0">
-              <Table>
-                <TableHeader>
-                  <TableRow className="bg-gray-50">
-                    <TableHead className="font-semibold">Type</TableHead>
-                    <TableHead className="font-semibold text-center">Count</TableHead>
-                    <TableHead className="font-semibold">Area</TableHead>
-                    <TableHead className="font-semibold">Price</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {details.units.commercial.map((unit: any, index: number) => (
+              <div className="overflow-x-auto">
+                <Table className="min-w-[500px]">
+                  <TableHeader>
+                    <TableRow className="bg-gray-50">
+                      <TableHead className="font-semibold min-w-[120px]">Type</TableHead>
+                      <TableHead className="font-semibold text-center min-w-[80px]">Count</TableHead>
+                      <TableHead className="font-semibold min-w-[100px]">Area</TableHead>
+                      <TableHead className="font-semibold min-w-[120px]">Price</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {details.units.commercial.map((unit: any, index: number) => (
                     <TableRow key={index} className="hover:bg-teal-50/50 transition-colors">
                       <TableCell className="font-medium">{unit.type}</TableCell>
                       <TableCell className="text-center">
@@ -1948,6 +2385,7 @@ export function ReportsTab
                   ))}
                 </TableBody>
               </Table>
+              </div>
             </CardContent>
           </Card>
         </div>

@@ -155,8 +155,8 @@ function stringToHslColor(input: string, saturation = 65, lightness = 55): strin
   return `hsl(${hue} ${saturation}% ${lightness}%)`;
 }
 
-// Import Indian property projects data
-import { indianPropertyProjects } from '@/data/indian-property-projects';
+// Import Tamil property projects data
+import { tamilPropertyProjects } from '@/data/tamil-property-projects';
 import { sampleProjects } from '@/data/sample-projects';
 
 // Generate sample projects using real Indian data
@@ -164,52 +164,52 @@ const generateMockProjects = (): Project[] => {
   // Use actual Indian property projects as base
   const baseProjects = [...sampleProjects];
   
-  // Indian project names for additional variety
+  // Tamil project names for additional variety
   const projectNames = [
-    'Godrej Platinum', 'Prestige Silver Oak', 'Lodha Palava City', 'DLF Capital Greens', 'Brigade Gateway',
-    'Sobha Dream Acres', 'Puravankara Skydale', 'Raheja Vivarea', 'Hiranandani Estate', 'Adani Realty Shantigram',
-    'Mahindra Lifespaces', 'Tata Housing Value Homes', 'L&T Emerald Isle', 'Oberoi Realty Garden City',
-    'Unitech Grande', 'Jaypee Greens', 'Amrapali Sapphire', 'Supertech Emerald Court', 'Gaurs Siddhartham',
-    'ATS Greens Village', 'Eldeco Live', 'Omaxe New Heights', 'BPTP Park Grandeura', 'Vatika City',
-    'M3M Marina', 'Ireo Victory Valley', 'Bestech Park View', 'CHD Avenue', 'Hero Homes',
-    'Pareena Heights', 'Signature Global Park', 'ROF Alante', 'Experion Windchants', 'Central Park Flower Valley',
-    'Ashiana Housing', 'Ansal API Valley', 'TDI City', 'Orris Aster Court', 'Spaze Towers',
-    'Max Heights', 'Cosmos Infra', 'SS Group Plaza', 'JMS Marine Square', 'MRG Crown'
+    'Ramasamy House', 'Sundaram Villa', 'Moorthy Apartments', 'Gopal Residency', 'Murugan Complex',
+    'Krishnan Villa Estate', 'Subramani Flats', 'Natarajan House', 'Kannan Towers', 'Selvam Garden',
+    'Venkatesan Homes', 'Balaji Gardens', 'Ganesh Residency', 'Kumar Villa', 'Rajan Apartments',
+    'Srinivasan Complex', 'Lakshmi Towers', 'Saravana Homes', 'Karthik Gardens', 'Senthil Flats',
+    'Balamurugan Estate', 'Annamalai Residency', 'Dhanasekaran Villa', 'Easwaran Homes', 'Pandian Complex',
+    'Arumugam Gardens', 'Kathiresan Towers', 'Manikandan Flats', 'Rajendran Estate', 'Sivakumar Homes',
+    'Thangaraj Villa', 'Veeramani Complex', 'Muthukumar Gardens', 'Palani Residency', 'Ayyappan Towers',
+    'Dhanapal Homes', 'Ganesan Estate', 'Jayaraman Flats', 'Kalidasan Complex', 'Manoharan Villa'
   ];
 
   const customerNames = [
-    'DLF Limited', 'Godrej Properties', 'Lodha Group', 'Prestige Estates', 'Brigade Group',
-    'Sobha Limited', 'Puravankara Limited', 'Raheja Developers', 'Hiranandani Group', 'Adani Realty',
-    'Mahindra Lifespaces', 'Tata Housing', 'L&T Realty', 'Oberoi Realty', 'Unitech Group',
-    'Jaypee Group', 'Amrapali Group', 'Supertech Limited', 'Gaursons India', 'ATS Infrastructure',
-    'Eldeco Group', 'Omaxe Ltd', 'BPTP Limited', 'Vatika Group', 'M3M India',
-    'Ireo Private Limited', 'Bestech India', 'CHD Developers', 'Hero Realty', 'Pareena Group',
-    'Signature Global', 'ROF Group', 'Experion Developers', 'Central Park', 'Ashiana Housing',
-    'Ansal API', 'TDI Infratech', 'Orris Infrastructure', 'Spaze Towers', 'Max Estates',
-    'Cosmos Group', 'SS Group', 'JMS Buildtech', 'MRG Group', 'Shapoorji Pallonji'
+    'Ramasamy Constructions', 'Sundaram Developers', 'Moorthy & Sons Builders', 'Gopal Estates Pvt Ltd',
+    'Murugan Properties', 'Krishnan Developers', 'Subramani Constructions', 'Natarajan Builders',
+    'Kannan Group', 'Selvam Developers', 'Venkatesan Builders', 'Balaji Constructions',
+    'Ganesh Properties', 'Kumar Estates', 'Rajan Builders', 'Srinivasan Developers',
+    'Lakshmi Constructions', 'Saravana Properties', 'Karthik Builders', 'Senthil Estates',
+    'Balamurugan Developers', 'Annamalai Builders', 'Dhanasekaran Properties', 'Easwaran Constructions',
+    'Pandian Estates', 'Arumugam Builders', 'Kathiresan Developers', 'Manikandan Properties',
+    'Rajendran Builders', 'Sivakumar Constructions', 'Thangaraj Estates', 'Veeramani Developers',
+    'Muthukumar Properties', 'Palani Builders', 'Ayyappan Constructions', 'Dhanapal Estates',
+    'Ganesan Developers', 'Jayaraman Properties', 'Kalidasan Builders', 'Manoharan Constructions'
   ];
 
   const managerNames = [
-    'Rajesh Kumar', 'Priya Sharma', 'Amit Singh', 'Neha Gupta', 'Vikram Malhotra',
-    'Sunita Patel', 'Arun Verma', 'Pooja Reddy', 'Suresh Menon', 'Anita Desai',
-    'Ravi Shankar', 'Kavita Joshi', 'Manish Agarwal', 'Deepa Nair', 'Santosh Yadav',
-    'Rekha Bhardwaj', 'Vijay Kumar', 'Meera Chopra', 'Ashok Mishra', 'Swati Bansal',
-    'Nikhil Mehta', 'Anjali Saxena', 'Rahul Kapoor', 'Shweta Tiwari', 'Gaurav Jindal',
-    'Nidhi Shah', 'Pankaj Dubey', 'Sonia Arora', 'Karthik Iyer', 'Preeti Chauhan',
-    'Rohit Bhatia', 'Divya Pandey', 'Alok Srivastava', 'Tanvi Kulkarni', 'Varun Dhawan',
-    'Ritika Goyal', 'Sanjay Tripathi', 'Monica Ahuja', 'Harish Chandra', 'Pallavi Jain'
+    'Mr. P. Ramasamy', 'Mr. K. Sundaram', 'Mr. S. Moorthy', 'Mr. R. Gopal', 'Mr. V. Murugan',
+    'Mr. T. Krishnan', 'Mr. P. Subramani', 'Mr. M. Natarajan', 'Mr. A. Selvam', 'Mr. S. Venkatesan',
+    'Mr. R. Balaji', 'Mr. K. Ganesh', 'Mr. V. Kumar', 'Mr. N. Rajan', 'Mr. T. Srinivasan',
+    'Mrs. L. Lakshmi', 'Mr. S. Saravanan', 'Mr. K. Karthik', 'Mr. M. Senthil', 'Mr. B. Balamurugan',
+    'Mr. A. Annamalai', 'Mr. D. Dhanasekaran', 'Mr. E. Easwaran', 'Mr. P. Pandian', 'Mr. A. Arumugam',
+    'Mr. K. Kathiresan', 'Mr. M. Manikandan', 'Mr. R. Rajendran', 'Mr. S. Sivakumar', 'Mr. T. Thangaraj',
+    'Mr. V. Veeramani', 'Mr. M. Muthukumar', 'Mr. P. Palani', 'Mr. A. Ayyappan', 'Mr. D. Dhanapal',
+    'Mr. G. Ganesan', 'Mr. J. Jayaraman', 'Mr. K. Kalidasan', 'Mr. M. Manoharan', 'Mrs. P. Priya'
   ];
 
   const locations = [
-    'Gurugram, Haryana', 'Noida, Uttar Pradesh', 'Mumbai, Maharashtra', 'Bangalore, Karnataka', 'Chennai, Tamil Nadu',
-    'Pune, Maharashtra', 'Hyderabad, Telangana', 'Kolkata, West Bengal', 'Ahmedabad, Gujarat', 'Delhi NCR',
-    'Thane, Maharashtra', 'Navi Mumbai, Maharashtra', 'Faridabad, Haryana', 'Ghaziabad, Uttar Pradesh', 'Greater Noida, UP',
-    'Whitefield, Bangalore', 'Electronic City, Bangalore', 'Hebbal, Bangalore', 'Marathahalli, Bangalore', 'Yelahanka, Bangalore',
-    'Andheri, Mumbai', 'Powai, Mumbai', 'Bandra, Mumbai', 'Goregaon, Mumbai', 'Malad, Mumbai',
-    'Hinjewadi, Pune', 'Wakad, Pune', 'Kharadi, Pune', 'Baner, Pune', 'Viman Nagar, Pune',
-    'HITEC City, Hyderabad', 'Gachibowli, Hyderabad', 'Madhapur, Hyderabad', 'Kondapur, Hyderabad', 'Jubilee Hills, Hyderabad',
-    'Salt Lake, Kolkata', 'New Town, Kolkata', 'EM Bypass, Kolkata', 'Rajarhat, Kolkata', 'Park Street, Kolkata',
-    'SG Highway, Ahmedabad', 'Vastrapur, Ahmedabad', 'Satellite, Ahmedabad', 'Bopal, Ahmedabad', 'Science City, Ahmedabad'
+    'T. Nagar, Chennai', 'Velachery, Chennai', 'Adyar, Chennai', 'Besant Nagar, Chennai', 'Mylapore, Chennai',
+    'Anna Nagar, Chennai', 'Nungambakkam, Chennai', 'Alwarpet, Chennai', 'Kodambakkam, Chennai', 'Vadapalani, Chennai',
+    'Chromepet, Chennai', 'Tambaram, Chennai', 'Thoraipakkam, Chennai', 'Sholinganallur, Chennai', 'Perungudi, Chennai',
+    'Guindy, Chennai', 'Saidapet, Chennai', 'Ashok Nagar, Chennai', 'K.K. Nagar, Chennai', 'West Mambalam, Chennai',
+    'Porur, Chennai', 'Madipakkam, Chennai', 'Pallikaranai, Chennai', 'Medavakkam, Chennai', 'Nanganallur, Chennai',
+    'Triplicane, Chennai', 'Royapettah, Chennai', 'Teynampet, Chennai', 'Raja Annamalaipuram, Chennai', 'Boat Club, Chennai',
+    'ECR Road, Chennai', 'OMR Road, Chennai', 'GST Road, Chennai', 'Mount Road, Chennai', 'Poonamallee, Chennai',
+    'Coimbatore, Tamil Nadu', 'Madurai, Tamil Nadu', 'Trichy, Tamil Nadu', 'Salem, Tamil Nadu', 'Tirunelveli, Tamil Nadu',
+    'Kanchipuram, Tamil Nadu', 'Vellore, Tamil Nadu', 'Erode, Tamil Nadu', 'Tiruppur, Tamil Nadu', 'Thanjavur, Tamil Nadu'
   ];
 
   const milestones = [

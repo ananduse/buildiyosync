@@ -358,7 +358,7 @@ export default function EnhancedProjectDashboard() {
 
       {/* Detailed Tabs */}
       <Tabs defaultValue="tasks" className="space-y-4">
-        <TabsList className="grid w-full grid-cols-6">
+        <TabsList className="grid w-full grid-cols-2 sm:grid-cols-3 lg:grid-cols-6">
           <TabsTrigger value="tasks">Tasks</TabsTrigger>
           <TabsTrigger value="resources">Resources</TabsTrigger>
           <TabsTrigger value="financial">Financial</TabsTrigger>
@@ -378,21 +378,22 @@ export default function EnhancedProjectDashboard() {
                 <Button size="sm">View All Tasks</Button>
               </div>
             </CardHeader>
-            <CardContent>
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Task Code</TableHead>
-                    <TableHead>Title</TableHead>
-                    <TableHead>Assignee</TableHead>
-                    <TableHead>Progress</TableHead>
-                    <TableHead>Due Date</TableHead>
-                    <TableHead>Priority</TableHead>
-                    <TableHead>Status</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {selectedProject.tasks.filter(t => t.status === 'in-progress').map((task) => (
+            <CardContent className="p-0 sm:p-6">
+              <div className="overflow-x-auto">
+                <Table className="min-w-[900px]">
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead className="min-w-[100px]">Task Code</TableHead>
+                      <TableHead className="min-w-[200px]">Title</TableHead>
+                      <TableHead className="min-w-[140px]">Assignee</TableHead>
+                      <TableHead className="min-w-[120px]">Progress</TableHead>
+                      <TableHead className="min-w-[100px]">Due Date</TableHead>
+                      <TableHead className="min-w-[80px]">Priority</TableHead>
+                      <TableHead className="min-w-[80px]">Status</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {selectedProject.tasks.filter(t => t.status === 'in-progress').map((task) => (
                     <TableRow key={task.id}>
                       <TableCell className="font-medium">{task.code}</TableCell>
                       <TableCell>{task.title}</TableCell>
@@ -433,6 +434,7 @@ export default function EnhancedProjectDashboard() {
                   ))}
                 </TableBody>
               </Table>
+              </div>
             </CardContent>
           </Card>
         </TabsContent>
@@ -634,20 +636,21 @@ export default function EnhancedProjectDashboard() {
               <CardTitle>Active Vendors</CardTitle>
               <CardDescription>Contractors and suppliers currently engaged</CardDescription>
             </CardHeader>
-            <CardContent>
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Company</TableHead>
-                    <TableHead>Type</TableHead>
-                    <TableHead>Specialization</TableHead>
-                    <TableHead>Contract Value</TableHead>
-                    <TableHead>Performance</TableHead>
-                    <TableHead>Status</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {selectedProject.vendors.map((vendor) => (
+            <CardContent className="p-0 sm:p-6">
+              <div className="overflow-x-auto">
+                <Table className="min-w-[800px]">
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead className="min-w-[180px]">Company</TableHead>
+                      <TableHead className="min-w-[100px]">Type</TableHead>
+                      <TableHead className="min-w-[160px]">Specialization</TableHead>
+                      <TableHead className="min-w-[120px]">Contract Value</TableHead>
+                      <TableHead className="min-w-[120px]">Performance</TableHead>
+                      <TableHead className="min-w-[80px]">Status</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {selectedProject.vendors.map((vendor) => (
                     <TableRow key={vendor.id}>
                       <TableCell>
                         <div>
@@ -693,6 +696,7 @@ export default function EnhancedProjectDashboard() {
                   ))}
                 </TableBody>
               </Table>
+              </div>
             </CardContent>
           </Card>
         </TabsContent>
