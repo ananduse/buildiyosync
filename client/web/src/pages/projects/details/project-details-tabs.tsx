@@ -69,6 +69,8 @@ import {
   ThumbsUp,
   Heart,
   ArrowRight,
+  Save,
+  CheckCircle,
 } from 'lucide-react';
 
 import { cn } from '@/lib/utils';
@@ -833,6 +835,499 @@ export function DocumentsTab({ project }: { project: any }) {
         <ProjectDocuments />
       </div>
     </Suspense>
+  );
+}
+
+export function DetailsTab({ project }: { project: any }) {
+  const [isEditMode, setIsEditMode] = useState(false);
+  const [editedDetails, setEditedDetails] = useState<any>(null);
+
+  // Initialize with project details or defaults
+  const projectDetails = {
+    plot: {
+      size: '12,500 sq ft',
+      dimensions: '100 x 125 ft',
+      facing: 'North-East',
+      soilType: 'Clay Loam',
+      topography: 'Level Ground',
+      surveyNumber: 'SV-2024-001',
+      zoning: 'Commercial Mixed Use',
+      setbacks: {
+        front: '20 ft',
+        rear: '15 ft',
+        left: '10 ft',
+        right: '10 ft'
+      }
+    },
+    design: {
+      architect: 'Sterling Architecture Inc.',
+      structuralEngineer: 'BuildStrong Consultants',
+      mepConsultant: 'MEP Solutions Ltd.',
+      landscapeDesigner: 'GreenScape Studios',
+      interiorDesigner: 'Elite Interiors',
+      designStyle: 'Modern Contemporary',
+      sustainabilityRating: 'LEED Gold',
+      approvalStatus: 'Approved',
+      approvalDate: '2024-01-10',
+      permitNumber: 'BP-2024-0156'
+    },
+    structure: {
+      type: 'RCC Frame Structure',
+      foundation: 'Raft Foundation',
+      floors: 45,
+      basements: 3,
+      towers: 2,
+      totalUnits: 240,
+      parkingLevels: 5,
+      totalParkingSpaces: 480,
+      builtUpArea: '450,000 sq ft',
+      carpetArea: '320,000 sq ft',
+      commonArea: '130,000 sq ft',
+      efficiency: '71%'
+    },
+    units: {
+      residential: [
+        { type: '1 BHK', count: 60, area: '650 sq ft', price: '$250,000' },
+        { type: '2 BHK', count: 80, area: '1,100 sq ft', price: '$420,000' },
+        { type: '3 BHK', count: 60, area: '1,500 sq ft', price: '$650,000' },
+        { type: '4 BHK', count: 30, area: '2,200 sq ft', price: '$950,000' },
+        { type: 'Penthouse', count: 10, area: '3,500 sq ft', price: '$1,500,000' }
+      ],
+      commercial: [
+        { type: 'Retail Shops', count: 25, area: '200-500 sq ft', price: '$500-1,500/sq ft' },
+        { type: 'Office Spaces', count: 15, area: '1,000-5,000 sq ft', price: '$80/sq ft/month' },
+        { type: 'Food Court', count: 1, area: '8,000 sq ft', price: 'On Lease' }
+      ]
+    },
+    amenities: [
+      'Swimming Pool', 'Gymnasium', 'Clubhouse', 'Children\'s Play Area',
+      'Jogging Track', 'Basketball Court', 'Tennis Court', 'Amphitheater',
+      'Party Hall', 'Guest Suites', 'Spa & Sauna', 'Yoga Studio',
+      'Library', 'Business Center', 'Cafeteria', 'Medical Center'
+    ],
+    specifications: {
+      flooring: 'Vitrified Tiles / Wooden Flooring',
+      kitchen: 'Modular Kitchen with Granite Platform',
+      bathroom: 'Premium CP Fittings, Anti-skid Tiles',
+      doors: 'Main - Teak Wood, Internal - Flush Doors',
+      windows: 'UPVC with Mosquito Mesh',
+      electricals: 'Concealed Copper Wiring, LED Fixtures',
+      plumbing: 'CPVC Pipes, Premium Fittings',
+      paint: 'Premium Emulsion Paint',
+      elevator: '6 High-speed Elevators per Tower',
+      security: '24x7 CCTV, Access Control, Intercom'
+    },
+    timeline: {
+      projectStart: '2024-01-15',
+      foundationComplete: '2024-04-30',
+      structureComplete: '2024-11-30',
+      mepComplete: '2025-03-15',
+      finishingComplete: '2025-07-30',
+      handover: '2025-12-31',
+      possessionStart: '2026-01-15'
+    },
+    compliance: {
+      environmentalClearance: 'EC-2023-1245',
+      fireSafety: 'FS-2024-0089',
+      occupancyCertificate: 'Pending',
+      completionCertificate: 'Pending',
+      buildingPlan: 'BP-2024-0156',
+      waterConnection: 'Applied',
+      electricityConnection: 'Sanctioned',
+      sewerageConnection: 'Approved'
+    },
+    financial: {
+      totalProjectCost: '$125,000,000',
+      landCost: '$25,000,000',
+      constructionCost: '$85,000,000',
+      otherCosts: '$15,000,000',
+      expectedRevenue: '$175,000,000',
+      expectedROI: '40%',
+      fundingSource: 'Bank Loan (60%) + Equity (40%)',
+      bankName: 'National Development Bank',
+      loanAmount: '$75,000,000',
+      loanStatus: 'Disbursed - 45%'
+    }
+  };
+
+  const handleEdit = () => {
+    setEditedDetails({ ...projectDetails });
+    setIsEditMode(true);
+  };
+
+  const handleSave = () => {
+    // Here you would save the edited details to your backend
+    console.log('Saving details:', editedDetails);
+    setIsEditMode(false);
+    // Show success message
+  };
+
+  const handleCancel = () => {
+    setEditedDetails(null);
+    setIsEditMode(false);
+  };
+
+  const details = editedDetails || projectDetails;
+
+  return (
+    <div className="space-y-6">
+      {/* Header */}
+      <div className="flex items-center justify-between">
+        <div>
+          <h2 className="text-2xl font-bold">Project Details</h2>
+          <p className="text-muted-foreground">
+            Comprehensive information about the project from plot to handover
+          </p>
+        </div>
+        <div className="flex gap-2">
+          {!isEditMode ? (
+            <>
+              <Button variant="outline" size="sm">
+                <Download className="h-4 w-4 mr-2" />
+                Export PDF
+              </Button>
+              <Button variant="outline" size="sm">
+                <Printer className="h-4 w-4 mr-2" />
+                Print
+              </Button>
+              <Button size="sm" onClick={handleEdit}>
+                <Edit className="h-4 w-4 mr-2" />
+                Edit Details
+              </Button>
+            </>
+          ) : (
+            <>
+              <Button variant="outline" size="sm" onClick={handleCancel}>
+                Cancel
+              </Button>
+              <Button size="sm" onClick={handleSave}>
+                <Save className="h-4 w-4 mr-2" />
+                Save Changes
+              </Button>
+            </>
+          )}
+        </div>
+      </div>
+
+      {/* Plot Details */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <MapPin className="h-5 w-5" />
+            Plot Information
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div>
+              <Label className="text-muted-foreground">Plot Size</Label>
+              <p className="font-medium">{details.plot.size}</p>
+            </div>
+            <div>
+              <Label className="text-muted-foreground">Dimensions</Label>
+              <p className="font-medium">{details.plot.dimensions}</p>
+            </div>
+            <div>
+              <Label className="text-muted-foreground">Facing</Label>
+              <p className="font-medium">{details.plot.facing}</p>
+            </div>
+            <div>
+              <Label className="text-muted-foreground">Soil Type</Label>
+              <p className="font-medium">{details.plot.soilType}</p>
+            </div>
+            <div>
+              <Label className="text-muted-foreground">Survey Number</Label>
+              <p className="font-medium">{details.plot.surveyNumber}</p>
+            </div>
+            <div>
+              <Label className="text-muted-foreground">Zoning</Label>
+              <p className="font-medium">{details.plot.zoning}</p>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Design & Architecture */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Palette className="h-5 w-5" />
+            Design & Architecture
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div>
+              <Label className="text-muted-foreground">Architect</Label>
+              <p className="font-medium">{details.design.architect}</p>
+            </div>
+            <div>
+              <Label className="text-muted-foreground">Structural Engineer</Label>
+              <p className="font-medium">{details.design.structuralEngineer}</p>
+            </div>
+            <div>
+              <Label className="text-muted-foreground">Design Style</Label>
+              <p className="font-medium">{details.design.designStyle}</p>
+            </div>
+            <div>
+              <Label className="text-muted-foreground">Sustainability Rating</Label>
+              <Badge className="bg-green-100 text-green-700">{details.design.sustainabilityRating}</Badge>
+            </div>
+            <div>
+              <Label className="text-muted-foreground">Permit Number</Label>
+              <p className="font-medium">{details.design.permitNumber}</p>
+            </div>
+            <div>
+              <Label className="text-muted-foreground">Approval Status</Label>
+              <Badge className="bg-green-100 text-green-700">{details.design.approvalStatus}</Badge>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Structure Details */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Building2 className="h-5 w-5" />
+            Structure & Construction
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div>
+              <Label className="text-muted-foreground">Structure Type</Label>
+              <p className="font-medium">{details.structure.type}</p>
+            </div>
+            <div>
+              <Label className="text-muted-foreground">Total Floors</Label>
+              <p className="font-medium">{details.structure.floors}</p>
+            </div>
+            <div>
+              <Label className="text-muted-foreground">Basements</Label>
+              <p className="font-medium">{details.structure.basements}</p>
+            </div>
+            <div>
+              <Label className="text-muted-foreground">Total Units</Label>
+              <p className="font-medium">{details.structure.totalUnits}</p>
+            </div>
+            <div>
+              <Label className="text-muted-foreground">Built-up Area</Label>
+              <p className="font-medium">{details.structure.builtUpArea}</p>
+            </div>
+            <div>
+              <Label className="text-muted-foreground">Carpet Area</Label>
+              <p className="font-medium">{details.structure.carpetArea}</p>
+            </div>
+            <div>
+              <Label className="text-muted-foreground">Parking Spaces</Label>
+              <p className="font-medium">{details.structure.totalParkingSpaces}</p>
+            </div>
+            <div>
+              <Label className="text-muted-foreground">Efficiency</Label>
+              <p className="font-medium">{details.structure.efficiency}</p>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Unit Types */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Home className="h-5 w-5" />
+              Residential Units
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Type</TableHead>
+                  <TableHead>Count</TableHead>
+                  <TableHead>Area</TableHead>
+                  <TableHead>Price</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {details.units.residential.map((unit: any, index: number) => (
+                  <TableRow key={index}>
+                    <TableCell className="font-medium">{unit.type}</TableCell>
+                    <TableCell>{unit.count}</TableCell>
+                    <TableCell>{unit.area}</TableCell>
+                    <TableCell>{unit.price}</TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Briefcase className="h-5 w-5" />
+              Commercial Units
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Type</TableHead>
+                  <TableHead>Count</TableHead>
+                  <TableHead>Area</TableHead>
+                  <TableHead>Price</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {details.units.commercial.map((unit: any, index: number) => (
+                  <TableRow key={index}>
+                    <TableCell className="font-medium">{unit.type}</TableCell>
+                    <TableCell>{unit.count}</TableCell>
+                    <TableCell>{unit.area}</TableCell>
+                    <TableCell>{unit.price}</TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Specifications */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Settings className="h-5 w-5" />
+            Specifications
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {Object.entries(details.specifications).map(([key, value]) => (
+              <div key={key}>
+                <Label className="text-muted-foreground capitalize">{key.replace(/([A-Z])/g, ' $1').trim()}</Label>
+                <p className="font-medium">{value}</p>
+              </div>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Amenities */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Star className="h-5 w-5" />
+            Amenities
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
+            {details.amenities.map((amenity: string, index: number) => (
+              <Badge key={index} variant="secondary" className="justify-start p-2">
+                <CheckCircle className="h-4 w-4 mr-2 text-green-600" />
+                {amenity}
+              </Badge>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Timeline */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Clock className="h-5 w-5" />
+            Project Timeline
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div>
+              <Label className="text-muted-foreground">Project Start</Label>
+              <p className="font-medium">{format(new Date(details.timeline.projectStart), 'MMM dd, yyyy')}</p>
+            </div>
+            <div>
+              <Label className="text-muted-foreground">Structure Complete</Label>
+              <p className="font-medium">{format(new Date(details.timeline.structureComplete), 'MMM dd, yyyy')}</p>
+            </div>
+            <div>
+              <Label className="text-muted-foreground">Finishing Complete</Label>
+              <p className="font-medium">{format(new Date(details.timeline.finishingComplete), 'MMM dd, yyyy')}</p>
+            </div>
+            <div>
+              <Label className="text-muted-foreground">Handover</Label>
+              <p className="font-medium">{format(new Date(details.timeline.handover), 'MMM dd, yyyy')}</p>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Financial Details */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <DollarSign className="h-5 w-5" />
+            Financial Information
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div>
+              <Label className="text-muted-foreground">Total Project Cost</Label>
+              <p className="font-medium text-lg">{details.financial.totalProjectCost}</p>
+            </div>
+            <div>
+              <Label className="text-muted-foreground">Expected Revenue</Label>
+              <p className="font-medium text-lg">{details.financial.expectedRevenue}</p>
+            </div>
+            <div>
+              <Label className="text-muted-foreground">Expected ROI</Label>
+              <Badge className="bg-green-100 text-green-700 text-lg px-3 py-1">{details.financial.expectedROI}</Badge>
+            </div>
+            <div>
+              <Label className="text-muted-foreground">Land Cost</Label>
+              <p className="font-medium">{details.financial.landCost}</p>
+            </div>
+            <div>
+              <Label className="text-muted-foreground">Construction Cost</Label>
+              <p className="font-medium">{details.financial.constructionCost}</p>
+            </div>
+            <div>
+              <Label className="text-muted-foreground">Loan Status</Label>
+              <p className="font-medium">{details.financial.loanStatus}</p>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Compliance & Approvals */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Shield className="h-5 w-5" />
+            Compliance & Approvals
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {Object.entries(details.compliance).map(([key, value]: [string, any]) => (
+              <div key={key}>
+                <Label className="text-muted-foreground capitalize">{key.replace(/([A-Z])/g, ' $1').trim()}</Label>
+                <div className="flex items-center gap-2">
+                  <p className="font-medium">{value}</p>
+                  {value === 'Approved' && <CheckCircle className="h-4 w-4 text-green-600" />}
+                  {value === 'Pending' && <Clock className="h-4 w-4 text-yellow-600" />}
+                </div>
+              </div>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
+    </div>
   );
 }
 

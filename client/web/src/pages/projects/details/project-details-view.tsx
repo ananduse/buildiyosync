@@ -293,7 +293,8 @@ import {
   DocumentsTab, 
   ReportsTab,
   CalendarTab,
-  ActivityTab 
+  ActivityTab,
+  DetailsTab 
 } from './project-details-tabs';
 import { TimelineTabEnhanced } from './timeline-tab-enhanced';
 
@@ -701,7 +702,7 @@ export default function ProjectDetailsView() {
   const getActiveTab = () => {
     const pathSegments = location.pathname.split('/');
     const lastSegment = pathSegments[pathSegments.length - 1];
-    const validTabs = ['overview', 'activity', 'timeline', 'team', 'tasks', 'budget', 'documents', 'calendar', 'reports'];
+    const validTabs = ['overview', 'activity', 'timeline', 'team', 'tasks', 'budget', 'documents', 'calendar', 'reports', 'details'];
     
     if (validTabs.includes(lastSegment)) {
       return lastSegment;
@@ -1001,6 +1002,13 @@ export default function ProjectDetailsView() {
               >
                 <BarChart3 className="h-4 w-4" />
                 Reports
+              </TabsTrigger>
+              <TabsTrigger 
+                value="details"
+                className="shrink-0 cursor-pointer whitespace-nowrap inline-flex justify-center items-center font-medium ring-offset-background transition-colors focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 data-disabled:pointer-events-none data-disabled:opacity-50 [&_svg]:shrink-0 [&_svg]:text-muted-foreground [&:hover_svg]:text-primary [&[data-state=active]_svg]:text-primary border-b-2 text-muted-foreground border-transparent hover:text-primary data-[state=active]:border-primary data-[state=active]:text-primary gap-2 [&_svg]:size-4 text-sm py-2.5"
+              >
+                <Info className="h-4 w-4" />
+                Details
               </TabsTrigger>
             </TabsList>
           </Tabs>
@@ -1307,6 +1315,11 @@ export default function ProjectDetailsView() {
           {/* Reports Tab */}
           <TabsContent value="reports" className="space-y-6">
             <ReportsTab project={project} />
+          </TabsContent>
+
+          {/* Details Tab */}
+          <TabsContent value="details" className="space-y-6">
+            <DetailsTab project={project} />
           </TabsContent>
         </Tabs>
       </div>
