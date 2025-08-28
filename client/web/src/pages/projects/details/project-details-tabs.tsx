@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, lazy, Suspense } from 'react';
 import { format } from 'date-fns';
 import {
   Users,
@@ -73,7 +73,9 @@ import {
 
 import { cn } from '@/lib/utils';
 import { ProjectCalendar } from './project-calendar';
-import ProjectDocuments from '../documents/project-documents';
+
+// Lazy load the ProjectDocuments component
+const ProjectDocuments = lazy(() => import('@/pages/projects/documents/project-documents'));
 
 // Helper function to generate random avatar colors matching the team reference
 const getRandomAvatarColor = () => {
@@ -817,10 +819,20 @@ export function TasksTab({ project }: { project: any }) {
 }
 
 export function DocumentsTab({ project }: { project: any }) {
+  // Use the full ProjectDocuments component with lazy loading
   return (
-    <div className="h-full -m-6"> {/* Remove the tab padding to make it full-screen */}
-      <ProjectDocuments />
-    </div>
+    <Suspense fallback={
+      <div className="flex items-center justify-center h-96">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
+          <p className="text-muted-foreground">Loading documents...</p>
+        </div>
+      </div>
+    }>
+      <div className="h-full -m-6">
+        <ProjectDocuments />
+      </div>
+    </Suspense>
   );
 }
 
