@@ -136,17 +136,17 @@ export default function ProjectDocuments() {
   return (
     <div className="flex flex-col h-full">
       {/* Header */}
-      <div className="bg-white border-b px-6 py-4">
-        <div className="flex items-center justify-between mb-4">
+      <div className="bg-white border-b px-2 sm:px-4 lg:px-6 py-4">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4">
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">Document Management</h1>
-            <p className="text-gray-600 mt-1">Project {actualProjectId} - {filteredDocuments.length} documents</p>
+            <h1 className="text-xl sm:text-2xl font-bold text-gray-900">Document Management</h1>
+            <p className="text-sm sm:text-base text-gray-600 mt-1">Project {actualProjectId} - {filteredDocuments.length} documents</p>
           </div>
           
-          <div className="flex items-center gap-3">
+          <div className="flex flex-wrap items-center gap-2 sm:gap-3">
             {selectedDocuments.length > 0 && (
-              <div className="flex items-center gap-2 mr-4">
-                <span className="text-sm text-gray-600">
+              <div className="flex items-center gap-2 mr-2 sm:mr-4">
+                <span className="text-xs sm:text-sm text-gray-600">
                   {selectedDocuments.length} selected
                 </span>
                 <DropdownMenu>
@@ -196,17 +196,19 @@ export default function ProjectDocuments() {
                 variant={viewMode === 'grid' ? 'default' : 'ghost'}
                 size="sm"
                 onClick={() => setViewMode('grid')}
-                className="rounded-r-none"
+                className="rounded-r-none px-2 sm:px-3"
               >
-                <Grid3x3 className="h-4 w-4" />
+                <Grid3x3 className="h-3 w-3 sm:h-4 sm:w-4" />
+                <span className="hidden sm:inline ml-1">Grid</span>
               </Button>
               <Button
                 variant={viewMode === 'list' ? 'default' : 'ghost'}
                 size="sm"
                 onClick={() => setViewMode('list')}
-                className="rounded-l-none"
+                className="rounded-l-none px-2 sm:px-3"
               >
-                <List className="h-4 w-4" />
+                <List className="h-3 w-3 sm:h-4 sm:w-4" />
+                <span className="hidden sm:inline ml-1">List</span>
               </Button>
             </div>
             
@@ -214,32 +216,35 @@ export default function ProjectDocuments() {
               variant={groupByCategory ? 'default' : 'outline'}
               size="sm"
               onClick={() => setGroupByCategory(!groupByCategory)}
+              className="px-2 sm:px-3"
             >
-              <Layers className="h-4 w-4 mr-2" />
-              Group by Category
+              <Layers className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
+              <span className="hidden sm:inline">Group by Category</span>
+              <span className="inline sm:hidden">Group</span>
             </Button>
             
-            <Button onClick={() => setShowUploadDialog(true)}>
-              <Upload className="h-4 w-4 mr-2" />
-              Upload Document
+            <Button onClick={() => setShowUploadDialog(true)} className="px-2 sm:px-4">
+              <Upload className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
+              <span className="hidden sm:inline">Upload Document</span>
+              <span className="inline sm:hidden">Upload</span>
             </Button>
           </div>
         </div>
         
         {/* Search Bar */}
-        <div className="flex items-center gap-4">
-          <div className="flex-1 relative">
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-4">
+          <div className="flex-1 relative min-w-0">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
             <Input
-              placeholder="Search documents by name, number, or description..."
+              placeholder="Search documents..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-10"
+              className="pl-10 w-full"
             />
           </div>
           
           <Select value={selectedCategory} onValueChange={setSelectedCategory}>
-            <SelectTrigger className="w-48">
+            <SelectTrigger className="w-full sm:w-48">
               <SelectValue placeholder="All Categories" />
             </SelectTrigger>
             <SelectContent>
@@ -264,7 +269,7 @@ export default function ProjectDocuments() {
               setSortOrder(newSortOrder as DocumentFilter['sortOrder']);
             }}
           >
-            <SelectTrigger className="w-48">
+            <SelectTrigger className="w-full sm:w-48">
               <SelectValue placeholder="Sort by" />
             </SelectTrigger>
             <SelectContent>

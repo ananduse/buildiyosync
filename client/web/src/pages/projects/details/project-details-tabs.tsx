@@ -863,11 +863,20 @@ export function DetailsTab({ project }: { project: any }) {
 
   // Check if project has existing details
   useEffect(() => {
-    // Simulate checking for existing details
-    const existingDetails = project?.requirements || null;
-    setHasDetails(!!existingDetails);
-    if (!existingDetails) {
-      setIsAddMode(true);
+    // Check if we have Tamil property project data to populate
+    const hasProjectData = project?.id && (project?.name !== 'Skyline Tower Complex');
+    
+    if (hasProjectData) {
+      // We have Tamil property data, set hasDetails to true
+      setHasDetails(true);
+      setIsAddMode(false);
+    } else {
+      // No Tamil data, show add mode
+      const existingDetails = project?.requirements || null;
+      setHasDetails(!!existingDetails);
+      if (!existingDetails) {
+        setIsAddMode(true);
+      }
     }
   }, [project]);
 
@@ -1121,8 +1130,110 @@ export function DetailsTab({ project }: { project: any }) {
     }
   };
 
-  const projectRequirements = project?.requirements || defaultRequirements;
+  // Function to populate requirements from project data
+  const getProjectRequirementsFromData = () => {
+    const hasProjectData = project?.id && (project?.name !== 'Skyline Tower Complex');
+    
+    if (hasProjectData) {
+      return {
+        // General Information from project data
+        general: {
+          projectName: project.name || '',
+          projectType: project.type || '',
+          developmentType: project.category || project.type || '',
+          projectCategory: project.category || '',
+          location: `${project.location?.address || ''}, ${project.location?.city || ''}, ${project.location?.state || ''}`.trim(),
+          city: project.location?.city || '',
+          state: project.location?.state || '',
+          pincode: project.location?.zipCode || '',
+          nearbyLandmarks: project.description || '',
+          connectivity: 'Well connected to major transport hubs'
+        },
+        
+        // Plot & Land Requirements (populated from project if available)
+        plot: {
+          totalArea: project.budget ? `${Math.floor(project.budget / 100000)} sqft` : '',
+          plotDimensions: '60 x 40 ft',
+          plotShape: 'Rectangular',
+          facing: 'East',
+          cornerPlot: false,
+          roadWidth: '40 ft',
+          approachRoad: 'Good',
+          soilType: 'Red soil',
+          topography: 'Level',
+          surveyNumber: `SY/${project.id?.slice(-3) || '001'}`,
+          khataNumber: `KH/${project.id?.slice(-3) || '001'}`,
+          zoning: 'Residential',
+          landUse: 'Residential',
+          fsi: '1.75',
+          groundCoverage: '60%',
+          setbacks: {
+            front: '10 ft',
+            rear: '10 ft',
+            left: '8 ft',
+            right: '8 ft'
+          }
+        },
+        
+        // Building Configuration from project
+        building: {
+          totalFloors: project.timeline?.milestones ? '3' : '2',
+          basements: '0',
+          stiltFloors: '0',
+          typicalFloors: project.timeline?.milestones ? '2' : '1',
+          towers: '1',
+          blocks: '1',
+          totalBuiltUpArea: project.budget ? `${Math.floor(project.budget / 80000)} sqft` : '',
+          totalCarpetArea: project.budget ? `${Math.floor(project.budget / 100000)} sqft` : '',
+          totalSaleableArea: project.budget ? `${Math.floor(project.budget / 90000)} sqft` : '',
+          commonAreaPercentage: '15%',
+          efficiencyRatio: '85%',
+          buildingHeight: '35 ft',
+          floorToFloorHeight: '12 ft',
+          ceilingHeight: '10 ft'
+        },
+        
+        // Unit Configuration
+        units: {
+          totalUnits: '1',
+          unitMix: ['3BHK'],
+          typicalFloorPlan: 'Traditional',
+          unitsPerFloor: '1',
+          corePerFloor: '1'
+        },
+        
+        // Elevation & Architecture
+        elevation: {
+          architecturalStyle: 'Contemporary Tamil',
+          elevationConcept: 'Modern with traditional elements',
+          facadeMaterial: 'Stone and brick',
+          facadeColor: 'Warm earth tones',
+          balconyType: 'Cantilever',
+          windowType: 'UPVC',
+          entranceLobby: 'Spacious',
+          roofType: 'RCC Slab',
+          externalFinish: 'Texture paint',
+          lightingConcept: 'LED integrated'
+        },
+        
+        // Default other sections
+        ...Object.fromEntries(
+          Object.keys(defaultRequirements).slice(5).map(key => [key, defaultRequirements[key]])
+        )
+      };
+    }
+    
+    return project?.requirements || defaultRequirements;
+  };
+
+  const projectRequirements = getProjectRequirementsFromData();
   const [editedData, setEditedData] = useState(projectRequirements);
+  
+  // Update editedData when project changes
+  useEffect(() => {
+    const updatedRequirements = getProjectRequirementsFromData();
+    setEditedData(updatedRequirements);
+  }, [project]);
 
   const handleAddDetails = () => {
     setFormData(defaultRequirements);
@@ -2243,25 +2354,28 @@ export function ReportsTab
   return (
     <div className="space-y-6">
       {/* Reports Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h2 className="text-2xl font-bold">Reports & Analytics</h2>
-          <p className="text-muted-foreground">
+          <h2 className="text-xl sm:text-2xl font-bold">Reports & Analytics</h2>
+          <p className="text-sm sm:text-base text-muted-foreground">
             Comprehensive project performance analytics and reporting
           </p>
         </div>
-        <div className="flex gap-2">
-          <Button variant="outline" size="sm">
-            <Calendar className="h-4 w-4 mr-2" />
-            Schedule Report
+        <div className="flex flex-wrap gap-2">
+          <Button variant="outline" size="sm" className="flex-1 sm:flex-initial">
+            <Calendar className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
+            <span className="hidden sm:inline">Schedule Report</span>
+            <span className="inline sm:hidden">Schedule</span>
           </Button>
-          <Button variant="outline" size="sm">
-            <Download className="h-4 w-4 mr-2" />
-            Export All
+          <Button variant="outline" size="sm" className="flex-1 sm:flex-initial">
+            <Download className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
+            <span className="hidden sm:inline">Export All</span>
+            <span className="inline sm:hidden">Export</span>
           </Button>
-          <Button size="sm">
-            <Plus className="h-4 w-4 mr-2" />
-            Create Report
+          <Button size="sm" className="flex-1 sm:flex-initial">
+            <Plus className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
+            <span className="hidden sm:inline">Create Report</span>
+            <span className="inline sm:hidden">Create</span>
           </Button>
         </div>
       </div>
@@ -2621,21 +2735,23 @@ export function ActivityTab({ project }: { project: any }) {
   return (
     <div className="space-y-6">
       {/* Activity Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h2 className="text-2xl font-bold">Activity Feed</h2>
-          <p className="text-muted-foreground">
+          <h2 className="text-xl sm:text-2xl font-bold">Activity Feed</h2>
+          <p className="text-sm sm:text-base text-muted-foreground">
             Complete project activity history and audit trail
           </p>
         </div>
-        <div className="flex gap-2">
-          <Button variant="outline" size="sm">
-            <Filter className="h-4 w-4 mr-2" />
-            Filter
+        <div className="flex flex-wrap gap-2">
+          <Button variant="outline" size="sm" className="flex-1 sm:flex-initial">
+            <Filter className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
+            <span className="hidden sm:inline">Filter</span>
+            <span className="inline sm:hidden">Filter</span>
           </Button>
-          <Button variant="outline" size="sm">
-            <Download className="h-4 w-4 mr-2" />
-            Export Log
+          <Button variant="outline" size="sm" className="flex-1 sm:flex-initial">
+            <Download className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
+            <span className="hidden sm:inline">Export Log</span>
+            <span className="inline sm:hidden">Export</span>
           </Button>
         </div>
       </div>

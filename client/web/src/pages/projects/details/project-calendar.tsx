@@ -1004,21 +1004,21 @@ export function ProjectCalendar({ project }: ProjectCalendarProps) {
   return (
     <div className="space-y-4">
       {/* Calendar Header */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-4">
-          <div className="flex items-center gap-2">
-            <Button variant="outline" size="icon" onClick={handlePrevious}>
-              <ChevronLeft className="h-4 w-4" />
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
+          <div className="flex items-center gap-1 sm:gap-2">
+            <Button variant="outline" size="icon" onClick={handlePrevious} className="h-8 w-8 sm:h-10 sm:w-10">
+              <ChevronLeft className="h-3 w-3 sm:h-4 sm:w-4" />
             </Button>
-            <Button variant="outline" onClick={handleToday}>
+            <Button variant="outline" onClick={handleToday} size="sm" className="px-2 sm:px-4">
               Today
             </Button>
-            <Button variant="outline" size="icon" onClick={handleNext}>
-              <ChevronRight className="h-4 w-4" />
+            <Button variant="outline" size="icon" onClick={handleNext} className="h-8 w-8 sm:h-10 sm:w-10">
+              <ChevronRight className="h-3 w-3 sm:h-4 sm:w-4" />
             </Button>
           </div>
           
-          <h2 className="text-xl font-semibold">
+          <h2 className="text-lg sm:text-xl font-semibold">
             {viewMode === 'month' && format(currentDate, 'MMMM yyyy')}
             {viewMode === 'week' && `Week of ${format(startOfWeek(currentDate), 'MMM d, yyyy')}`}
             {viewMode === 'day' && format(currentDate, 'EEEE, MMMM d, yyyy')}
@@ -1026,25 +1026,25 @@ export function ProjectCalendar({ project }: ProjectCalendarProps) {
           </h2>
         </div>
         
-        <div className="flex items-center gap-2">
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
           {/* Search */}
           <div className="relative">
-            <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
+            <Search className="absolute left-2 top-2.5 h-3 w-3 sm:h-4 sm:w-4 text-muted-foreground" />
             <Input
               placeholder="Search events..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-8 w-64"
+              className="pl-8 w-full sm:w-64"
             />
           </div>
           
           {/* View Mode Tabs */}
           <Tabs value={viewMode} onValueChange={(v: any) => setViewMode(v)}>
-            <TabsList>
-              <TabsTrigger value="month">Month</TabsTrigger>
-              <TabsTrigger value="week">Week</TabsTrigger>
-              <TabsTrigger value="day">Day</TabsTrigger>
-              <TabsTrigger value="agenda">Agenda</TabsTrigger>
+            <TabsList className="grid grid-cols-2 sm:grid-cols-4 w-full sm:w-auto">
+              <TabsTrigger value="month" className="text-xs sm:text-sm px-2 sm:px-3">Month</TabsTrigger>
+              <TabsTrigger value="week" className="text-xs sm:text-sm px-2 sm:px-3">Week</TabsTrigger>
+              <TabsTrigger value="day" className="text-xs sm:text-sm px-2 sm:px-3">Day</TabsTrigger>
+              <TabsTrigger value="agenda" className="text-xs sm:text-sm px-2 sm:px-3">Agenda</TabsTrigger>
             </TabsList>
           </Tabs>
           
