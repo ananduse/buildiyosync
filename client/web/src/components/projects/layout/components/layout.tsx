@@ -27,12 +27,12 @@ export function ProjectLayout({ children }: { children?: React.ReactNode }) {
       <Header />
       <div className="flex flex-1 overflow-hidden">
         {!isMobile && <Sidebar />}
-        <main className="flex-1 flex flex-col mt-[var(--header-height)] lg:mt-[calc(var(--header-height)+var(--content-header-height))] lg:ms-[var(--sidebar-width)] lg:in-data-[sidebar-collapsed]:ms-[var(--sidebar-width-collapsed)] transition-[margin-inline-start] duration-200 ease-in-out bg-white overflow-hidden">
+        <main className="flex-1 flex flex-col mt-[var(--header-height)] lg:mt-[calc(var(--header-height)+var(--content-header-height))] lg:ms-[var(--sidebar-width)] lg:in-data-[sidebar-collapsed]:ms-[var(--sidebar-width-collapsed)] transition-[margin-inline-start] duration-200 ease-in-out bg-white">
           <ContentHeader>
             <ContentTitle />
           </ContentHeader>
           <SecondaryNav />
-          <div className="flex-1 bg-white overflow-y-auto">
+          <div className="flex-1 overflow-y-auto bg-white">
             {children || <Outlet />}
           </div>
         </main>

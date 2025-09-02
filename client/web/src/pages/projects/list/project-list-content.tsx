@@ -47,8 +47,7 @@ import {
   Target,
   Award,
   AlertCircle,
-  TrendingDown,
-  Plus
+  TrendingDown
 } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import {
@@ -389,7 +388,8 @@ const generateMockProjects = (): Project[] => {
   return projects;
 };
 
-const mockProjects: Project[] = generateMockProjects();
+// Generate mock projects once at module load
+const mockProjectsData: Project[] = generateMockProjects();
 
 function getStatusColor(status: Project['status']) {
   const colors = {
@@ -620,6 +620,9 @@ export function ProjectListContent() {
   const [refreshing, setRefreshing] = useState(false);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [projectToDelete, setProjectToDelete] = useState<Project | null>(null);
+  
+  // Initialize projects data in a controlled manner
+  const [projectsData] = useState(() => mockProjectsData);
   const [columnVisibility, setColumnVisibility] = useState<Record<string, boolean>>(() => {
     // Hide certain columns on mobile by default
     if (typeof window !== 'undefined' && window.innerWidth < 768) {
@@ -639,7 +642,7 @@ export function ProjectListContent() {
 
   // Filter data based on search and filters
   const filteredData = useMemo(() => {
-    return mockProjects.filter((project) => {
+    return projectsData.filter((project) => {
       // Search filter
       const searchLower = searchQuery.toLowerCase();
       const matchesSearch = !searchQuery ||
@@ -659,7 +662,7 @@ export function ProjectListContent() {
       
       return matchesSearch && matchesStatus && matchesType && matchesPriority;
     });
-  }, [searchQuery, selectedStatus, selectedType, selectedPriority]);
+  }, [projectsData, searchQuery, selectedStatus, selectedType, selectedPriority]);
 
   // Handle refresh
   const handleRefresh = async () => {
@@ -1240,9 +1243,9 @@ export function ProjectListContent() {
   );
 
   return (
-    <div className="h-full flex flex-col">
+    <div>
       {/* Enhanced Header */}
-      <div className="px-4 sm:px-6 py-4 space-y-4 flex-shrink-0">
+      <div className="px-4 sm:px-6 py-4 space-y-4 sticky top-0 bg-white z-10 border-b">
         {/* Top Row - All controls in one line */}
         <div className="flex flex-col lg:flex-row items-start lg:items-center gap-2">
           {/* Search Bar - Reduced size */}
@@ -1502,15 +1505,15 @@ export function ProjectListContent() {
 
       </div>
 
-      {/* Data Display - Flex grow to fill available space */}
+      {/* Data Display */}
       {loading ? (
-        <div className="space-y-3 px-4 sm:px-6 flex-1 overflow-y-auto">
+        <div className="space-y-3 px-4 sm:px-6 py-4">
           {[...Array(5)].map((_, i) => (
             <Skeleton key={i} className="h-20 w-full" />
           ))}
         </div>
       ) : view === 'list' ? (
-        <div className="flex-1 overflow-auto">
+        <div className="w-full">
           <DataGrid
             table={table}
             recordCount={filteredData.length}
@@ -1539,8 +1542,10 @@ export function ProjectListContent() {
                 />
               </div>
               <CardTable>
-                <div className="min-w-[768px] overflow-x-auto">
-                  <DataGridTable />
+                <div className="overflow-x-auto">
+                  <div className="min-w-[768px]">
+                    <DataGridTable />
+                  </div>
                 </div>
               </CardTable>
               <CardFooter className="px-4 py-0">
@@ -1553,7 +1558,7 @@ export function ProjectListContent() {
           </DataGrid>
         </div>
       ) : view === 'grid' ? (
-        <div className="px-4 sm:px-6 flex-1 overflow-y-auto">
+        <div className="px-4 sm:px-6 py-4">
           <GridView />
           <div className="flex justify-center mt-4">
             <div className="flex items-center gap-2">
