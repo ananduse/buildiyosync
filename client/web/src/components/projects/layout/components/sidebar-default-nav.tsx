@@ -22,9 +22,10 @@ import { Link } from 'react-router-dom';
 import { useLayout } from './layout-context';
 import { cn } from '@/lib/utils';
 import { useLocation } from 'react-router-dom';
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { ChevronRight, MoreHorizontal, Pin, PinOff, Copy, Edit, Trash2, Ellipsis } from 'lucide-react';
 import { useMemo } from 'react';
+import { createPortal } from 'react-dom';
 
 // More Dropdown Menu Component for showing unpinned items
 function MoreDropdownMenu({ item }: { item: NavItem }) {
@@ -94,16 +95,105 @@ function MoreDropdownMenu({ item }: { item: NavItem }) {
   );
 }
 
+// Popup component for smooth rendering
+function HoverPopup({ children, position, isVisible, onMouseEnter, onMouseLeave }: {
+  children: React.ReactNode;
+  position: { top: number; left: number };
+  isVisible: boolean;
+  onMouseEnter: () => void;
+  onMouseLeave: () => void;
+}) {
+  const [shouldRender, setShouldRender] = useState(false);
+  const [isAnimating, setIsAnimating] = useState(false);
+
+  useEffect(() => {
+    if (isVisible) {
+      setShouldRender(true);
+      setTimeout(() => setIsAnimating(true), 10);
+    } else {
+      setIsAnimating(false);
+      setTimeout(() => setShouldRender(false), 200);
+    }
+  }, [isVisible]);
+
+  if (!shouldRender) return null;
+
+  return createPortal(
+    <div 
+      className={cn(
+        "fixed min-w-[240px] rounded-lg border border-gray-200 dark:border-gray-700",
+        "bg-white dark:bg-gray-900 p-2 shadow-2xl",
+        "transition-all duration-200 ease-out",
+        isAnimating ? "opacity-100 translate-x-0 scale-100" : "opacity-0 -translate-x-2 scale-95"
+      )}
+      style={{ 
+        top: `${position.top}px`,
+        left: `${position.left}px`,
+        zIndex: 9999,
+        pointerEvents: isAnimating ? 'auto' : 'none'
+      }}
+      onMouseEnter={onMouseEnter}
+      onMouseLeave={onMouseLeave}
+    >
+      {children}
+    </div>,
+    document.body
+  );
+}
+
 function NavMenuItem({ item }: { item: NavItem }) {
   const { sidebarCollapse, pinnedNavItems, pinSidebarNavItem } = useLayout();
   const location = useLocation();
   const [isExpanded, setIsExpanded] = useState(false);
+  const [showHoverMenu, setShowHoverMenu] = useState(false);
+  const [popupPosition, setPopupPosition] = useState({ top: 0, left: 0 });
+  const hoverTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const itemRef = useRef<HTMLDivElement>(null);
   
   // Check if item is pinned (either in config or dynamically)
   const isPinned = item.pinned === true || pinnedNavItems.includes(item.id);
   
   const hasChildren = item.children && item.children.length > 0;
   const isActive = item.path && (location.pathname === item.path || location.pathname.startsWith(item.path + '/'));
+  
+  // Handle mouse enter - show popup when sidebar is collapsed
+  const handleMouseEnter = () => {
+    if (sidebarCollapse && itemRef.current) {
+      if (hoverTimeoutRef.current) {
+        clearTimeout(hoverTimeoutRef.current);
+      }
+      
+      // Calculate position based on the item's position
+      const rect = itemRef.current.getBoundingClientRect();
+      setPopupPosition({
+        top: rect.top,
+        left: rect.right + 8 // 8px gap from the sidebar
+      });
+      
+      setShowHoverMenu(true);
+    }
+  };
+  
+  // Handle mouse leave - hide popup with delay
+  const handleMouseLeave = () => {
+    if (sidebarCollapse) {
+      hoverTimeoutRef.current = setTimeout(() => {
+        setShowHoverMenu(false);
+      }, 150); // Reduced delay for smoother transition
+    }
+  };
+  
+  // Clear timeout when entering the popup menu
+  const handlePopupMouseEnter = () => {
+    if (hoverTimeoutRef.current) {
+      clearTimeout(hoverTimeoutRef.current);
+    }
+  };
+  
+  // Handle popup mouse leave
+  const handlePopupMouseLeave = () => {
+    setShowHoverMenu(false);
+  };
 
   // Special handling for "More" dropdown menu
   if (item.dropdown) {
@@ -125,8 +215,12 @@ function NavMenuItem({ item }: { item: NavItem }) {
   // Main menu item with children
   if (hasChildren) {
     return (
-      <div className="space-y-0.5">
-        <div className="relative group">
+      <div 
+        ref={itemRef}
+        className="relative space-y-0.5"
+        onMouseEnter={handleMouseEnter}
+        onMouseLeave={handleMouseLeave}>
+        <div className="group">
           <AccordionMenuItem
             value={item.id}
             className={cn(
@@ -142,19 +236,23 @@ function NavMenuItem({ item }: { item: NavItem }) {
             onClick={() => setIsExpanded(!isExpanded)}
           >
             <div className="flex items-center gap-2 w-full">
-              {/* Icon with Tooltip */}
+              {/* Icon - No tooltip when collapsed (use hover panel instead) */}
               {item.icon && (
-                <Tooltip delayDuration={300}>
-                  <TooltipTrigger asChild>
-                    <div><item.icon className="h-4 w-4" strokeWidth={2.5} /></div>
-                  </TooltipTrigger>
-                  <TooltipContent align="center" side={sidebarCollapse ? "right" : "top"} sideOffset={sidebarCollapse ? 28 : 8}>
-                    {item.title}
-                    {item.children && item.children.length > 0 && (
-                      <span className="text-xs text-muted-foreground block mt-1">{item.children.length} items</span>
-                    )}
-                  </TooltipContent>
-                </Tooltip>
+                sidebarCollapse ? (
+                  <item.icon className="h-4 w-4" strokeWidth={2.5} />
+                ) : (
+                  <Tooltip delayDuration={300}>
+                    <TooltipTrigger asChild>
+                      <div><item.icon className="h-4 w-4" strokeWidth={2.5} /></div>
+                    </TooltipTrigger>
+                    <TooltipContent align="center" side="top" sideOffset={8}>
+                      {item.title}
+                      {item.children && item.children.length > 0 && (
+                        <span className="text-xs text-muted-foreground block mt-1">{item.children.length} items</span>
+                      )}
+                    </TooltipContent>
+                  </Tooltip>
+                )
               )}
               
               {/* Title */}
@@ -254,13 +352,58 @@ function NavMenuItem({ item }: { item: NavItem }) {
             ))}
           </div>
         )}
+        
+        {/* Hover Popup Panel - Shows when sidebar is collapsed */}
+        {sidebarCollapse && (
+          <HoverPopup
+            position={popupPosition}
+            isVisible={showHoverMenu}
+            onMouseEnter={handlePopupMouseEnter}
+            onMouseLeave={handlePopupMouseLeave}
+          >
+            {/* Panel Header with Icon and Title */}
+            <div className="flex items-center gap-2 px-2 py-1.5 border-b mb-1">
+              {item.icon && <item.icon className="h-4 w-4 text-muted-foreground" />}
+              <span className="font-medium text-sm">{item.title}</span>
+            </div>
+            
+            {/* Submenu Items */}
+            {item.children && (
+              <div className="space-y-0.5">
+                {item.children.map((child) => (
+                  <Link
+                    key={child.id}
+                    to={child.path || '#'}
+                    className={cn(
+                      "flex items-center gap-2 rounded-md px-2 py-1.5 text-sm transition-colors",
+                      "hover:bg-accent hover:text-accent-foreground",
+                      child.path && location.pathname === child.path && "bg-accent text-accent-foreground font-medium"
+                    )}
+                  >
+                    {child.icon && <child.icon className="h-3.5 w-3.5" />}
+                    <span className="flex-1">{child.title}</span>
+                    {child.badge && (
+                      <Badge variant="secondary" className="h-4 px-1 text-[10px]">
+                        {child.badge}
+                      </Badge>
+                    )}
+                  </Link>
+                ))}
+              </div>
+            )}
+          </HoverPopup>
+        )}
       </div>
     );
   }
 
   // Simple menu item without children
   return (
-    <div className="relative group">
+    <div 
+      ref={itemRef}
+      className="relative group"
+      onMouseEnter={handleMouseEnter}
+      onMouseLeave={handleMouseLeave}>
       <AccordionMenuItem
         value={item.id}
         className={cn(
@@ -275,19 +418,23 @@ function NavMenuItem({ item }: { item: NavItem }) {
         )}
       >
         <Link to={item.path || '#'} className="flex items-center gap-2 w-full">
-          {/* Icon with Tooltip */}
+          {/* Icon - No tooltip when collapsed (use hover panel instead) */}
           {item.icon && (
-            <Tooltip delayDuration={300}>
-              <TooltipTrigger asChild>
-                <div><item.icon className="h-4 w-4" strokeWidth={2.5} /></div>
-              </TooltipTrigger>
-              <TooltipContent align="center" side={sidebarCollapse ? "right" : "top"} sideOffset={sidebarCollapse ? 28 : 8}>
-                {item.title}
-                {item.path && !sidebarCollapse && (
-                  <span className="text-xs text-muted-foreground block mt-1">{item.path}</span>
-                )}
-              </TooltipContent>
-            </Tooltip>
+            sidebarCollapse ? (
+              <item.icon className="h-4 w-4" strokeWidth={2.5} />
+            ) : (
+              <Tooltip delayDuration={300}>
+                <TooltipTrigger asChild>
+                  <div><item.icon className="h-4 w-4" strokeWidth={2.5} /></div>
+                </TooltipTrigger>
+                <TooltipContent align="center" side="top" sideOffset={8}>
+                  {item.title}
+                  {item.path && (
+                    <span className="text-xs text-muted-foreground block mt-1">{item.path}</span>
+                  )}
+                </TooltipContent>
+              </Tooltip>
+            )
           )}
           
           {/* Title */}
@@ -343,6 +490,31 @@ function NavMenuItem({ item }: { item: NavItem }) {
           )}
         </Link>
       </AccordionMenuItem>
+      
+      {/* Hover Popup Panel for simple items - Shows when sidebar is collapsed */}
+      {sidebarCollapse && (
+        <HoverPopup
+          position={popupPosition}
+          isVisible={showHoverMenu}
+          onMouseEnter={handlePopupMouseEnter}
+          onMouseLeave={handlePopupMouseLeave}
+        >
+          <div className="p-1">
+            <div className="flex items-center gap-2">
+              {item.icon && <item.icon className="h-4 w-4 text-muted-foreground" />}
+              <span className="font-medium text-sm">{item.title}</span>
+              {item.badge && (
+                <Badge variant="secondary" className="h-4 px-1 text-[10px] ml-auto">
+                  {item.badge}
+                </Badge>
+              )}
+            </div>
+            {item.path && (
+              <p className="text-xs text-muted-foreground mt-2">Navigate to: {item.path}</p>
+            )}
+          </div>
+        </HoverPopup>
+      )}
     </div>
   );
 }
