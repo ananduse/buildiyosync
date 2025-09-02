@@ -1,4 +1,4 @@
-import { HeaderBrand } from './header-brand';
+import { HeaderBrand } from '@/components/shared/layout/header-brand';
 import { HeaderUpgrade } from './header-upgrade';
 import { HeaderNew } from './header-new';
 import { HeaderHelp } from './header-help';

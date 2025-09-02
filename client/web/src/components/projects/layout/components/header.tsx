@@ -1,4 +1,4 @@
-import { HeaderBrand } from '@/components/leads/layout/components/header-brand';
+import { HeaderBrand } from '@/components/shared/layout/header-brand';
 import { HeaderMainNav } from '@/components/leads/layout/components/header-main-nav';
 import { HeaderSearch } from './header-search';
 import { HeaderQuickActions } from './header-quick-actions';

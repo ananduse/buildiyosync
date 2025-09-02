@@ -47,9 +47,10 @@ import {
   Target,
   Award,
   AlertCircle,
-  TrendingDown
+  TrendingDown,
+  Plus
 } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import {
   ColumnDef,
   getCoreRowModel,
@@ -66,7 +67,7 @@ import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from '@/components/ui/dropdown-menu';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator, DropdownMenuLabel } from '@/components/ui/dropdown-menu';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -473,63 +474,65 @@ function ActionsCell({ row, onDelete }: { row: Row<Project>; onDelete: (project:
 
   return (
     <div className="flex items-center space-x-1">
-      {/* Quick Actions */}
-      <TooltipProvider>
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <Button 
-              variant="ghost" 
-              size="sm"
-              className="h-8 w-8 p-0"
-              onClick={(e) => {
-                e.stopPropagation();
-                handleViewDPR();
-              }}
-            >
-              <ClipboardCheck className="h-3 w-3" />
-            </Button>
-          </TooltipTrigger>
-          <TooltipContent>View DPR</TooltipContent>
-        </Tooltip>
-      </TooltipProvider>
+      {/* Quick Actions - Hidden on mobile */}
+      <div className="hidden sm:flex items-center space-x-1">
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button 
+                variant="ghost" 
+                size="sm"
+                className="h-8 w-8 p-0"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleViewDPR();
+                }}
+              >
+                <ClipboardCheck className="h-3 w-3" />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>View DPR</TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
 
-      <TooltipProvider>
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <Button 
-              variant="ghost" 
-              size="sm"
-              className="h-8 w-8 p-0"
-              onClick={(e) => {
-                e.stopPropagation();
-                handleOpenChat();
-              }}
-            >
-              <MessageSquare className="h-3 w-3" />
-            </Button>
-          </TooltipTrigger>
-          <TooltipContent>Team Chat</TooltipContent>
-        </Tooltip>
-      </TooltipProvider>
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button 
+                variant="ghost" 
+                size="sm"
+                className="h-8 w-8 p-0"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleOpenChat();
+                }}
+              >
+                <MessageSquare className="h-3 w-3" />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>Team Chat</TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
 
-      <TooltipProvider>
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <Button 
-              variant="ghost" 
-              size="sm"
-              className="h-8 w-8 p-0"
-              onClick={(e) => {
-                e.stopPropagation();
-                handleViewDocuments();
-              }}
-            >
-              <FileText className="h-3 w-3" />
-            </Button>
-          </TooltipTrigger>
-          <TooltipContent>Documents</TooltipContent>
-        </Tooltip>
-      </TooltipProvider>
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button 
+                variant="ghost" 
+                size="sm"
+                className="h-8 w-8 p-0"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleViewDocuments();
+                }}
+              >
+                <FileText className="h-3 w-3" />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>Documents</TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
+      </div>
 
       {/* More Actions Dropdown */}
       <DropdownMenu>
@@ -602,6 +605,7 @@ function ActionsCell({ row, onDelete }: { row: Row<Project>; onDelete: (project:
 }
 
 export function ProjectListContent() {
+  const navigate = useNavigate();
   const [view, setView] = useState<'list' | 'grid' | 'kanban' | 'calendar'>('list');
   const [searchQuery, setSearchQuery] = useState('');
   const [filters, setFilters] = useState<SimpleFilterRule[]>([]);
@@ -616,7 +620,19 @@ export function ProjectListContent() {
   const [refreshing, setRefreshing] = useState(false);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [projectToDelete, setProjectToDelete] = useState<Project | null>(null);
-  const [columnVisibility, setColumnVisibility] = useState<Record<string, boolean>>({});
+  const [columnVisibility, setColumnVisibility] = useState<Record<string, boolean>>(() => {
+    // Hide certain columns on mobile by default
+    if (typeof window !== 'undefined' && window.innerWidth < 768) {
+      return {
+        team: false,
+        compliance: false,
+        lastDPR: false,
+        risks: false,
+        projectManager: false
+      };
+    }
+    return {};
+  });
   const [selectedStatus, setSelectedStatus] = useState<string>('all');
   const [selectedType, setSelectedType] = useState<string>('all');
   const [selectedPriority, setSelectedPriority] = useState<string>('all');
@@ -718,9 +734,9 @@ export function ProjectListContent() {
           return (
             <HoverCard openDelay={120}>
               <HoverCardTrigger asChild>
-                <div className="flex items-center gap-3 cursor-pointer">
-                  <div className="relative">
-                    <Avatar className="h-10 w-10">
+                <div className="flex items-center gap-2 sm:gap-3 cursor-pointer">
+                  <div className="relative flex-shrink-0">
+                    <Avatar className="h-8 w-8 sm:h-10 sm:w-10">
                       <AvatarImage src="" />
                       <AvatarFallback
                         className="text-xs font-semibold text-white"
@@ -730,25 +746,25 @@ export function ProjectListContent() {
                       </AvatarFallback>
                     </Avatar>
                     {row.original.priority === 'critical' && (
-                      <div className="absolute -top-1 -right-1 h-3 w-3 bg-red-500 rounded-full animate-pulse" />
+                      <div className="absolute -top-1 -right-1 h-2 w-2 sm:h-3 sm:w-3 bg-red-500 rounded-full animate-pulse" />
                     )}
                   </div>
-                  <div>
-                    <div className="flex items-center gap-2">
-                      <p className="font-medium leading-none hover:underline">{row.original.name}</p>
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-center gap-1 sm:gap-2 flex-wrap">
+                      <p className="font-medium leading-none hover:underline text-sm sm:text-base truncate">{row.original.name}</p>
                       {row.original.customer.type === 'self-registered' && (
-                        <Badge variant="outline" className="text-[10px] px-1.5 py-0">
+                        <Badge variant="outline" className="text-[10px] px-1.5 py-0 hidden sm:inline-flex">
                           <User className="h-2 w-2 mr-1" />
                           Customer
                         </Badge>
                       )}
                     </div>
-                    <div className="flex items-center gap-2 mt-1">
-                      <span className="text-xs text-muted-foreground">{row.original.customer.name}</span>
-                      <Badge className={`${getStatusColor(row.original.status)} text-[10px] px-1.5 py-0.5 border-0`}> 
+                    <div className="flex items-center gap-1 sm:gap-2 mt-1 flex-wrap">
+                      <span className="text-xs text-muted-foreground truncate max-w-[150px] sm:max-w-none">{row.original.customer.name}</span>
+                      <Badge className={`${getStatusColor(row.original.status)} text-[10px] px-1 sm:px-1.5 py-0.5 border-0`}> 
                         {getStatusLabel(row.original.status)}
                       </Badge>
-                      <Badge className={`${getPhaseColor(row.original.phase)} text-[10px] px-1.5 py-0.5 border-0`}>
+                      <Badge className={`${getPhaseColor(row.original.phase)} text-[10px] px-1 sm:px-1.5 py-0.5 border-0 hidden sm:inline-flex`}>
                         {getPhaseLabel(row.original.phase)}
                       </Badge>
                     </div>
@@ -825,15 +841,15 @@ export function ProjectListContent() {
           <DataGridColumnHeader title="Progress" column={column} />
         ),
         cell: ({ row }) => (
-          <div className="w-20">
+          <div className="w-16 sm:w-20">
             <div className="flex items-center justify-between text-xs mb-1">
               <span>{row.original.timeline.progress}%</span>
             </div>
-            <Progress value={row.original.timeline.progress} className="h-2" />
+            <Progress value={row.original.timeline.progress} className="h-1.5 sm:h-2" />
           </div>
         ),
         enableSorting: true,
-        size: 100,
+        size: 80,
       },
       {
         id: 'budget',
@@ -1060,7 +1076,7 @@ export function ProjectListContent() {
         header: '',
         cell: ({ row }) => <ActionsCell row={row} onDelete={handleDeleteProject} />,
         enableSorting: false,
-        size: 140,
+        size: 100,
       },
     ],
     []
@@ -1075,9 +1091,11 @@ export function ProjectListContent() {
     state: {
       pagination,
       sorting,
+      columnVisibility,
     },
     onPaginationChange: setPagination,
     onSortingChange: setSorting,
+    onColumnVisibilityChange: setColumnVisibility,
     getCoreRowModel: getCoreRowModel(),
     getFilteredRowModel: getFilteredRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
@@ -1087,7 +1105,7 @@ export function ProjectListContent() {
 
   // Grid View Component
   const GridView = () => (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4">
       {table.getRowModel().rows.map((row) => {
         const project = row.original;
         const avgCompliance = (project.compliance.safety + project.compliance.regulatory) / 2;
@@ -1098,10 +1116,10 @@ export function ProjectListContent() {
         
         return (
           <Card key={project.id} className="hover:shadow-lg transition-shadow cursor-pointer">
-            <CardHeader className="pb-3">
+            <CardHeader className="p-3 sm:p-4 pb-3">
               <div className="flex items-start justify-between">
-                <div className="flex items-center gap-3">
-                  <Avatar className="h-10 w-10">
+                <div className="flex items-center gap-2 sm:gap-3 min-w-0">
+                  <Avatar className="h-8 w-8 sm:h-10 sm:w-10 flex-shrink-0">
                     <AvatarImage src="" />
                     <AvatarFallback
                       className="text-xs font-semibold text-white"
@@ -1110,15 +1128,15 @@ export function ProjectListContent() {
                       {getProjectTypeIcon(project.projectType)}
                     </AvatarFallback>
                   </Avatar>
-                  <div>
-                    <CardTitle className="text-base">{project.name}</CardTitle>
-                    <p className="text-xs text-muted-foreground">{project.customer.name}</p>
+                  <div className="min-w-0 flex-1">
+                    <CardTitle className="text-sm sm:text-base truncate">{project.name}</CardTitle>
+                    <p className="text-xs text-muted-foreground truncate">{project.customer.name}</p>
                   </div>
                 </div>
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
-                      <MoreHorizontal className="h-4 w-4" />
+                    <Button variant="ghost" size="sm" className="h-7 w-7 sm:h-8 sm:w-8 p-0 flex-shrink-0">
+                      <MoreHorizontal className="h-3 w-3 sm:h-4 sm:w-4" />
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end">
@@ -1143,73 +1161,73 @@ export function ProjectListContent() {
                 </DropdownMenu>
               </div>
             </CardHeader>
-            <CardContent className="space-y-3">
-              <div className="flex gap-2">
-                <Badge className={getStatusColor(project.status)}>
+            <CardContent className="p-3 sm:p-4 pt-0 space-y-3">
+              <div className="flex gap-1 sm:gap-2 flex-wrap">
+                <Badge className={`${getStatusColor(project.status)} text-[10px] sm:text-xs px-1.5 py-0.5`}>
                   {getStatusLabel(project.status)}
                 </Badge>
-                <Badge className={getPhaseColor(project.phase)}>
+                <Badge className={`${getPhaseColor(project.phase)} text-[10px] sm:text-xs px-1.5 py-0.5`}>
                   {getPhaseLabel(project.phase)}
                 </Badge>
-                <Badge className={getPriorityColor(project.priority)}>
+                <Badge className={`${getPriorityColor(project.priority)} text-[10px] sm:text-xs px-1.5 py-0.5`}>
                   {project.priority}
                 </Badge>
               </div>
               
               <div className="space-y-2">
                 <div>
-                  <div className="flex justify-between text-xs mb-1">
+                  <div className="flex justify-between text-[10px] sm:text-xs mb-1">
                     <span>Progress</span>
-                    <span>{project.timeline.progress}%</span>
+                    <span className="font-medium">{project.timeline.progress}%</span>
                   </div>
-                  <Progress value={project.timeline.progress} className="h-2" />
+                  <Progress value={project.timeline.progress} className="h-1.5 sm:h-2" />
                 </div>
                 
                 <div>
-                  <div className="flex justify-between text-xs mb-1">
+                  <div className="flex justify-between text-[10px] sm:text-xs mb-1">
                     <span>Budget</span>
-                    <span>${(project.budget.spent / 1000000).toFixed(1)}M / ${(project.budget.total / 1000000).toFixed(1)}M</span>
+                    <span className="font-medium">${(project.budget.total / 1000000).toFixed(1)}M</span>
                   </div>
                   <Progress 
                     value={budgetPercentage} 
-                    className={`h-2 ${budgetPercentage > 90 ? '[&>div]:bg-red-500' : ''}`} 
+                    className={`h-1.5 sm:h-2 ${budgetPercentage > 90 ? '[&>div]:bg-red-500' : ''}`} 
                   />
                 </div>
               </div>
               
-              <div className="flex items-center justify-between text-xs">
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1 text-[10px] sm:text-xs">
                 <div className="flex items-center gap-1">
-                  <MapPin className="h-3 w-3" />
-                  <span>{project.location}</span>
+                  <MapPin className="h-3 w-3 flex-shrink-0" />
+                  <span className="truncate">{project.location}</span>
                 </div>
                 <div className="flex items-center gap-1">
-                  <Users className="h-3 w-3" />
-                  <span>{project.team.employees + project.team.contractors + project.team.vendors}</span>
+                  <Users className="h-3 w-3 flex-shrink-0" />
+                  <span>{project.team.employees + project.team.contractors + project.team.vendors} members</span>
                 </div>
               </div>
               
               <div className="flex items-center justify-between pt-2 border-t">
-                <div className="flex items-center gap-2">
-                  <Avatar className="h-6 w-6">
+                <div className="flex items-center gap-1 sm:gap-2 min-w-0">
+                  <Avatar className="h-5 w-5 sm:h-6 sm:w-6 flex-shrink-0">
                     <AvatarImage src={project.projectManager.avatar} />
-                    <AvatarFallback className="text-[10px]">
+                    <AvatarFallback className="text-[8px] sm:text-[10px]">
                       {getInitials(project.projectManager.name)}
                     </AvatarFallback>
                   </Avatar>
-                  <span className="text-xs">{project.projectManager.name}</span>
+                  <span className="text-[10px] sm:text-xs truncate">{project.projectManager.name}</span>
                 </div>
-                <div className="flex gap-1">
+                <div className="flex gap-0.5 sm:gap-1 flex-shrink-0">
                   {project.risks > 0 && (
-                    <Badge variant="outline" className="text-[10px] px-1 border-orange-200">
+                    <Badge variant="outline" className="text-[9px] sm:text-[10px] px-0.5 sm:px-1 border-orange-200">
                       {project.risks}R
                     </Badge>
                   )}
                   {project.issues > 0 && (
-                    <Badge variant="outline" className="text-[10px] px-1 border-red-200">
+                    <Badge variant="outline" className="text-[9px] sm:text-[10px] px-0.5 sm:px-1 border-red-200">
                       {project.issues}I
                     </Badge>
                   )}
-                  <Badge variant="outline" className="text-[10px] px-1">
+                  <Badge variant="outline" className="text-[9px] sm:text-[10px] px-0.5 sm:px-1">
                     {avgCompliance.toFixed(0)}%
                   </Badge>
                 </div>
@@ -1222,76 +1240,88 @@ export function ProjectListContent() {
   );
 
   return (
-    <div>
+    <div className="h-full flex flex-col">
       {/* Enhanced Header */}
-      <div className="flex flex-col space-y-4 px-6 py-4">
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-          <div className="flex items-center space-x-4">
-            <h1 className="text-2xl font-bold tracking-tight">Projects</h1>
-            <div className="flex items-center space-x-2">
-              <Badge variant="secondary">{filteredData.length} total</Badge>
-              {table.getFilteredSelectedRowModel().rows.length > 0 && (
-                <Badge variant="outline">
-                  {table.getFilteredSelectedRowModel().rows.length} selected
-                </Badge>
-              )}
-            </div>
+      <div className="px-4 sm:px-6 py-4 space-y-4 flex-shrink-0">
+        {/* Top Row - All controls in one line */}
+        <div className="flex flex-col lg:flex-row items-start lg:items-center gap-2">
+          {/* Search Bar - Reduced size */}
+          <div className="relative w-full lg:w-64">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
+            <Input
+              placeholder="Search projects..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="pl-9 pr-4 h-9"
+            />
           </div>
 
-          <div className="flex items-center gap-2 flex-wrap">
-            {/* Add New Project */}
-            <Button asChild>
-              <Link to="/projects/new">
-                <Plus className="h-4 w-4 mr-2" />
-                New Project
-              </Link>
-            </Button>
+          {/* Right side controls */}
+          <div className="flex items-center gap-2 ml-auto">
+            {/* Refresh Button with Tooltip */}
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={handleRefresh}
+                    disabled={refreshing}
+                    className="h-9"
+                  >
+                    <RefreshCw className={`h-4 w-4 ${refreshing ? 'animate-spin' : ''}`} />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>Refresh</TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
 
-            {/* Refresh Button */}
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={handleRefresh}
-              disabled={refreshing}
-            >
-              <RefreshCw className={`h-4 w-4 mr-2 ${refreshing ? 'animate-spin' : ''}`} />
-              <span className="hidden sm:inline">Refresh</span>
-            </Button>
+            {/* Export Menu with Tooltip */}
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button variant="outline" size="sm" className="h-9">
+                        <Download className="h-4 w-4" />
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
+                      <DropdownMenuItem onClick={() => handleExport('csv')}>
+                        <FileText className="h-4 w-4 mr-2" />
+                        Export as CSV
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => handleExport('excel')}>
+                        <FileText className="h-4 w-4 mr-2" />
+                        Export as Excel
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => handleExport('pdf')}>
+                        <FileText className="h-4 w-4 mr-2" />
+                        Export as PDF
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                </TooltipTrigger>
+                <TooltipContent>Export</TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
 
-            {/* Export Menu */}
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="outline" size="sm">
-                  <Download className="h-4 w-4 mr-2" />
-                  <span className="hidden sm:inline">Export</span>
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
-                <DropdownMenuItem onClick={() => handleExport('csv')}>
-                  <FileText className="h-4 w-4 mr-2" />
-                  Export as CSV
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => handleExport('excel')}>
-                  <FileText className="h-4 w-4 mr-2" />
-                  Export as Excel
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => handleExport('pdf')}>
-                  <FileText className="h-4 w-4 mr-2" />
-                  Export as PDF
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
+            {/* New Project Button */}
+            <Button onClick={() => navigate('/projects/new')} className="h-9">
+              <Plus className="h-4 w-4 mr-2" />
+              New Project
+            </Button>
 
             {/* View Switcher */}
-            <div className="flex border rounded-lg p-1">
+            <div className="flex border rounded-md">
               <TooltipProvider>
                 <Tooltip>
                   <TooltipTrigger asChild>
                     <Button
-                      variant={view === 'list' ? 'default' : 'ghost'}
+                      variant={view === 'list' ? 'secondary' : 'ghost'}
                       size="sm"
                       onClick={() => setView('list')}
-                      className="h-8 w-8 p-0"
+                      className="h-9 px-3 rounded-r-none"
                     >
                       <List className="h-4 w-4" />
                     </Button>
@@ -1304,10 +1334,10 @@ export function ProjectListContent() {
                 <Tooltip>
                   <TooltipTrigger asChild>
                     <Button
-                      variant={view === 'grid' ? 'default' : 'ghost'}
+                      variant={view === 'grid' ? 'secondary' : 'ghost'}
                       size="sm"
                       onClick={() => setView('grid')}
-                      className="h-8 w-8 p-0"
+                      className="h-9 px-3 rounded-l-none"
                     >
                       <Grid3X3 className="h-4 w-4" />
                     </Button>
@@ -1319,143 +1349,211 @@ export function ProjectListContent() {
           </div>
         </div>
 
-        {/* Search and Filters */}
-        <div className="flex flex-col sm:flex-row gap-3 px-6 pb-4">
-          <div className="relative flex-1 max-w-md">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
-            <Input
-              placeholder="Search projects, customers, locations..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-9"
-            />
+        {/* Filter Controls */}
+        <div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
+            <Select value={selectedStatus} onValueChange={setSelectedStatus}>
+              <SelectTrigger className="w-full sm:w-[140px] h-9">
+                <SelectValue placeholder="Status" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Status</SelectItem>
+                <SelectItem value="planning">Planning</SelectItem>
+                <SelectItem value="active">Active</SelectItem>
+                <SelectItem value="on-hold">On Hold</SelectItem>
+                <SelectItem value="completed">Completed</SelectItem>
+                <SelectItem value="cancelled">Cancelled</SelectItem>
+              </SelectContent>
+            </Select>
+
+            <Select value={selectedType} onValueChange={setSelectedType}>
+              <SelectTrigger className="w-full sm:w-[140px] h-9">
+                <SelectValue placeholder="Type" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Types</SelectItem>
+                <SelectItem value="commercial">Commercial</SelectItem>
+                <SelectItem value="residential">Residential</SelectItem>
+                <SelectItem value="infrastructure">Infrastructure</SelectItem>
+                <SelectItem value="industrial">Industrial</SelectItem>
+                <SelectItem value="renovation">Renovation</SelectItem>
+              </SelectContent>
+            </Select>
+
+            <Select value={selectedPriority} onValueChange={setSelectedPriority}>
+              <SelectTrigger className="w-full sm:w-[140px] h-9">
+                <SelectValue placeholder="Priority" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Priority</SelectItem>
+                <SelectItem value="low">Low</SelectItem>
+                <SelectItem value="medium">Medium</SelectItem>
+                <SelectItem value="high">High</SelectItem>
+                <SelectItem value="critical">Critical</SelectItem>
+              </SelectContent>
+            </Select>
+
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline" className="h-9 hidden sm:flex">
+                  <Filter className="h-4 w-4 mr-2" />
+                  More Filters
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-56">
+                <DropdownMenuLabel>Additional Filters</DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                <div className="p-2 space-y-2">
+                  <div>
+                    <label className="text-sm font-medium">Date Range</label>
+                    <Select>
+                      <SelectTrigger className="w-full h-8 mt-1">
+                        <SelectValue placeholder="Select range" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="today">Today</SelectItem>
+                        <SelectItem value="week">This Week</SelectItem>
+                        <SelectItem value="month">This Month</SelectItem>
+                        <SelectItem value="quarter">This Quarter</SelectItem>
+                        <SelectItem value="year">This Year</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div>
+                    <label className="text-sm font-medium">Budget Range</label>
+                    <Select>
+                      <SelectTrigger className="w-full h-8 mt-1">
+                        <SelectValue placeholder="Select budget" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="0-100k">$0 - $100k</SelectItem>
+                        <SelectItem value="100k-500k">$100k - $500k</SelectItem>
+                        <SelectItem value="500k-1m">$500k - $1M</SelectItem>
+                        <SelectItem value="1m-5m">$1M - $5M</SelectItem>
+                        <SelectItem value="5m+">$5M+</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div>
+                    <label className="text-sm font-medium">Completion %</label>
+                    <Select>
+                      <SelectTrigger className="w-full h-8 mt-1">
+                        <SelectValue placeholder="Select completion" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="0-25">0% - 25%</SelectItem>
+                        <SelectItem value="25-50">25% - 50%</SelectItem>
+                        <SelectItem value="50-75">50% - 75%</SelectItem>
+                        <SelectItem value="75-99">75% - 99%</SelectItem>
+                        <SelectItem value="100">100%</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+                <DropdownMenuSeparator />
+                <div className="p-2 flex gap-2">
+                  <Button size="sm" variant="outline" className="flex-1">
+                    Clear
+                  </Button>
+                  <Button size="sm" className="flex-1">
+                    Apply
+                  </Button>
+                </div>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
-          
-          <Select value={selectedStatus} onValueChange={setSelectedStatus}>
-            <SelectTrigger className="w-[140px]">
-              <SelectValue placeholder="All Status" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All Status</SelectItem>
-              <SelectItem value="planning">Planning</SelectItem>
-              <SelectItem value="active">Active</SelectItem>
-              <SelectItem value="on-hold">On Hold</SelectItem>
-              <SelectItem value="completed">Completed</SelectItem>
-              <SelectItem value="cancelled">Cancelled</SelectItem>
-            </SelectContent>
-          </Select>
-
-          <Select value={selectedType} onValueChange={setSelectedType}>
-            <SelectTrigger className="w-[140px]">
-              <SelectValue placeholder="All Types" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All Types</SelectItem>
-              <SelectItem value="commercial">Commercial</SelectItem>
-              <SelectItem value="residential">Residential</SelectItem>
-              <SelectItem value="infrastructure">Infrastructure</SelectItem>
-              <SelectItem value="industrial">Industrial</SelectItem>
-              <SelectItem value="renovation">Renovation</SelectItem>
-            </SelectContent>
-          </Select>
-
-          <Select value={selectedPriority} onValueChange={setSelectedPriority}>
-            <SelectTrigger className="w-[140px]">
-              <SelectValue placeholder="All Priority" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All Priority</SelectItem>
-              <SelectItem value="low">Low</SelectItem>
-              <SelectItem value="medium">Medium</SelectItem>
-              <SelectItem value="high">High</SelectItem>
-              <SelectItem value="critical">Critical</SelectItem>
-            </SelectContent>
-          </Select>
-
-          <Button variant="outline" size="icon">
-            <Filter className="h-4 w-4" />
-          </Button>
-
-          <DataGridColumnVisibility table={table} trigger={<Button variant="outline" size="sm">Columns</Button>} />
-        </div>
 
         {/* Bulk Actions Bar */}
         {table.getFilteredSelectedRowModel().rows.length > 0 && (
-          <div className="flex items-center gap-2 p-3 mx-6 mb-4 bg-muted/50 rounded-lg">
-            <span className="text-sm font-medium">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-4 p-3 mb-4 bg-muted/50 rounded-lg">
+            <span className="text-xs sm:text-sm font-medium">
               {table.getFilteredSelectedRowModel().rows.length} selected
             </span>
-            <div className="flex gap-2 ml-4">
-              <Button variant="outline" size="sm" onClick={() => handleBulkAssign('manager')}>
-                <Users className="h-4 w-4 mr-2" />
-                Assign
+            <div className="flex flex-wrap gap-2">
+              <Button variant="outline" size="sm" onClick={() => handleBulkAssign('manager')} className="h-8 text-xs sm:text-sm">
+                <Users className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
+                <span className="hidden sm:inline">Assign</span>
+                <span className="sm:hidden">Assign</span>
               </Button>
-              <Button variant="outline" size="sm" onClick={() => handleBulkStatusChange('active')}>
-                <Activity className="h-4 w-4 mr-2" />
-                Change Status
+              <Button variant="outline" size="sm" onClick={() => handleBulkStatusChange('active')} className="h-8 text-xs sm:text-sm">
+                <Activity className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
+                <span className="hidden sm:inline">Change Status</span>
+                <span className="sm:hidden">Status</span>
               </Button>
               <Button 
                 variant="outline" 
                 size="sm" 
-                className="text-red-600 hover:text-red-600"
+                className="text-red-600 hover:text-red-600 h-8 text-xs sm:text-sm"
                 onClick={handleBulkDelete}
               >
-                <Trash2 className="h-4 w-4 mr-2" />
+                <Trash2 className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
                 Delete
               </Button>
             </div>
             <Button
               variant="ghost"
               size="sm"
-              className="ml-auto"
+              className="ml-auto h-8 w-8 p-0"
               onClick={() => table.resetRowSelection()}
             >
               <X className="h-4 w-4" />
             </Button>
           </div>
         )}
+
       </div>
 
-      {/* Data Display */}
+      {/* Data Display - Flex grow to fill available space */}
       {loading ? (
-        <div className="space-y-3">
+        <div className="space-y-3 px-4 sm:px-6 flex-1 overflow-y-auto">
           {[...Array(5)].map((_, i) => (
             <Skeleton key={i} className="h-20 w-full" />
           ))}
         </div>
       ) : view === 'list' ? (
-        <DataGrid
-          table={table}
-          recordCount={filteredData.length}
-          tableLayout={{
-            dense: true,
-            cellBorder: false,
-            rowBorder: true,
-            stripped: false,
-            headerBorder: true,
-            headerBackground: true,
-            columnsResizable: true,
-            columnsVisibility: true,
-            columnsPinnable: true,
-          }}
-        >
-          <Card className="shadow-none border-t border-l-0 border-r-0 border-b-0 rounded-none">
-            <CardTable>
-              <ScrollArea>
-                <DataGridTable />
-                <ScrollBar orientation="horizontal" />
-              </ScrollArea>
-            </CardTable>
-            <CardFooter className="px-4 py-0">
-              <DataGridPagination 
-                className="py-1" 
-                sizes={[10, 20, 50, 100, 200]}
-              />
-            </CardFooter>
-          </Card>
-        </DataGrid>
+        <div className="flex-1 overflow-auto">
+          <DataGrid
+            table={table}
+            recordCount={filteredData.length}
+            tableLayout={{
+              dense: true,
+              cellBorder: false,
+              rowBorder: true,
+              stripped: false,
+              headerBorder: true,
+              headerBackground: true,
+              columnsResizable: true,
+              columnsVisibility: true,
+              columnsPinnable: true,
+            }}
+          >
+            <Card className="shadow-none border-t border-l-0 border-r-0 border-b-0 rounded-none">
+              <div className="flex items-center justify-end px-4 py-2 border-b">
+                <DataGridColumnVisibility 
+                  table={table} 
+                  trigger={
+                    <Button variant="outline" size="sm" className="h-8">
+                      <Settings className="h-4 w-4 mr-2" />
+                      Columns
+                    </Button>
+                  } 
+                />
+              </div>
+              <CardTable>
+                <div className="min-w-[768px] overflow-x-auto">
+                  <DataGridTable />
+                </div>
+              </CardTable>
+              <CardFooter className="px-4 py-0">
+                <DataGridPagination 
+                  className="py-1 text-xs sm:text-sm" 
+                  sizes={[10, 20, 50, 100, 200]}
+                />
+              </CardFooter>
+            </Card>
+          </DataGrid>
+        </div>
       ) : view === 'grid' ? (
-        <div className="px-6">
+        <div className="px-4 sm:px-6 flex-1 overflow-y-auto">
           <GridView />
           <div className="flex justify-center mt-4">
             <div className="flex items-center gap-2">
@@ -1464,10 +1562,12 @@ export function ProjectListContent() {
                 size="sm"
                 onClick={() => setPagination(prev => ({ ...prev, pageIndex: Math.max(0, prev.pageIndex - 1) }))}
                 disabled={pagination.pageIndex === 0}
+                className="h-8 text-xs sm:text-sm"
               >
-                Previous
+                <span className="hidden sm:inline">Previous</span>
+                <span className="sm:hidden">Prev</span>
               </Button>
-              <span className="text-sm text-muted-foreground">
+              <span className="text-xs sm:text-sm text-muted-foreground px-2">
                 Page {pagination.pageIndex + 1} of {Math.ceil(filteredData.length / pagination.pageSize)}
               </span>
               <Button
@@ -1475,6 +1575,7 @@ export function ProjectListContent() {
                 size="sm"
                 onClick={() => setPagination(prev => ({ ...prev, pageIndex: prev.pageIndex + 1 }))}
                 disabled={pagination.pageIndex >= Math.ceil(filteredData.length / pagination.pageSize) - 1}
+                className="h-8 text-xs sm:text-sm"
               >
                 Next
               </Button>

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import React, { useState } from 'react';
 import {
   CheckSquare,
   Plus,
@@ -996,8 +996,8 @@ export default function TaskManagement() {
                   const CategoryIcon = getCategoryIcon(task.category);
                   const isExpanded = expandedTasks.includes(task.id);
                   return (
-                    <>
-                      <TableRow key={task.id} className="cursor-pointer hover:bg-muted/50">
+                    <React.Fragment key={task.id}>
+                      <TableRow className="cursor-pointer hover:bg-muted/50">
                         <TableCell>
                           <Checkbox />
                         </TableCell>
@@ -1329,7 +1329,7 @@ export default function TaskManagement() {
                           </TableCell>
                         </TableRow>
                       )}
-                    </>
+                    </React.Fragment>
                   );
                 })}
               </TableBody>

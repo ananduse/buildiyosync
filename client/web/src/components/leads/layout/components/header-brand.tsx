@@ -7,6 +7,8 @@ import { SidebarContent } from './sidebar-content';
 import { useLocation } from 'react-router-dom';
 import { HeaderWorkspace } from './header-workspace';
 import { Separator } from '@/components/ui/separator';
+import { LayoutProvider } from './layout-context';
+import { LEADS_NAV } from '../../config/app.config';
 
 export function HeaderBrand() {
   const { pathname } = useLocation();
@@ -47,7 +49,9 @@ export function HeaderBrand() {
           >
             <SheetHeader className="p-0 space-y-0" />
             <SheetBody className="flex flex-col grow p-0 [--sidebar-space-x:calc(var(--spacing)*2.5)]">
-              <SidebarContent />
+              <LayoutProvider sidebarNavItems={LEADS_NAV}>
+                <SidebarContent />
+              </LayoutProvider>
             </SheetBody>
           </SheetContent>
         </Sheet>
