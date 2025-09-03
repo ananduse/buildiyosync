@@ -241,6 +241,10 @@ import EnterpriseProjectList from '@/pages/projects/list/enterprise-project-list
 import ProjectListPage from '@/pages/projects/list/project-list-page';
 import ProjectDetails from '@/pages/projects/details/project-details';
 import ProjectDetailsView from '@/pages/projects/details/project-details-view';
+import ProjectTasks from '@/pages/projects/[id]/tasks/project-tasks';
+import TaskManagementComplete from '@/pages/projects/[id]/tasks/task-management-complete';
+import ProjectTaskManager from '@/pages/projects/[id]/tasks/project-task-manager';
+import ProjectDetailPage from '@/pages/projects/[id]/project-detail-page';
 import ProjectTeamManagement from '@/pages/projects/team/team-management';
 import ProjectTaskManagement from '@/pages/projects/tasks/task-management';
 import ProjectDocuments from '@/pages/projects/documents/project-documents';

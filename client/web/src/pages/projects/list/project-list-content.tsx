@@ -548,9 +548,9 @@ function ActionsCell({ row, onDelete }: { row: Row<Project>; onDelete: (project:
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end" className="w-48">
           <DropdownMenuItem asChild>
-            <Link to={`/projects/${row.original.id}/details`}>
+            <Link to={`/projects/${row.original.id}`}>
               <Eye className="h-4 w-4 mr-2" />
-              View Details
+              View Project
             </Link>
           </DropdownMenuItem>
           <DropdownMenuItem asChild>
@@ -754,7 +754,12 @@ export function ProjectListContent() {
                   </div>
                   <div className="min-w-0 flex-1">
                     <div className="flex items-center gap-1 sm:gap-2 flex-wrap">
-                      <p className="font-medium leading-none hover:underline text-sm sm:text-base truncate">{row.original.name}</p>
+                      <Link 
+                        to={`/projects/${row.original.id}`}
+                        className="font-medium leading-none hover:underline text-sm sm:text-base truncate text-blue-600 hover:text-blue-800"
+                      >
+                        {row.original.name}
+                      </Link>
                       {row.original.customer.type === 'self-registered' && (
                         <Badge variant="outline" className="text-[10px] px-1.5 py-0 hidden sm:inline-flex">
                           <User className="h-2 w-2 mr-1" />
@@ -1144,9 +1149,9 @@ export function ProjectListContent() {
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end">
                     <DropdownMenuItem asChild>
-                      <Link to={`/projects/${project.id}/details`}>
+                      <Link to={`/projects/${project.id}`}>
                         <Eye className="h-4 w-4 mr-2" />
-                        View Details
+                        View Project
                       </Link>
                     </DropdownMenuItem>
                     <DropdownMenuItem asChild>
