@@ -1302,87 +1302,77 @@ export default function ProjectDetailsView() {
             <TabsList 
               variant="line" 
               size="md"
-              className="flex items-center border-b-0 border-border px-2 sm:px-4 lg:px-6 gap-0 sm:gap-2 md:gap-4 lg:gap-6 bg-transparent w-full justify-start overflow-x-auto scrollbar-none [&_button]:border-b-2 [&_button_svg]:size-4 [&_button]:text-secondary-foreground min-h-[48px]"
+              className="flex items-center border-b-0 border-border px-4 gap-0 bg-transparent w-full justify-start overflow-x-auto scrollbar-none [&_button]:border-b-2 [&_button_svg]:size-4 [&_button]:text-secondary-foreground min-h-[48px]"
             >
               <TabsTrigger 
                 value="overview" 
-                className="flex-shrink-0 cursor-pointer whitespace-nowrap inline-flex justify-center items-center font-medium ring-offset-background transition-colors focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 data-disabled:pointer-events-none data-disabled:opacity-50 [&_svg]:shrink-0 [&_svg]:text-muted-foreground [&:hover_svg]:text-primary [&[data-state=active]_svg]:text-primary border-b-2 text-muted-foreground border-transparent hover:text-primary data-[state=active]:border-primary data-[state=active]:text-primary gap-1 sm:gap-1.5 lg:gap-2 [&_svg]:size-3 sm:[&_svg]:size-4 text-xs sm:text-sm py-2.5 sm:py-2.5 px-2 sm:px-3 lg:px-4 min-w-fit"
+                className="flex-shrink-0 cursor-pointer whitespace-nowrap inline-flex justify-center items-center font-medium ring-offset-background transition-colors focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 data-disabled:pointer-events-none data-disabled:opacity-50 [&_svg]:shrink-0 [&_svg]:text-muted-foreground [&:hover_svg]:text-primary [&[data-state=active]_svg]:text-primary border-b-2 text-muted-foreground border-transparent hover:text-primary data-[state=active]:border-primary data-[state=active]:text-primary gap-1.5 [&_svg]:size-4 text-sm py-2 px-3 min-w-fit"
               >
-                <LayoutGrid className="h-3 w-3 sm:h-4 sm:w-4" />
-                <span className="hidden sm:inline">Overview</span>
-                <span className="inline sm:hidden">View</span>
+                <LayoutGrid className="h-4 w-4" />
+                <span>Overview</span>
               </TabsTrigger>
               <TabsTrigger 
                 value="activity"
-                className="flex-shrink-0 cursor-pointer whitespace-nowrap inline-flex justify-center items-center font-medium ring-offset-background transition-colors focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 data-disabled:pointer-events-none data-disabled:opacity-50 [&_svg]:shrink-0 [&_svg]:text-muted-foreground [&:hover_svg]:text-primary [&[data-state=active]_svg]:text-primary border-b-2 text-muted-foreground border-transparent hover:text-primary data-[state=active]:border-primary data-[state=active]:text-primary gap-1 sm:gap-1.5 lg:gap-2 [&_svg]:size-3 sm:[&_svg]:size-4 text-xs sm:text-sm py-2.5 sm:py-2.5 px-2 sm:px-3 lg:px-4 min-w-fit"
+                className="flex-shrink-0 cursor-pointer whitespace-nowrap inline-flex justify-center items-center font-medium ring-offset-background transition-colors focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 data-disabled:pointer-events-none data-disabled:opacity-50 [&_svg]:shrink-0 [&_svg]:text-muted-foreground [&:hover_svg]:text-primary [&[data-state=active]_svg]:text-primary border-b-2 text-muted-foreground border-transparent hover:text-primary data-[state=active]:border-primary data-[state=active]:text-primary gap-1.5 [&_svg]:size-4 text-sm py-2 px-3 min-w-fit"
               >
-                <Activity className="h-3 w-3 sm:h-4 sm:w-4" />
-                <span className="hidden sm:inline">Activity</span>
-                <span className="inline sm:hidden">Act</span>
+                <Activity className="h-4 w-4" />
+                <span>Activity</span>
               </TabsTrigger>
               <TabsTrigger 
                 value="timeline"
-                className="flex-shrink-0 cursor-pointer whitespace-nowrap inline-flex justify-center items-center font-medium ring-offset-background transition-colors focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 data-disabled:pointer-events-none data-disabled:opacity-50 [&_svg]:shrink-0 [&_svg]:text-muted-foreground [&:hover_svg]:text-primary [&[data-state=active]_svg]:text-primary border-b-2 text-muted-foreground border-transparent hover:text-primary data-[state=active]:border-primary data-[state=active]:text-primary gap-1 sm:gap-1.5 lg:gap-2 [&_svg]:size-3 sm:[&_svg]:size-4 text-xs sm:text-sm py-2.5 sm:py-2.5 px-2 sm:px-3 lg:px-4 min-w-fit"
+                className="flex-shrink-0 cursor-pointer whitespace-nowrap inline-flex justify-center items-center font-medium ring-offset-background transition-colors focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 data-disabled:pointer-events-none data-disabled:opacity-50 [&_svg]:shrink-0 [&_svg]:text-muted-foreground [&:hover_svg]:text-primary [&[data-state=active]_svg]:text-primary border-b-2 text-muted-foreground border-transparent hover:text-primary data-[state=active]:border-primary data-[state=active]:text-primary gap-1.5 [&_svg]:size-4 text-sm py-2 px-3 min-w-fit"
               >
-                <Clock className="h-3 w-3 sm:h-4 sm:w-4" />
-                <span className="hidden sm:inline">Timeline</span>
-                <span className="inline sm:hidden">Time</span>
+                <Clock className="h-4 w-4" />
+                <span>Timeline</span>
               </TabsTrigger>
               <TabsTrigger 
                 value="team"
-                className="flex-shrink-0 cursor-pointer whitespace-nowrap inline-flex justify-center items-center font-medium ring-offset-background transition-colors focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 data-disabled:pointer-events-none data-disabled:opacity-50 [&_svg]:shrink-0 [&_svg]:text-muted-foreground [&:hover_svg]:text-primary [&[data-state=active]_svg]:text-primary border-b-2 text-muted-foreground border-transparent hover:text-primary data-[state=active]:border-primary data-[state=active]:text-primary gap-1 sm:gap-1.5 lg:gap-2 [&_svg]:size-3 sm:[&_svg]:size-4 text-xs sm:text-sm py-2.5 sm:py-2.5 px-2 sm:px-3 lg:px-4 min-w-fit"
+                className="flex-shrink-0 cursor-pointer whitespace-nowrap inline-flex justify-center items-center font-medium ring-offset-background transition-colors focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 data-disabled:pointer-events-none data-disabled:opacity-50 [&_svg]:shrink-0 [&_svg]:text-muted-foreground [&:hover_svg]:text-primary [&[data-state=active]_svg]:text-primary border-b-2 text-muted-foreground border-transparent hover:text-primary data-[state=active]:border-primary data-[state=active]:text-primary gap-1.5 [&_svg]:size-4 text-sm py-2 px-3 min-w-fit"
               >
-                <Users className="h-3 w-3 sm:h-4 sm:w-4" />
-                <span className="hidden sm:inline">Team</span>
-                <span className="inline sm:hidden">Team</span>
+                <Users className="h-4 w-4" />
+                <span>Team</span>
               </TabsTrigger>
               <TabsTrigger 
                 value="tasks"
-                className="flex-shrink-0 cursor-pointer whitespace-nowrap inline-flex justify-center items-center font-medium ring-offset-background transition-colors focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 data-disabled:pointer-events-none data-disabled:opacity-50 [&_svg]:shrink-0 [&_svg]:text-muted-foreground [&:hover_svg]:text-primary [&[data-state=active]_svg]:text-primary border-b-2 text-muted-foreground border-transparent hover:text-primary data-[state=active]:border-primary data-[state=active]:text-primary gap-1 sm:gap-1.5 lg:gap-2 [&_svg]:size-3 sm:[&_svg]:size-4 text-xs sm:text-sm py-2.5 sm:py-2.5 px-2 sm:px-3 lg:px-4 min-w-fit"
+                className="flex-shrink-0 cursor-pointer whitespace-nowrap inline-flex justify-center items-center font-medium ring-offset-background transition-colors focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 data-disabled:pointer-events-none data-disabled:opacity-50 [&_svg]:shrink-0 [&_svg]:text-muted-foreground [&:hover_svg]:text-primary [&[data-state=active]_svg]:text-primary border-b-2 text-muted-foreground border-transparent hover:text-primary data-[state=active]:border-primary data-[state=active]:text-primary gap-1.5 [&_svg]:size-4 text-sm py-2 px-3 min-w-fit"
               >
-                <CheckSquare className="h-3 w-3 sm:h-4 sm:w-4" />
-                <span className="hidden sm:inline">Tasks</span>
-                <span className="inline sm:hidden">Task</span>
+                <CheckSquare className="h-4 w-4" />
+                <span>Tasks</span>
               </TabsTrigger>
               <TabsTrigger 
                 value="budget"
-                className="flex-shrink-0 cursor-pointer whitespace-nowrap inline-flex justify-center items-center font-medium ring-offset-background transition-colors focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 data-disabled:pointer-events-none data-disabled:opacity-50 [&_svg]:shrink-0 [&_svg]:text-muted-foreground [&:hover_svg]:text-primary [&[data-state=active]_svg]:text-primary border-b-2 text-muted-foreground border-transparent hover:text-primary data-[state=active]:border-primary data-[state=active]:text-primary gap-1 sm:gap-1.5 lg:gap-2 [&_svg]:size-3 sm:[&_svg]:size-4 text-xs sm:text-sm py-2.5 sm:py-2.5 px-2 sm:px-3 lg:px-4 min-w-fit"
+                className="flex-shrink-0 cursor-pointer whitespace-nowrap inline-flex justify-center items-center font-medium ring-offset-background transition-colors focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 data-disabled:pointer-events-none data-disabled:opacity-50 [&_svg]:shrink-0 [&_svg]:text-muted-foreground [&:hover_svg]:text-primary [&[data-state=active]_svg]:text-primary border-b-2 text-muted-foreground border-transparent hover:text-primary data-[state=active]:border-primary data-[state=active]:text-primary gap-1.5 [&_svg]:size-4 text-sm py-2 px-3 min-w-fit"
               >
-                <DollarSign className="h-3 w-3 sm:h-4 sm:w-4" />
-                <span className="hidden sm:inline">Budget</span>
-                <span className="inline sm:hidden">$$</span>
+                <DollarSign className="h-4 w-4" />
+                <span>Budget</span>
               </TabsTrigger>
               <TabsTrigger 
                 value="documents"
-                className="flex-shrink-0 cursor-pointer whitespace-nowrap inline-flex justify-center items-center font-medium ring-offset-background transition-colors focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 data-disabled:pointer-events-none data-disabled:opacity-50 [&_svg]:shrink-0 [&_svg]:text-muted-foreground [&:hover_svg]:text-primary [&[data-state=active]_svg]:text-primary border-b-2 text-muted-foreground border-transparent hover:text-primary data-[state=active]:border-primary data-[state=active]:text-primary gap-1 sm:gap-1.5 lg:gap-2 [&_svg]:size-3 sm:[&_svg]:size-4 text-xs sm:text-sm py-2.5 sm:py-2.5 px-2 sm:px-3 lg:px-4 min-w-fit"
+                className="flex-shrink-0 cursor-pointer whitespace-nowrap inline-flex justify-center items-center font-medium ring-offset-background transition-colors focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 data-disabled:pointer-events-none data-disabled:opacity-50 [&_svg]:shrink-0 [&_svg]:text-muted-foreground [&:hover_svg]:text-primary [&[data-state=active]_svg]:text-primary border-b-2 text-muted-foreground border-transparent hover:text-primary data-[state=active]:border-primary data-[state=active]:text-primary gap-1.5 [&_svg]:size-4 text-sm py-2 px-3 min-w-fit"
               >
-                <FolderOpen className="h-3 w-3 sm:h-4 sm:w-4" />
-                <span className="hidden sm:inline">Documents</span>
-                <span className="inline sm:hidden">Docs</span>
+                <FolderOpen className="h-4 w-4" />
+                <span>Documents</span>
               </TabsTrigger>
               <TabsTrigger 
                 value="calendar"
-                className="flex-shrink-0 cursor-pointer whitespace-nowrap inline-flex justify-center items-center font-medium ring-offset-background transition-colors focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 data-disabled:pointer-events-none data-disabled:opacity-50 [&_svg]:shrink-0 [&_svg]:text-muted-foreground [&:hover_svg]:text-primary [&[data-state=active]_svg]:text-primary border-b-2 text-muted-foreground border-transparent hover:text-primary data-[state=active]:border-primary data-[state=active]:text-primary gap-1 sm:gap-1.5 lg:gap-2 [&_svg]:size-3 sm:[&_svg]:size-4 text-xs sm:text-sm py-2.5 sm:py-2.5 px-2 sm:px-3 lg:px-4 min-w-fit"
+                className="flex-shrink-0 cursor-pointer whitespace-nowrap inline-flex justify-center items-center font-medium ring-offset-background transition-colors focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 data-disabled:pointer-events-none data-disabled:opacity-50 [&_svg]:shrink-0 [&_svg]:text-muted-foreground [&:hover_svg]:text-primary [&[data-state=active]_svg]:text-primary border-b-2 text-muted-foreground border-transparent hover:text-primary data-[state=active]:border-primary data-[state=active]:text-primary gap-1.5 [&_svg]:size-4 text-sm py-2 px-3 min-w-fit"
               >
-                <CalendarDays className="h-3 w-3 sm:h-4 sm:w-4" />
-                <span className="hidden sm:inline">Calendar</span>
-                <span className="inline sm:hidden">Cal</span>
+                <CalendarDays className="h-4 w-4" />
+                <span>Calendar</span>
               </TabsTrigger>
               <TabsTrigger 
                 value="reports"
-                className="flex-shrink-0 cursor-pointer whitespace-nowrap inline-flex justify-center items-center font-medium ring-offset-background transition-colors focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 data-disabled:pointer-events-none data-disabled:opacity-50 [&_svg]:shrink-0 [&_svg]:text-muted-foreground [&:hover_svg]:text-primary [&[data-state=active]_svg]:text-primary border-b-2 text-muted-foreground border-transparent hover:text-primary data-[state=active]:border-primary data-[state=active]:text-primary gap-1 sm:gap-1.5 lg:gap-2 [&_svg]:size-3 sm:[&_svg]:size-4 text-xs sm:text-sm py-2.5 sm:py-2.5 px-2 sm:px-3 lg:px-4 min-w-fit"
+                className="flex-shrink-0 cursor-pointer whitespace-nowrap inline-flex justify-center items-center font-medium ring-offset-background transition-colors focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 data-disabled:pointer-events-none data-disabled:opacity-50 [&_svg]:shrink-0 [&_svg]:text-muted-foreground [&:hover_svg]:text-primary [&[data-state=active]_svg]:text-primary border-b-2 text-muted-foreground border-transparent hover:text-primary data-[state=active]:border-primary data-[state=active]:text-primary gap-1.5 [&_svg]:size-4 text-sm py-2 px-3 min-w-fit"
               >
-                <BarChart3 className="h-3 w-3 sm:h-4 sm:w-4" />
-                <span className="hidden sm:inline">Reports</span>
-                <span className="inline sm:hidden">Rep</span>
+                <BarChart3 className="h-4 w-4" />
+                <span>Reports</span>
               </TabsTrigger>
               <TabsTrigger 
                 value="details"
-                className="flex-shrink-0 cursor-pointer whitespace-nowrap inline-flex justify-center items-center font-medium ring-offset-background transition-colors focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 data-disabled:pointer-events-none data-disabled:opacity-50 [&_svg]:shrink-0 [&_svg]:text-muted-foreground [&:hover_svg]:text-primary [&[data-state=active]_svg]:text-primary border-b-2 text-muted-foreground border-transparent hover:text-primary data-[state=active]:border-primary data-[state=active]:text-primary gap-1 sm:gap-1.5 lg:gap-2 [&_svg]:size-3 sm:[&_svg]:size-4 text-xs sm:text-sm py-2.5 sm:py-2.5 px-2 sm:px-3 lg:px-4 min-w-fit"
+                className="flex-shrink-0 cursor-pointer whitespace-nowrap inline-flex justify-center items-center font-medium ring-offset-background transition-colors focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 data-disabled:pointer-events-none data-disabled:opacity-50 [&_svg]:shrink-0 [&_svg]:text-muted-foreground [&:hover_svg]:text-primary [&[data-state=active]_svg]:text-primary border-b-2 text-muted-foreground border-transparent hover:text-primary data-[state=active]:border-primary data-[state=active]:text-primary gap-1.5 [&_svg]:size-4 text-sm py-2 px-3 min-w-fit"
               >
-                <Info className="h-3 w-3 sm:h-4 sm:w-4" />
-                <span className="hidden sm:inline">Details</span>
-                <span className="inline sm:hidden">Info</span>
+                <Info className="h-4 w-4" />
+                <span>Details</span>
               </TabsTrigger>
             </TabsList>
           </Tabs>
