@@ -132,6 +132,7 @@ import {
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
+import EnterpriseWidgetsOverview from '@/pages/projects/overview/enterprise-widgets-overview';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -653,8 +654,21 @@ const generateMockProjectDetails = (projectId?: string) => {
           efficiency: 89,
           qualityIndex: tamilProject.qualityScore || 94,
           safetyIndex: tamilProject.safetyScore || 96,
-          overallHealth: tamilProject.qualityScore >= 90 ? 'good' : 'fair'
+          overallHealth: tamilProject.qualityScore >= 90 ? 'good' : 'fair',
+          customerSatisfaction: 85,
+          teamMorale: 78
         },
+        
+        risks: {
+          high: 2,
+          medium: 5,
+          low: 8,
+          total: 15
+        },
+        
+        changeRequests: 12,
+        defectRate: 2.3,
+        rework: 5,
 
         activities: [
           {
@@ -1162,7 +1176,7 @@ export default function ProjectDetailsView() {
   ];
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-white">
       {/* Header */}
       <div className="border-b bg-white">
         <div className="container mx-auto py-4 max-w-[1600px] px-4">
@@ -1384,261 +1398,7 @@ export default function ProjectDetailsView() {
         <Tabs value={activeTab} className="space-y-6">
           {/* Overview Tab */}
           <TabsContent value="overview" className="space-y-6">
-            {/* Key Metrics */}
-            <div className="grid gap-4 md:grid-cols-4">
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Progress</CardTitle>
-                <Target className="h-4 w-4 text-muted-foreground" />
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">{project.timeline.progress}%</div>
-                <Progress value={project.timeline.progress} className="mt-2" />
-                <p className="text-xs text-muted-foreground mt-1">
-                  {project.timeline.daysElapsed} of {project.timeline.duration} days
-                </p>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Budget Used</CardTitle>
-                <CircleDollarSign className="h-4 w-4 text-muted-foreground" />
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">
-                  ${(project.budget.spent / 1000000).toFixed(1)}M
-                </div>
-                <Progress value={budgetUtilization} className="mt-2" />
-                <p className="text-xs text-muted-foreground mt-1">
-                  of ${(project.budget.total / 1000000).toFixed(0)}M total
-                </p>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Tasks</CardTitle>
-                <CheckSquare className="h-4 w-4 text-muted-foreground" />
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">
-                  {project.tasks.completed}/{project.tasks.total}
-                </div>
-                <Progress value={(project.tasks.completed / project.tasks.total) * 100} className="mt-2" />
-                <p className="text-xs text-muted-foreground mt-1">
-                  {project.tasks.inProgress} in progress
-                </p>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Team</CardTitle>
-                <Users className="h-4 w-4 text-muted-foreground" />
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">{project.team.totalMembers}</div>
-                <div className="flex items-center gap-4 mt-2">
-                  <span className="text-xs text-muted-foreground">
-                    {project.team.employees} employees
-                  </span>
-                  <span className="text-xs text-muted-foreground">
-                    {project.team.contractors} contractors
-                  </span>
-                </div>
-              </CardContent>
-            </Card>
-        </div>
-
-        {/* Project Overview */}
-        <Card>
-            <CardHeader>
-              <CardTitle>Project Description</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-muted-foreground">{project.description}</p>
-              <div className="grid gap-4 md:grid-cols-2 mt-4">
-                <div>
-                  <h4 className="font-semibold mb-2">Schedule Performance</h4>
-                  <ResponsiveContainer width="100%" height={200}>
-                    <LineChart data={progressChartData}>
-                      <CartesianGrid strokeDasharray="3 3" />
-                      <XAxis dataKey="month" />
-                      <YAxis />
-                      <RechartsTooltip />
-                      <Line type="monotone" dataKey="planned" stroke="#94a3b8" strokeWidth={2} />
-                      <Line type="monotone" dataKey="actual" stroke="#3b82f6" strokeWidth={2} />
-                    </LineChart>
-                  </ResponsiveContainer>
-                </div>
-                <div>
-                  <h4 className="font-semibold mb-2">Budget Distribution</h4>
-                  <ResponsiveContainer width="100%" height={200}>
-                    <PieChart>
-                      <Pie
-                        data={budgetChartData}
-                        cx="50%"
-                        cy="50%"
-                        innerRadius={60}
-                        outerRadius={80}
-                        paddingAngle={2}
-                        dataKey="value"
-                      >
-                        {budgetChartData.map((entry, index) => (
-                          <Cell key={`cell-${index}`} fill={entry.fill} />
-                        ))}
-                      </Pie>
-                      <RechartsTooltip />
-                    </PieChart>
-                  </ResponsiveContainer>
-                </div>
-              </div>
-            </CardContent>
-        </Card>
-
-        {/* Project Details */}
-        <div className="grid gap-4 md:grid-cols-2">
-          <Card>
-            <CardHeader>
-              <CardTitle>Project Information</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-3">
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">Project ID:</span>
-                  <span className="font-medium">{project.id}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">Customer:</span>
-                  <span className="font-medium">{project.customer.name}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">Location:</span>
-                  <span className="font-medium">{project.location.city}, {project.location.state}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">Phase:</span>
-                  <Badge>{project.phase}</Badge>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">Start Date:</span>
-                  <span className="font-medium">{format(new Date(project.timeline.startDate), 'MMM dd, yyyy')}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">End Date:</span>
-                  <span className="font-medium">{format(new Date(project.timeline.endDate), 'MMM dd, yyyy')}</span>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <CardTitle>Performance Metrics</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-3">
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">Overall Health:</span>
-                  <span className="font-medium capitalize">{project.performance.overallHealth}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">Efficiency:</span>
-                  <span className="font-medium">{project.performance.efficiency}%</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">Quality Index:</span>
-                  <span className="font-medium">{project.performance.qualityIndex}%</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">Safety Index:</span>
-                  <span className="font-medium">{project.performance.safetyIndex}%</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">Productivity:</span>
-                  <span className="font-medium">{project.performance.productivity}%</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">Cost Performance (CPI):</span>
-                  <span className="font-medium">{project.performance.cpi}</span>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Milestones */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Key Milestones</CardTitle>
-            <CardDescription>Track progress of major project milestones</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-3">
-              {project.milestones.slice(0, 5).map((milestone: any) => (
-                <div key={milestone.id} className="flex items-center justify-between p-3 border rounded-lg">
-                  <div className="flex items-center gap-3">
-                    {milestone.status === 'completed' && <CheckCircle2 className="h-5 w-5 text-green-600" />}
-                    {milestone.status === 'in-progress' && <Clock className="h-5 w-5 text-blue-600" />}
-                    {milestone.status === 'pending' && <Circle className="h-5 w-5 text-gray-400" />}
-                    <div>
-                      <p className="font-medium">{milestone.name}</p>
-                      <p className="text-sm text-muted-foreground">Due: {format(new Date(milestone.date), 'MMM dd, yyyy')}</p>
-                    </div>
-                  </div>
-                  <Badge variant={milestone.status === 'completed' ? 'default' : milestone.status === 'in-progress' ? 'secondary' : 'outline'}>
-                    {milestone.status}
-                  </Badge>
-                </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Quick Actions */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Quick Actions</CardTitle>
-            <CardDescription>Navigate to different project sections</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="grid gap-3 md:grid-cols-4">
-              <Button variant="outline" className="justify-start" onClick={() => navigate(`/projects/${id}/timeline`)}>
-                <Calendar className="h-4 w-4 mr-2" />
-                View Timeline
-              </Button>
-              <Button variant="outline" className="justify-start" onClick={() => navigate(`/projects/${id}/tasks`)}>
-                <ListTodo className="h-4 w-4 mr-2" />
-                Manage Tasks
-              </Button>
-              <Button variant="outline" className="justify-start" onClick={() => navigate(`/projects/${id}/team`)}>
-                <Users className="h-4 w-4 mr-2" />
-                Team Members
-              </Button>
-              <Button variant="outline" className="justify-start" onClick={() => navigate(`/projects/${id}/documents`)}>
-                <FolderOpenIcon className="h-4 w-4 mr-2" />
-                Documents
-              </Button>
-              <Button variant="outline" className="justify-start" onClick={() => navigate(`/projects/${id}/budget`)}>
-                <DollarSign className="h-4 w-4 mr-2" />
-                Budget
-              </Button>
-              <Button variant="outline" className="justify-start" onClick={() => navigate(`/projects/${id}/calendar`)}>
-                <CalendarDays className="h-4 w-4 mr-2" />
-                Calendar
-              </Button>
-              <Button variant="outline" className="justify-start" onClick={() => navigate(`/projects/${id}/reports`)}>
-                <BarChart2 className="h-4 w-4 mr-2" />
-                Reports
-              </Button>
-              <Button variant="outline" className="justify-start" onClick={() => navigate(`/projects/${id}/activity`)}>
-                <ActivityIcon className="h-4 w-4 mr-2" />
-                Activity
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
+            <EnterpriseWidgetsOverview project={project} />
           </TabsContent>
 
           {/* Activity Tab */}

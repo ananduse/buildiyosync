@@ -69,7 +69,25 @@ import {
   CheckSquare,
   ChevronUp,
   BarChart,
-  ClipboardList
+  ClipboardList,
+  ZoomIn,
+  ZoomOut,
+  Bug,
+  Sparkles,
+  Droplets,
+  Wind,
+  Flame,
+  FlaskConical,
+  Truck,
+  Building2,
+  Wrench,
+  HardHat,
+  Hammer,
+  PaintBucket,
+  Lightbulb,
+  Cpu,
+  Bolt,
+  Package
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -131,6 +149,7 @@ import { format, formatDistanceToNow, addDays, isOverdue, differenceInDays, star
 import { Calendar as CalendarComponent } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { toast } from 'sonner';
+import { generateSampleTasks } from './simple-sample-tasks';
 
 // Types
 interface Task {
@@ -516,8 +535,10 @@ export default function ProjectTaskManager() {
   const { id: projectId } = useParams<{ id: string }>();
   
   // State
-  const [tasks, setTasks] = useState<Task[]>([]);
-  const [view, setView] = useState<'list' | 'kanban' | 'gantt' | 'calendar'>('list');
+  const sampleTasks = generateSampleTasks();
+  console.log('Generated sample tasks:', sampleTasks);
+  const [tasks, setTasks] = useState<Task[]>(sampleTasks);
+  const [view, setView] = useState<'list' | 'kanban' | 'gantt' | 'calendar'>('calendar');
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedStatus, setSelectedStatus] = useState<string>('all');
   const [selectedPriority, setSelectedPriority] = useState<string>('all');
@@ -537,8 +558,7 @@ export default function ProjectTaskManager() {
     const loadTasks = async () => {
       setLoading(true);
       await new Promise(resolve => setTimeout(resolve, 500));
-      const mockTasks = generateMockTasks(projectId || 'P001');
-      setTasks(mockTasks);
+      // Tasks are already loaded from generateSampleTasks
       setLoading(false);
     };
     loadTasks();
@@ -567,13 +587,87 @@ export default function ProjectTaskManager() {
 
   const getTypeIcon = (type: Task['type']) => {
     switch (type) {
-      case 'task': return <CheckCircle2 className="h-4 w-4" />;
-      case 'milestone': return <Flag className="h-4 w-4" />;
-      case 'bug': return <AlertTriangle className="h-4 w-4" />;
-      case 'feature': return <Zap className="h-4 w-4" />;
-      case 'epic': return <Layers className="h-4 w-4" />;
-      case 'subtask': return <GitMerge className="h-4 w-4" />;
+      case 'task': return <ClipboardList className="h-4 w-4 text-slate-600" />;
+      case 'milestone': return <Flag className="h-4 w-4 text-purple-600" />;
+      case 'bug': return <Bug className="h-4 w-4 text-red-600" />;
+      case 'feature': return <Sparkles className="h-4 w-4 text-blue-600" />;
+      case 'epic': return <FolderOpen className="h-4 w-4 text-indigo-600" />;
+      case 'subtask': return <GitBranch className="h-4 w-4 text-gray-500" />;
     }
+  };
+
+  // Get icon based on task category/tags
+  const getCategoryIcon = (task: Task) => {
+    const tags = task.tags || [];
+    const title = task.title.toLowerCase();
+    
+    // Construction-specific icons
+    if (tags.includes('foundation') || title.includes('foundation')) {
+      return <Building2 className="h-4 w-4 text-amber-600" />;
+    }
+    if (tags.includes('electrical') || title.includes('electrical') || title.includes('wiring')) {
+      return <Bolt className="h-4 w-4 text-yellow-600" />;
+    }
+    if (tags.includes('plumbing') || title.includes('plumbing') || title.includes('water')) {
+      return <Droplets className="h-4 w-4 text-blue-600" />;
+    }
+    if (tags.includes('structure') || title.includes('structural') || title.includes('framework')) {
+      return <Building2 className="h-4 w-4 text-gray-700" />;
+    }
+    if (tags.includes('roofing') || title.includes('roof')) {
+      return <HardHat className="h-4 w-4 text-red-600" />;
+    }
+    if (tags.includes('safety') || title.includes('safety') || title.includes('inspection')) {
+      return <Shield className="h-4 w-4 text-green-600" />;
+    }
+    if (tags.includes('painting') || title.includes('painting') || title.includes('finishing')) {
+      return <PaintBucket className="h-4 w-4 text-purple-600" />;
+    }
+    if (tags.includes('hvac') || title.includes('hvac') || title.includes('ventilation')) {
+      return <Wind className="h-4 w-4 text-teal-600" />;
+    }
+    if (tags.includes('fire-safety') || title.includes('fire')) {
+      return <Flame className="h-4 w-4 text-orange-600" />;
+    }
+    if (tags.includes('elevator') || title.includes('elevator')) {
+      return <ArrowUpCircle className="h-4 w-4 text-purple-600" />;
+    }
+    if (tags.includes('materials') || title.includes('delivery') || title.includes('material')) {
+      return <Truck className="h-4 w-4 text-slate-600" />;
+    }
+    if (tags.includes('meeting') || title.includes('meeting')) {
+      return <Users className="h-4 w-4 text-blue-600" />;
+    }
+    if (tags.includes('testing') || title.includes('test')) {
+      return <FlaskConical className="h-4 w-4 text-purple-600" />;
+    }
+    if (tags.includes('landscaping') || title.includes('landscaping') || title.includes('garden')) {
+      return <Package className="h-4 w-4 text-green-600" />;
+    }
+    if (tags.includes('flooring') || title.includes('flooring') || title.includes('floor')) {
+      return <Layers className="h-4 w-4 text-indigo-600" />;
+    }
+    if (tags.includes('interior') || title.includes('interior') || title.includes('design')) {
+      return <Lightbulb className="h-4 w-4 text-amber-500" />;
+    }
+    if (tags.includes('maintenance') || title.includes('maintenance')) {
+      return <Wrench className="h-4 w-4 text-gray-600" />;
+    }
+    if (tags.includes('excavation') || title.includes('excavation')) {
+      return <Hammer className="h-4 w-4 text-brown-700" />;
+    }
+    if (tags.includes('concrete') || title.includes('concrete') || title.includes('cement')) {
+      return <HardHat className="h-4 w-4 text-gray-600" />;
+    }
+    if (tags.includes('steel') || title.includes('steel') || title.includes('reinforcement')) {
+      return <Bolt className="h-4 w-4 text-blue-gray-600" />;
+    }
+    if (tags.includes('automation') || title.includes('automation') || title.includes('smart')) {
+      return <Cpu className="h-4 w-4 text-blue-600" />;
+    }
+    
+    // Default to type icon
+    return getTypeIcon(task.type);
   };
 
   // Task operations
@@ -812,7 +906,7 @@ export default function ProjectTaskManager() {
                 <div className="flex-1">
                   {/* Task header */}
                   <div className="flex items-center gap-2 mb-1">
-                    {getTypeIcon(task.type)}
+                    {getCategoryIcon(task)}
                     <span className="text-xs text-muted-foreground">{task.taskCode}</span>
                     {getPriorityIcon(task.priority)}
                     {getStatusIcon(task.status)}
@@ -972,7 +1066,7 @@ export default function ProjectTaskManager() {
   };
 
   return (
-    <div className="h-full flex flex-col bg-gray-50">
+    <div className="h-full flex flex-col bg-white">
       {/* Stats */}
       <div className="px-6 py-4 bg-white border-b">
         <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
@@ -1148,7 +1242,7 @@ export default function ProjectTaskManager() {
                               <CardContent className="p-3">
                                 <div className="flex items-start justify-between mb-2">
                                   <div className="flex items-center gap-2">
-                                    {getTypeIcon(task.type)}
+                                    {getCategoryIcon(task)}
                                     <span className="text-xs text-muted-foreground">{task.taskCode}</span>
                                   </div>
                                   {getPriorityIcon(task.priority)}
@@ -1178,45 +1272,110 @@ export default function ProjectTaskManager() {
             </div>
           </div>
         ) : view === 'gantt' ? (
-          <div className="p-6">
-            <Card>
-              <CardHeader>
-                <CardTitle>Gantt Chart</CardTitle>
-                <CardDescription>Timeline view of all tasks</CardDescription>
+          <div className="gantt-chart-container p-6">
+            <Card className="w-full overflow-hidden">
+              <CardHeader className="flex-shrink-0">
+                <div className="flex items-center justify-between flex-wrap gap-4">
+                  <div className="min-w-0">
+                    <CardTitle>Interactive Gantt Chart</CardTitle>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      Drag to reschedule • Click to view details • Track progress
+                    </p>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Button variant="outline" size="sm">
+                      <ZoomOut className="h-4 w-4" />
+                    </Button>
+                    <Button variant="outline" size="sm">
+                      <ZoomIn className="h-4 w-4" />
+                    </Button>
+                    <Button variant="outline" size="sm">
+                      Today
+                    </Button>
+                  </div>
+                </div>
               </CardHeader>
-              <CardContent className="h-96">
-                <div className="border rounded-lg p-4 h-full overflow-auto">
-                  <div className="space-y-2">
-                    {filteredTasks.map(task => {
-                      const startDate = parseISO(task.startDate);
-                      const endDate = parseISO(task.dueDate);
-                      const duration = differenceInDays(endDate, startDate) + 1;
-                      const daysSinceStart = differenceInDays(startDate, new Date(2024, 0, 1));
-                      
-                      return (
-                        <div key={task.id} className="flex items-center gap-4">
-                          <div className="w-48 truncate text-sm">{task.title}</div>
-                          <div className="flex-1 relative h-8">
-                            <div className="absolute inset-0 bg-gray-100 rounded"></div>
-                            <div 
-                              className={cn(
-                                "absolute h-full rounded flex items-center px-2 text-xs text-white",
-                                task.status === 'completed' ? 'bg-green-500' :
-                                task.status === 'in-progress' ? 'bg-blue-500' :
-                                task.status === 'blocked' ? 'bg-red-500' :
-                                'bg-gray-400'
-                              )}
-                              style={{
-                                left: `${daysSinceStart * 2}px`,
-                                width: `${duration * 10}px`,
-                              }}
-                            >
-                              {task.progress}%
-                            </div>
+              <CardContent className="p-0">
+                <div className="flex h-[600px]">
+                  {/* Task List Panel */}
+                  <div className="w-80 border-r flex flex-col">
+                    <div className="h-12 bg-muted/30 border-b px-4 flex items-center">
+                      <span className="text-sm font-medium">Tasks</span>
+                    </div>
+                    <ScrollArea className="flex-1">
+                      {filteredTasks.map((task) => (
+                        <div key={task.id} className="h-12 border-b px-4 flex items-center hover:bg-muted/20">
+                          <div className="flex items-center gap-2 flex-1 min-w-0">
+                            {getCategoryIcon(task)}
+                            <span className="text-sm truncate">{task.title}</span>
                           </div>
                         </div>
-                      );
-                    })}
+                      ))}
+                    </ScrollArea>
+                  </div>
+                  
+                  {/* Timeline Panel */}
+                  <div className="flex-1 overflow-auto">
+                    <div className="min-w-[1200px]">
+                      {/* Timeline Header */}
+                      <div className="h-12 bg-muted/30 border-b flex">
+                        {Array.from({ length: 30 }, (_, i) => {
+                          const date = addDays(new Date(), i - 7);
+                          return (
+                            <div key={i} className="flex-shrink-0 w-10 text-center border-r">
+                              <div className="text-xs text-muted-foreground">
+                                {format(date, 'd')}
+                              </div>
+                              <div className="text-xs text-muted-foreground">
+                                {format(date, 'EEE')}
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                      
+                      {/* Task Bars */}
+                      <div>
+                        {filteredTasks.map((task) => {
+                          const startDate = parseISO(task.startDate);
+                          const endDate = parseISO(task.dueDate);
+                          const today = new Date();
+                          const startOffset = differenceInDays(startDate, addDays(today, -7));
+                          const duration = differenceInDays(endDate, startDate) + 1;
+                          
+                          return (
+                            <div key={task.id} className="h-12 border-b relative hover:bg-muted/20">
+                              <div
+                                className={cn(
+                                  "absolute h-8 top-2 rounded-md flex items-center px-2 text-xs font-medium shadow-sm",
+                                  task.status === 'completed' ? 'bg-green-500 text-white' :
+                                  task.status === 'in-progress' ? 'bg-blue-500 text-white' :
+                                  task.status === 'blocked' ? 'bg-red-500 text-white' :
+                                  'bg-gray-400 text-white'
+                                )}
+                                style={{
+                                  left: `${startOffset * 40}px`,
+                                  width: `${duration * 40}px`,
+                                }}
+                              >
+                                <div className="flex items-center justify-between w-full">
+                                  <span className="truncate">{task.taskCode}</span>
+                                  <span>{task.progress}%</span>
+                                </div>
+                              </div>
+                              {/* Progress bar */}
+                              <div
+                                className="absolute h-1 bottom-1 bg-black/20 rounded"
+                                style={{
+                                  left: `${startOffset * 40}px`,
+                                  width: `${(duration * 40 * task.progress) / 100}px`,
+                                }}
+                              />
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
                   </div>
                 </div>
               </CardContent>
@@ -1224,10 +1383,13 @@ export default function ProjectTaskManager() {
           </div>
         ) : (
           <div className="p-6">
-            <Card>
-              <CardHeader>
-                <div className="flex items-center justify-between">
-                  <CardTitle>Calendar View</CardTitle>
+            <Card className="overflow-hidden">
+              <CardHeader className="pb-3">
+                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                  <div>
+                    <CardTitle>Task Calendar</CardTitle>
+                    <CardDescription>View and manage tasks by date</CardDescription>
+                  </div>
                   <div className="flex items-center gap-2">
                     <Button
                       variant="outline"
@@ -1236,9 +1398,11 @@ export default function ProjectTaskManager() {
                     >
                       <ChevronLeft className="h-4 w-4" />
                     </Button>
-                    <span className="text-sm font-medium">
-                      {format(selectedMonth, 'MMMM yyyy')}
-                    </span>
+                    <div className="px-3 py-1 min-w-[140px] text-center">
+                      <h2 className="text-sm font-semibold">
+                        {format(selectedMonth, 'MMMM yyyy')}
+                      </h2>
+                    </div>
                     <Button
                       variant="outline"
                       size="sm"
@@ -1246,53 +1410,168 @@ export default function ProjectTaskManager() {
                     >
                       <ChevronRight className="h-4 w-4" />
                     </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setSelectedMonth(new Date())}
+                      className="ml-2"
+                    >
+                      Today
+                    </Button>
                   </div>
                 </div>
               </CardHeader>
-              <CardContent>
-                <div className="grid grid-cols-7 gap-px bg-gray-200 rounded-lg overflow-hidden">
+              <CardContent className="p-4">
+                <div className="grid grid-cols-7 gap-px bg-border rounded-lg overflow-hidden">
+                  {/* Day headers */}
                   {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(day => (
-                    <div key={day} className="bg-gray-50 p-2 text-center text-xs font-medium">
+                    <div key={day} className="bg-muted/50 p-3 text-center text-sm font-medium">
                       {day}
                     </div>
                   ))}
+                  
+                  {/* Calendar days */}
                   {getDaysInMonth().map(day => {
                     const dayTasks = getTasksForDate(day);
                     const isCurrentMonth = isSameMonth(day, selectedMonth);
+                    const isToday = isSameDay(day, new Date());
                     
                     return (
                       <div
                         key={day.toISOString()}
                         className={cn(
-                          "bg-white p-2 min-h-24 border-t",
-                          !isCurrentMonth && "bg-gray-50 text-gray-400"
+                          "bg-background min-h-[120px] p-2 border relative group cursor-pointer transition-colors",
+                          !isCurrentMonth && "bg-muted/20 text-muted-foreground",
+                          isToday && "bg-accent/10 ring-2 ring-accent ring-inset",
+                          "hover:bg-muted/10"
                         )}
+                        onClick={() => {
+                          setSelectedTask(null);
+                          setEditingTask({
+                            id: '',
+                            title: '',
+                            description: '',
+                            status: 'todo',
+                            priority: 'medium',
+                            type: 'task',
+                            assignee: { id: '1', name: 'John Doe', avatar: '' },
+                            startDate: format(day, 'yyyy-MM-dd'),
+                            dueDate: format(day, 'yyyy-MM-dd'),
+                            progress: 0,
+                            taskCode: `TASK-${Date.now()}`,
+                            subtasks: [],
+                            tags: [],
+                            comments: [],
+                            attachments: []
+                          });
+                          setShowTaskDialog(true);
+                        }}
                       >
-                        <div className="text-xs font-medium mb-1">{format(day, 'd')}</div>
+                        <div className="flex items-center justify-between mb-2">
+                          <span className={cn(
+                            "text-sm font-medium",
+                            isToday && "bg-accent text-accent-foreground rounded-full w-7 h-7 flex items-center justify-center"
+                          )}>
+                            {format(day, 'd')}
+                          </span>
+                          {dayTasks.length > 0 && (
+                            <Badge variant="secondary" className="text-xs px-1 h-5">
+                              {dayTasks.length}
+                            </Badge>
+                          )}
+                        </div>
+                        
                         <div className="space-y-1">
-                          {dayTasks.slice(0, 3).map(task => (
+                          {dayTasks.slice(0, 2).map(task => (
                             <div
                               key={task.id}
                               className={cn(
-                                "text-xs p-1 rounded truncate",
-                                task.priority === 'critical' ? 'bg-red-100 text-red-700' :
-                                task.priority === 'high' ? 'bg-orange-100 text-orange-700' :
-                                'bg-blue-100 text-blue-700'
+                                "text-xs px-1.5 py-0.5 rounded cursor-pointer transition-colors",
+                                task.priority === 'critical' ? 'bg-red-500/10 text-red-700 hover:bg-red-500/20' :
+                                task.priority === 'high' ? 'bg-orange-500/10 text-orange-700 hover:bg-orange-500/20' :
+                                task.status === 'completed' ? 'bg-green-500/10 text-green-700 hover:bg-green-500/20' :
+                                'bg-blue-500/10 text-blue-700 hover:bg-blue-500/20'
                               )}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setSelectedTask(task);
+                                setEditingTask(task);
+                                setShowTaskDialog(true);
+                              }}
                               title={task.title}
                             >
-                              {task.title}
+                              <div className="flex items-center gap-1">
+                                {getPriorityIcon(task.priority)}
+                                <span className="truncate">{task.title}</span>
+                              </div>
                             </div>
                           ))}
-                          {dayTasks.length > 3 && (
-                            <div className="text-xs text-muted-foreground">
-                              +{dayTasks.length - 3} more
-                            </div>
+                          {dayTasks.length > 2 && (
+                            <button
+                              className="text-xs text-muted-foreground hover:text-foreground transition-colors w-full text-left px-1.5"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                // Show all tasks for this day
+                              }}
+                            >
+                              +{dayTasks.length - 2} more
+                            </button>
                           )}
                         </div>
+                        
+                        {/* Add task button on hover */}
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          className="absolute top-2 right-2 h-6 w-6 p-0 opacity-0 group-hover:opacity-100 transition-opacity"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setSelectedTask(null);
+                            setEditingTask({
+                              id: '',
+                              title: '',
+                              description: '',
+                              status: 'todo',
+                              priority: 'medium',
+                              type: 'task',
+                              assignee: { id: '1', name: 'John Doe', avatar: '' },
+                              startDate: format(day, 'yyyy-MM-dd'),
+                              dueDate: format(day, 'yyyy-MM-dd'),
+                              progress: 0,
+                              taskCode: `TASK-${Date.now()}`,
+                              subtasks: [],
+                              tags: [],
+                              comments: [],
+                              attachments: []
+                            });
+                            setShowTaskDialog(true);
+                          }}
+                        >
+                          <Plus className="h-3 w-3" />
+                        </Button>
                       </div>
                     );
                   })}
+                </div>
+                
+                {/* Legend */}
+                <div className="flex items-center gap-4 mt-4 text-xs text-muted-foreground">
+                  <div className="flex items-center gap-1">
+                    <div className="w-3 h-3 bg-red-500/10 rounded" />
+                    <span>Critical</span>
+                  </div>
+                  <div className="flex items-center gap-1">
+                    <div className="w-3 h-3 bg-orange-500/10 rounded" />
+                    <span>High Priority</span>
+                  </div>
+                  <div className="flex items-center gap-1">
+                    <div className="w-3 h-3 bg-blue-500/10 rounded" />
+                    <span>Normal</span>
+                  </div>
+                  <div className="flex items-center gap-1">
+                    <div className="w-3 h-3 bg-green-500/10 rounded" />
+                    <span>Completed</span>
+                  </div>
                 </div>
               </CardContent>
             </Card>
