@@ -87,7 +87,9 @@ import {
   Lightbulb,
   Cpu,
   Bolt,
-  Package
+  Package,
+  TrendingDown,
+  Minus
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -150,6 +152,7 @@ import { Calendar as CalendarComponent } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { toast } from 'sonner';
 import { generateSampleTasks } from './simple-sample-tasks';
+import ExactTasksTable from './exact-tasks-table';
 
 // Types
 interface Task {
@@ -538,7 +541,7 @@ export default function ProjectTaskManager() {
   const sampleTasks = generateSampleTasks();
   console.log('Generated sample tasks:', sampleTasks);
   const [tasks, setTasks] = useState<Task[]>(sampleTasks);
-  const [view, setView] = useState<'list' | 'kanban' | 'gantt' | 'calendar'>('calendar');
+  const [view, setView] = useState<'list' | 'kanban' | 'gantt' | 'calendar'>('list');
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedStatus, setSelectedStatus] = useState<string>('all');
   const [selectedPriority, setSelectedPriority] = useState<string>('all');
@@ -552,6 +555,7 @@ export default function ProjectTaskManager() {
   const [inlineEditingId, setInlineEditingId] = useState<string | null>(null);
   const [inlineEditValue, setInlineEditValue] = useState('');
   const [selectedMonth, setSelectedMonth] = useState(new Date());
+  const [selectedTasks, setSelectedTasks] = useState<Set<string>>(new Set());
 
   // Load tasks
   useEffect(() => {
@@ -871,6 +875,220 @@ export default function ProjectTaskManager() {
     };
   }, [tasks]);
 
+  // Get activity category from task type
+  const getActivityCategory = (task: Task) => {
+    if (task.type === 'milestone' || task.status === 'todo') return 'Planning';
+    if (task.status === 'in-progress' || task.status === 'in-review') return 'Development';
+    if (task.status === 'completed' || task.status === 'blocked') return 'Finalization';
+    return 'Development';
+  };
+
+  // Calculate date variance
+  const calculateDateVariance = (task: Task) => {
+    const today = new Date();
+    const dueDate = parseISO(task.dueDate);
+    const startDate = parseISO(task.startDate);
+    const actualStart = task.actualStartDate ? parseISO(task.actualStartDate) : startDate;
+    const variance = differenceInDays(dueDate, today);
+    return variance;
+  };
+
+  // Render table row for list view
+  const renderTableRow = (task: Task, level: number = 0) => {
+    const hasSubtasks = task.subtasks && task.subtasks.length > 0;
+    const isExpanded = expandedTasks.has(task.id);
+    const isSelected = selectedTasks.has(task.id);
+    const variance = calculateDateVariance(task);
+    const costVariance = task.budget.estimated > 0 
+      ? Math.round(((task.budget.actual - task.budget.estimated) / task.budget.estimated) * 100)
+      : 0;
+    const category = getActivityCategory(task);
+    
+    // Status colors and labels matching the reference
+    const getStatusBadge = (status: string) => {
+      const statusMap: Record<string, { bg: string; text: string; label: string }> = {
+        'in-progress': { bg: 'bg-blue-500', text: 'text-white', label: 'In Progress' },
+        'todo': { bg: 'bg-gray-500', text: 'text-white', label: 'To Do' },
+        'completed': { bg: 'bg-gray-500', text: 'text-white', label: 'Completed' },
+        'in-review': { bg: 'bg-purple-500', text: 'text-white', label: 'Development' },
+        'blocked': { bg: 'bg-gray-500', text: 'text-white', label: 'Development' }
+      };
+      return statusMap[status] || { bg: 'bg-gray-500', text: 'text-white', label: status };
+    };
+
+    // Activity category colors matching reference
+    const getCategoryBadge = (category: string) => {
+      const categoryMap: Record<string, { bg: string; text: string }> = {
+        'Planning': { bg: 'bg-purple-500', text: 'text-white' },
+        'Development': { bg: 'bg-blue-500', text: 'text-white' },
+        'Finalization': { bg: 'bg-yellow-400', text: 'text-black' }
+      };
+      return categoryMap[category] || { bg: 'bg-gray-500', text: 'text-white' };
+    };
+
+    const statusBadge = getStatusBadge(task.status);
+    const categoryBadge = getCategoryBadge(category);
+    
+    return (
+      <>
+        <tr 
+          key={task.id}
+          className={cn(
+            'border-b border-gray-100 hover:bg-gray-50/50',
+            isSelected && 'bg-blue-50/50',
+            level > 0 && 'bg-gray-50/30'
+          )}
+        >
+          {/* Checkbox */}
+          <td className="px-3 py-2">
+            <Checkbox
+              checked={isSelected}
+              onCheckedChange={() => {
+                const newSelected = new Set(selectedTasks);
+                if (isSelected) {
+                  newSelected.delete(task.id);
+                } else {
+                  newSelected.add(task.id);
+                }
+                setSelectedTasks(newSelected);
+              }}
+              className="h-4 w-4"
+            />
+          </td>
+
+          {/* Name with expand */}
+          <td className="px-2 py-2">
+            <div className="flex items-center gap-1" style={{ paddingLeft: `${level * 16}px` }}>
+              {hasSubtasks && (
+                <button
+                  onClick={() => toggleTaskExpand(task.id)}
+                  className="p-0.5 hover:bg-gray-200 rounded"
+                >
+                  {isExpanded ? (
+                    <ChevronDown className="h-3 w-3 text-gray-500" />
+                  ) : (
+                    <ChevronRight className="h-3 w-3 text-gray-500" />
+                  )}
+                </button>
+              )}
+              <Circle className={cn(
+                "h-3 w-3",
+                task.status === 'completed' ? "fill-green-500 text-green-500" : 
+                task.status === 'in-progress' ? "fill-blue-500 text-blue-500" : 
+                "text-gray-400"
+              )} />
+              <span className="text-[13px] text-gray-900">{task.title}</span>
+            </div>
+          </td>
+
+          {/* Status */}
+          <td className="px-2 py-2">
+            <span className={cn(
+              'inline-flex items-center px-2 py-0.5 rounded text-[11px] font-medium',
+              statusBadge.bg,
+              statusBadge.text
+            )}>
+              {statusBadge.label}
+            </span>
+          </td>
+
+          {/* Activity Category */}
+          <td className="px-2 py-2">
+            <span className={cn(
+              'inline-flex items-center px-2 py-0.5 rounded text-[11px] font-medium',
+              categoryBadge.bg,
+              categoryBadge.text
+            )}>
+              {category}
+            </span>
+          </td>
+
+          {/* Assignee */}
+          <td className="px-2 py-2">
+            <div className="flex items-center gap-1">
+              <User className="h-3 w-3 text-gray-400" />
+              <span className="text-[12px] text-gray-700">{task.assignee.name}</span>
+            </div>
+          </td>
+
+          {/* Priority */}
+          <td className="px-2 py-2">
+            <div className="flex items-center gap-1">
+              <Flag className={cn(
+                "h-3 w-3",
+                task.priority === 'critical' || task.priority === 'high' ? 'text-red-500' : 'text-gray-400'
+              )} />
+              <span className={cn(
+                "text-[12px] font-medium",
+                task.priority === 'critical' || task.priority === 'high' ? 'text-red-600' : 'text-gray-600'
+              )}>
+                {task.priority === 'critical' ? 'Urgent' : 
+                 task.priority === 'high' ? 'High' : 
+                 task.priority === 'medium' ? 'Normal' : 'Low'}
+              </span>
+            </div>
+          </td>
+
+          {/* Estimated Duration */}
+          <td className="px-2 py-2">
+            <span className="text-[12px] text-gray-700">
+              {format(parseISO(task.startDate), 'M/d/yy')} {format(parseISO(task.startDate), 'haaa').toLowerCase()} - 
+              {format(parseISO(task.dueDate), 'M/d/yy')} {format(parseISO(task.dueDate), 'haaa').toLowerCase()}
+            </span>
+          </td>
+
+          {/* Start Date */}
+          <td className="px-2 py-2">
+            <span className="text-[12px] text-gray-700">
+              {format(parseISO(task.startDate), 'M/d/yyyy')}
+            </span>
+          </td>
+
+          {/* Due Date */}
+          <td className="px-2 py-2">
+            <span className="text-[12px] text-gray-700">
+              {format(parseISO(task.dueDate), 'M/d/yyyy')}
+            </span>
+          </td>
+
+          {/* Date Closed */}
+          <td className="px-2 py-2 text-center">
+            <span className="text-[12px] text-gray-500">-</span>
+          </td>
+
+          {/* Date Variance */}
+          <td className="px-2 py-2 text-center">
+            <span className="text-[12px] text-gray-700">-</span>
+          </td>
+
+          {/* Estimated Cost */}
+          <td className="px-2 py-2 text-right">
+            <span className="text-[12px] text-gray-700 font-medium">
+              {task.budget.estimated > 0 ? `$${task.budget.estimated.toLocaleString()}` : '-'}
+            </span>
+          </td>
+
+          {/* Actual Cost */}
+          <td className="px-2 py-2 text-right">
+            <span className="text-[12px] text-gray-700 font-medium">
+              {task.budget.actual > 0 ? `$${task.budget.actual.toLocaleString()}` : '-'}
+            </span>
+          </td>
+
+          {/* Cost Variance % */}
+          <td className="px-2 py-2 text-center">
+            <MoreVertical className="h-4 w-4 text-gray-400 cursor-pointer hover:text-gray-600 mx-auto" />
+          </td>
+        </tr>
+
+        {/* Render subtasks if expanded */}
+        {isExpanded && hasSubtasks && task.subtasks?.map(subtask => 
+          renderTableRow(subtask, level + 1)
+        )}
+      </>
+    );
+  };
+
   // Render task row
   const renderTaskRow = (task: Task, level: number = 0) => (
     <div key={task.id} className={cn("group", level > 0 && "ml-8")}>
@@ -1101,94 +1319,61 @@ export default function ProjectTaskManager() {
       </div>
 
       {/* Controls */}
-      <div className="px-6 py-3 bg-white border-b">
-        <div className="flex flex-col lg:flex-row gap-3">
-          <div className="flex-1 flex flex-col sm:flex-row gap-2">
-            <div className="relative flex-1 max-w-md">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-              <Input
-                placeholder="Search tasks..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-9 h-9"
-              />
-            </div>
-            <Select value={selectedStatus} onValueChange={setSelectedStatus}>
-              <SelectTrigger className="w-full sm:w-[140px] h-9">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Status</SelectItem>
-                <SelectItem value="todo">To Do</SelectItem>
-                <SelectItem value="in-progress">In Progress</SelectItem>
-                <SelectItem value="in-review">In Review</SelectItem>
-                <SelectItem value="blocked">Blocked</SelectItem>
-                <SelectItem value="completed">Completed</SelectItem>
-              </SelectContent>
-            </Select>
-            <Select value={selectedPriority} onValueChange={setSelectedPriority}>
-              <SelectTrigger className="w-full sm:w-[140px] h-9">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Priority</SelectItem>
-                <SelectItem value="critical">Critical</SelectItem>
-                <SelectItem value="high">High</SelectItem>
-                <SelectItem value="medium">Medium</SelectItem>
-                <SelectItem value="low">Low</SelectItem>
-              </SelectContent>
-            </Select>
-            <Select value={groupBy} onValueChange={(v) => setGroupBy(v as any)}>
-              <SelectTrigger className="w-full sm:w-[140px] h-9">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="none">No Grouping</SelectItem>
-                <SelectItem value="status">By Status</SelectItem>
-                <SelectItem value="priority">By Priority</SelectItem>
-                <SelectItem value="assignee">By Assignee</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-          <div className="flex items-center gap-2">
-            <div className="flex border rounded-md">
-              <Button
-                variant={view === 'list' ? 'secondary' : 'ghost'}
-                size="sm"
-                onClick={() => setView('list')}
-                className="rounded-r-none h-9"
-              >
-                <List className="h-4 w-4" />
-              </Button>
-              <Button
-                variant={view === 'kanban' ? 'secondary' : 'ghost'}
-                size="sm"
-                onClick={() => setView('kanban')}
-                className="rounded-none border-x h-9"
-              >
-                <Kanban className="h-4 w-4" />
-              </Button>
-              <Button
-                variant={view === 'gantt' ? 'secondary' : 'ghost'}
-                size="sm"
-                onClick={() => setView('gantt')}
-                className="rounded-none border-r h-9"
-              >
-                <GanttChart className="h-4 w-4" />
-              </Button>
-              <Button
-                variant={view === 'calendar' ? 'secondary' : 'ghost'}
-                size="sm"
-                onClick={() => setView('calendar')}
-                className="rounded-l-none h-9"
-              >
-                <CalendarDays className="h-4 w-4" />
+      <div className="bg-white border-b">
+        <div className="px-4 py-2">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <span className="text-[13px] text-gray-600">Group: Activity Category</span>
+              <ChevronDown className="h-3 w-3 text-gray-400" />
+              <span className="text-gray-300">|</span>
+              <Button variant="ghost" size="sm" className="h-7 px-2 text-[12px]">
+                <Plus className="h-3 w-3 mr-1" />
+                Add Task
               </Button>
             </div>
-            <Button onClick={() => setShowNewTaskDialog(true)} className="h-9">
-              <Plus className="h-4 w-4 mr-2" />
-              New Task
-            </Button>
+            <div className="flex items-center gap-1">
+              <Button variant="ghost" size="sm" className="h-7 px-2">
+                <Filter className="h-3 w-3" />
+              </Button>
+              <Button variant="ghost" size="sm" className="h-7 px-2">
+                Expanded
+              </Button>
+              <span className="text-gray-300">|</span>
+              <div className="flex">
+                <Button
+                  variant={view === 'list' ? 'secondary' : 'ghost'}
+                  size="sm"
+                  onClick={() => setView('list')}
+                  className="h-7 px-2 rounded-none rounded-l"
+                >
+                  <List className="h-3 w-3" />
+                </Button>
+                <Button
+                  variant={view === 'kanban' ? 'secondary' : 'ghost'}
+                  size="sm"
+                  onClick={() => setView('kanban')}
+                  className="h-7 px-2 rounded-none"
+                >
+                  <Kanban className="h-3 w-3" />
+                </Button>
+                <Button
+                  variant={view === 'gantt' ? 'secondary' : 'ghost'}
+                  size="sm"
+                  onClick={() => setView('gantt')}
+                  className="h-7 px-2 rounded-none"
+                >
+                  <BarChart3 className="h-3 w-3" />
+                </Button>
+                <Button
+                  variant={view === 'calendar' ? 'secondary' : 'ghost'}
+                  size="sm"
+                  onClick={() => setView('calendar')}
+                  className="h-7 px-2 rounded-none rounded-r"
+                >
+                  <Calendar className="h-3 w-3" />
+                </Button>
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -1200,23 +1385,7 @@ export default function ProjectTaskManager() {
             <RefreshCw className="h-8 w-8 animate-spin text-gray-400" />
           </div>
         ) : view === 'list' ? (
-          <div className="p-6">
-            {Object.entries(groupedTasks).map(([group, tasks]) => (
-              <div key={group} className="mb-6">
-                {groupBy !== 'none' && (
-                  <h3 className="text-sm font-semibold text-gray-700 mb-3 flex items-center gap-2">
-                    {groupBy === 'status' && getStatusIcon(group as Task['status'])}
-                    {groupBy === 'priority' && getPriorityIcon(group as Task['priority'])}
-                    <span className="capitalize">{group.replace('-', ' ')}</span>
-                    <Badge variant="secondary">{tasks.length}</Badge>
-                  </h3>
-                )}
-                <div>
-                  {tasks.map(task => renderTaskRow(task))}
-                </div>
-              </div>
-            ))}
-          </div>
+          <ExactTasksTable />
         ) : view === 'kanban' ? (
           <div className="h-full p-6">
             <div className="flex gap-4 h-full overflow-x-auto">
@@ -1446,7 +1615,7 @@ export default function ProjectTaskManager() {
                           "hover:bg-muted/10"
                         )}
                         onClick={() => {
-                          setSelectedTask(null);
+                          // Open new task dialog for this date
                           setEditingTask({
                             id: '',
                             title: '',
@@ -1464,7 +1633,7 @@ export default function ProjectTaskManager() {
                             comments: [],
                             attachments: []
                           });
-                          setShowTaskDialog(true);
+                          setShowNewTaskDialog(true);
                         }}
                       >
                         <div className="flex items-center justify-between mb-2">
@@ -1494,9 +1663,9 @@ export default function ProjectTaskManager() {
                               )}
                               onClick={(e) => {
                                 e.stopPropagation();
-                                setSelectedTask(task);
+                                // Edit this task
                                 setEditingTask(task);
-                                setShowTaskDialog(true);
+                                setShowNewTaskDialog(true);
                               }}
                               title={task.title}
                             >
@@ -1526,7 +1695,7 @@ export default function ProjectTaskManager() {
                           className="absolute top-2 right-2 h-6 w-6 p-0 opacity-0 group-hover:opacity-100 transition-opacity"
                           onClick={(e) => {
                             e.stopPropagation();
-                            setSelectedTask(null);
+                            // Open new task dialog for this date
                             setEditingTask({
                               id: '',
                               title: '',
@@ -1544,7 +1713,7 @@ export default function ProjectTaskManager() {
                               comments: [],
                               attachments: []
                             });
-                            setShowTaskDialog(true);
+                            setShowNewTaskDialog(true);
                           }}
                         >
                           <Plus className="h-3 w-3" />
