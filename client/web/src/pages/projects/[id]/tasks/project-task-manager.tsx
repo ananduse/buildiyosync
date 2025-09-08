@@ -1379,7 +1379,7 @@ export default function ProjectTaskManager() {
       </div>
 
       {/* Content */}
-      <div className="flex-1 overflow-auto">
+      <div className="flex-1">
         {loading ? (
           <div className="flex items-center justify-center h-full">
             <RefreshCw className="h-8 w-8 animate-spin text-gray-400" />
