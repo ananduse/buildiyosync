@@ -153,6 +153,7 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { toast } from 'sonner';
 import { generateSampleTasks } from './simple-sample-tasks';
 import ExactTasksTable from './exact-tasks-table';
+import ComprehensiveTaskModal from './comprehensive-task-modal';
 
 // Types
 interface Task {
@@ -1285,48 +1286,20 @@ export default function ProjectTaskManager() {
 
   return (
     <div className="h-full flex flex-col bg-white">
-      {/* Stats */}
-      <div className="px-6 py-4 bg-white border-b">
-        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
-          <div className="text-center">
-            <p className="text-2xl font-bold">{stats.total}</p>
-            <p className="text-xs text-muted-foreground">Total Tasks</p>
-          </div>
-          <div className="text-center">
-            <p className="text-2xl font-bold text-green-600">{stats.completed}</p>
-            <p className="text-xs text-muted-foreground">Completed</p>
-          </div>
-          <div className="text-center">
-            <p className="text-2xl font-bold text-blue-600">{stats.inProgress}</p>
-            <p className="text-xs text-muted-foreground">In Progress</p>
-          </div>
-          <div className="text-center">
-            <p className="text-2xl font-bold text-red-600">{stats.blocked}</p>
-            <p className="text-xs text-muted-foreground">Blocked</p>
-          </div>
-          <div className="text-center">
-            <p className="text-2xl font-bold text-orange-600">{stats.overdue}</p>
-            <p className="text-xs text-muted-foreground">Overdue</p>
-          </div>
-          <div className="text-center">
-            <div className="flex items-center justify-center gap-2">
-              <Progress value={stats.completionRate} className="h-2 w-16" />
-              <span className="text-sm font-bold">{stats.completionRate}%</span>
-            </div>
-            <p className="text-xs text-muted-foreground">Progress</p>
-          </div>
-        </div>
-      </div>
-
       {/* Controls */}
       <div className="bg-white border-b">
-        <div className="px-4 py-2">
+        <div className="px-4 py-1">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <span className="text-[13px] text-gray-600">Group: Activity Category</span>
               <ChevronDown className="h-3 w-3 text-gray-400" />
               <span className="text-gray-300">|</span>
-              <Button variant="ghost" size="sm" className="h-7 px-2 text-[12px]">
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                className="h-7 px-2 text-[12px]"
+                onClick={() => setShowNewTaskDialog(true)}
+              >
                 <Plus className="h-3 w-3 mr-1" />
                 Add Task
               </Button>
@@ -1748,35 +1721,23 @@ export default function ProjectTaskManager() {
         )}
       </div>
 
-      {/* New Task Dialog */}
-      <Dialog open={showNewTaskDialog} onOpenChange={setShowNewTaskDialog}>
-        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle>Create New Task</DialogTitle>
-            <DialogDescription>
-              Add a new task to the project
-            </DialogDescription>
-          </DialogHeader>
-          <TaskForm onSave={handleCreateTask} onCancel={() => setShowNewTaskDialog(false)} />
-        </DialogContent>
-      </Dialog>
-
-      {/* Edit Task Dialog */}
-      <Dialog open={!!editingTask} onOpenChange={(open) => !open && setEditingTask(null)}>
-        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle>Edit Task</DialogTitle>
-            <DialogDescription>
-              Update task details
-            </DialogDescription>
-          </DialogHeader>
-          <TaskForm 
-            task={editingTask} 
-            onSave={handleUpdateTask} 
-            onCancel={() => setEditingTask(null)} 
-          />
-        </DialogContent>
-      </Dialog>
+      {/* Comprehensive Task Modal for Add/Edit */}
+      <ComprehensiveTaskModal
+        isOpen={showNewTaskDialog || !!editingTask}
+        onClose={() => {
+          setShowNewTaskDialog(false);
+          setEditingTask(null);
+        }}
+        task={editingTask}
+        onSave={(taskData) => {
+          if (editingTask) {
+            handleUpdateTask(taskData);
+          } else {
+            handleCreateTask(taskData);
+          }
+        }}
+        mode={editingTask ? 'edit' : 'add'}
+      />
     </div>
   );
 }

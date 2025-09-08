@@ -97,7 +97,7 @@ const StatusPicker = ({ value, onChange, onClose, taskId }: any) => {
                   backgroundColor: status.color,
                   flexShrink: 0
                 }} />
-                <span style={{ flex: 1, fontSize: '14px', color: '#374151' }}>{status.label}</span>
+                <span style={{ flex: 1, fontSize: '14px', color: '#374151', fontWeight: '600' }}>{status.label}</span>
                 <MoreHorizontal style={{ width: '16px', height: '16px', color: '#9ca3af', cursor: 'pointer' }} />
               </div>
             ))}
@@ -211,7 +211,7 @@ const StatusPicker = ({ value, onChange, onClose, taskId }: any) => {
             backgroundColor: status.color,
             flexShrink: 0
           }} />
-          <span style={{ fontSize: '13px', color: '#374151' }}>{status.label}</span>
+          <span style={{ fontSize: '13px', color: '#374151', fontWeight: '600' }}>{status.label}</span>
         </div>
       ))}
       <div style={{ borderTop: '1px solid #e5e7eb', marginTop: '6px', paddingTop: '6px' }}>
@@ -436,7 +436,7 @@ const CategoryPicker = ({ value, onChange, onClose, taskId }: any) => {
                     borderRadius: '4px',
                     flexShrink: 0
                   }} />
-                  <span style={{ flex: 1, fontSize: '14px', color: '#374151' }}>{cat.label}</span>
+                  <span style={{ flex: 1, fontSize: '14px', color: '#374151', fontWeight: '600' }}>{cat.label}</span>
                   <span style={{ fontSize: '11px', color: '#6b7280', fontFamily: 'monospace' }}>
                     {cat.color}
                   </span>
@@ -544,7 +544,7 @@ const CategoryPicker = ({ value, onChange, onClose, taskId }: any) => {
               marginBottom: '4px',
               cursor: 'pointer',
               fontSize: '14px',
-              fontWeight: '500',
+              fontWeight: '700',
               textAlign: 'center',
               transition: 'all 0.15s ease'
             }}
@@ -810,7 +810,7 @@ const PriorityPicker = ({ value, onChange, onClose, taskId }: any) => {
                 <>
                   <span style={{ fontSize: '16px' }}>{priority.icon}</span>
                   <Flag style={{ width: '16px', height: '16px', color: priority.color }} />
-                  <span style={{ flex: 1, fontSize: '14px', color: '#374151' }}>{priority.label}</span>
+                  <span style={{ flex: 1, fontSize: '14px', color: '#374151', fontWeight: '600' }}>{priority.label}</span>
                   <span style={{ 
                     fontSize: '12px', 
                     color: '#6b7280',
@@ -942,7 +942,7 @@ const PriorityPicker = ({ value, onChange, onClose, taskId }: any) => {
             }}
           >
             <Flag style={{ width: '16px', height: '16px', color: priority.color }} />
-            <span style={{ flex: 1, fontSize: '14px', color: '#374151' }}>{priority.label}</span>
+            <span style={{ flex: 1, fontSize: '14px', color: '#374151', fontWeight: '600' }}>{priority.label}</span>
             <span style={{ 
               fontSize: '11px', 
               color: '#6b7280',
@@ -1069,7 +1069,7 @@ const AssigneePicker = ({ value, onChange, onClose, taskId }: any) => {
           }}>
             {assignee.name}
           </span>
-          <span style={{ fontSize: '13px', color: '#374151' }}>{assignee.fullName}</span>
+          <span style={{ fontSize: '13px', color: '#374151', fontWeight: '600' }}>{assignee.fullName}</span>
         </div>
       ))}
     </div>
@@ -1548,7 +1548,7 @@ const ExactTasksTable: React.FC = () => {
         }}
         onMouseLeave={() => setHoveredRow(null)}
       >
-        <td style={{ padding: '8px 6px' }}>
+        <td style={{ padding: '4px 6px' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
             {!isSubtask && (
               <GripVertical style={{ width: '14px', height: '14px', color: '#d1d5db', cursor: 'grab' }} />
@@ -1559,7 +1559,7 @@ const ExactTasksTable: React.FC = () => {
                    style={{ width: '14px', height: '14px', cursor: 'pointer' }} />
           </div>
         </td>
-        <td style={{ padding: '8px 6px', paddingLeft: isSubtask ? '48px' : '8px' }}>
+        <td style={{ padding: '4px 6px', paddingLeft: isSubtask ? '48px' : '8px' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
             {task.hasSubtasks && !isSubtask && (
               <span onClick={() => toggleTask(task.id)} style={{ cursor: 'pointer', display: 'flex', alignItems: 'center' }}>
@@ -1702,7 +1702,7 @@ const ExactTasksTable: React.FC = () => {
             )}
           </div>
         </td>
-        <td style={{ padding: '8px 6px', position: 'relative' }}>
+        <td style={{ padding: '4px 6px', position: 'relative' }}>
           {task.status && (
             <>
               <span 
@@ -1738,7 +1738,7 @@ const ExactTasksTable: React.FC = () => {
             </>
           )}
         </td>
-        <td style={{ padding: '8px 6px', position: 'relative' }}>
+        <td style={{ padding: '4px 6px', position: 'relative' }}>
           <span 
             onClick={(e) => {
               e.stopPropagation();
@@ -1768,7 +1768,7 @@ const ExactTasksTable: React.FC = () => {
             />
           )}
         </td>
-        <td style={{ padding: '8px 6px', textAlign: 'center', position: 'relative' }}>
+        <td style={{ padding: '4px 6px', textAlign: 'center', position: 'relative' }}>
           {task.assignee ? (
             <>
               <span 
@@ -1827,7 +1827,7 @@ const ExactTasksTable: React.FC = () => {
             />
           )}
         </td>
-        <td style={{ padding: '8px 6px', position: 'relative' }}>
+        <td style={{ padding: '4px 6px', position: 'relative' }}>
           <div 
             onClick={(e) => {
               e.stopPropagation();
@@ -1880,9 +1880,9 @@ const ExactTasksTable: React.FC = () => {
             />
           )}
         </td>
-        <td style={{ padding: '8px 6px', fontSize: '13px', color: '#374151' }}>{task.estimatedDuration}</td>
-        <td style={{ padding: '8px 6px', fontSize: '13px', color: '#374151' }}>{task.startDate}</td>
-        <td style={{ padding: '8px 6px', fontSize: '13px', color: '#374151' }}>{task.dueDate}</td>
+        <td style={{ padding: '4px 6px', fontSize: '13px', color: '#374151' }}>{task.estimatedDuration}</td>
+        <td style={{ padding: '4px 6px', fontSize: '13px', color: '#374151' }}>{task.startDate}</td>
+        <td style={{ padding: '4px 6px', fontSize: '13px', color: '#374151' }}>{task.dueDate}</td>
       </tr>
     );
   };
@@ -1894,7 +1894,7 @@ const ExactTasksTable: React.FC = () => {
         display: 'flex', 
         justifyContent: 'space-between', 
         alignItems: 'center', 
-        padding: '16px 20px',
+        padding: '8px 20px',
         borderBottom: '1px solid #e5e7eb',
         backgroundColor: 'transparent'
       }}>
@@ -2003,17 +2003,17 @@ const ExactTasksTable: React.FC = () => {
       <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '14px' }}>
         <thead>
           <tr style={{ borderBottom: '1px solid #e5e7eb', backgroundColor: 'transparent' }}>
-            <th style={{ padding: '8px 6px', textAlign: 'left', fontWeight: '600', color: '#374151', width: '60px' }}>
+            <th style={{ padding: '6px 6px', textAlign: 'left', fontWeight: '600', color: '#374151', width: '60px' }}>
               <input type="checkbox" style={{ width: '14px', height: '14px' }} />
             </th>
-            <th style={{ padding: '8px 6px', textAlign: 'left', fontWeight: '600', color: '#374151' }}>Name</th>
-            <th style={{ padding: '12px 8px', textAlign: 'left', fontWeight: '500', color: '#6b7280', width: '140px' }}>Status</th>
-            <th style={{ padding: '12px 8px', textAlign: 'left', fontWeight: '500', color: '#6b7280', width: '150px' }}>Activity Category</th>
-            <th style={{ padding: '8px 6px', textAlign: 'center', fontWeight: '600', color: '#374151', width: '100px' }}>Assignee</th>
-            <th style={{ padding: '12px 8px', textAlign: 'left', fontWeight: '500', color: '#6b7280', width: '130px' }}>Priority</th>
-            <th style={{ padding: '12px 8px', textAlign: 'left', fontWeight: '500', color: '#6b7280', width: '160px' }}>Estimated Duration</th>
-            <th style={{ padding: '12px 8px', textAlign: 'left', fontWeight: '500', color: '#6b7280', width: '140px' }}>Start date</th>
-            <th style={{ padding: '12px 8px', textAlign: 'left', fontWeight: '500', color: '#6b7280', width: '140px' }}>Due date</th>
+            <th style={{ padding: '6px 6px', textAlign: 'left', fontWeight: '600', color: '#374151' }}>Name</th>
+            <th style={{ padding: '6px 8px', textAlign: 'left', fontWeight: '500', color: '#6b7280', width: '140px' }}>Status</th>
+            <th style={{ padding: '6px 8px', textAlign: 'left', fontWeight: '500', color: '#6b7280', width: '150px' }}>Activity Category</th>
+            <th style={{ padding: '6px 6px', textAlign: 'center', fontWeight: '600', color: '#374151', width: '100px' }}>Assignee</th>
+            <th style={{ padding: '6px 8px', textAlign: 'left', fontWeight: '500', color: '#6b7280', width: '130px' }}>Priority</th>
+            <th style={{ padding: '6px 8px', textAlign: 'left', fontWeight: '500', color: '#6b7280', width: '160px' }}>Estimated Duration</th>
+            <th style={{ padding: '6px 8px', textAlign: 'left', fontWeight: '500', color: '#6b7280', width: '140px' }}>Start date</th>
+            <th style={{ padding: '6px 8px', textAlign: 'left', fontWeight: '500', color: '#6b7280', width: '140px' }}>Due date</th>
           </tr>
         </thead>
         <tbody>
@@ -2021,15 +2021,15 @@ const ExactTasksTable: React.FC = () => {
           {Object.entries(tasks).map(([groupKey, groupTasks]: [string, any]) => (
             <React.Fragment key={groupKey}>
               <tr>
-                <td colSpan={9} style={{ padding: '8px 12px', backgroundColor: 'transparent' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}
+                <td colSpan={9} style={{ padding: '4px 6px', backgroundColor: 'transparent' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '4px', cursor: 'pointer' }}
                        onClick={() => toggleGroup(groupKey)}>
                     {expandedGroups.includes(groupKey) ? 
                       <ChevronDown style={{ width: '16px', height: '16px', color: '#6b7280' }} /> : 
                       <ChevronRight style={{ width: '16px', height: '16px', color: '#6b7280' }} />
                     }
                     <span style={{ 
-                      fontSize: '13px', 
+                      fontSize: '12px', 
                       fontWeight: '600',
                       backgroundColor: groupKey === 'planning' ? '#e91e63' : 
                                       groupKey === 'development' ? '#5b5fc7' : 
@@ -2038,24 +2038,24 @@ const ExactTasksTable: React.FC = () => {
                                       groupKey === 'plumbing' ? '#14b8a6' :
                                       groupKey === 'electrical' ? '#c084fc' : '#6b7280',
                       color: 'white',
-                      padding: '5px 12px',
-                      borderRadius: '6px'
+                      padding: '2px 6px',
+                      borderRadius: '4px'
                     }}>
                       {groupKey.charAt(0).toUpperCase() + groupKey.slice(1)}
                     </span>
                     <span style={{ 
-                      fontSize: '13px', 
+                      fontSize: '11px', 
                       color: '#6b7280',
                       backgroundColor: 'transparent',
-                      padding: '2px 8px',
-                      borderRadius: '4px',
+                      padding: '0px 4px',
+                      borderRadius: '3px',
                       border: '1px solid #e5e7eb'
                     }}>
                       {groupTasks.length}
                     </span>
-                    <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: '6px', cursor: 'pointer' }}>
-                      <Plus style={{ width: '16px', height: '16px', color: '#6b7280' }} />
-                      <span style={{ fontSize: '13px', color: '#6b7280' }}>Add Task</span>
+                    <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: '3px', cursor: 'pointer' }}>
+                      <Plus style={{ width: '14px', height: '14px', color: '#6b7280' }} />
+                      <span style={{ fontSize: '12px', color: '#6b7280' }}>Add Task</span>
                     </div>
                   </div>
                 </td>
