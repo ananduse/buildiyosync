@@ -1612,8 +1612,7 @@ const ExactTasksTable: React.FC = () => {
                 color: hoveredRow === uniqueRowId ? '#3b82f6' : isSubtask ? '#6b7280' : '#111827',
                 transition: 'color 0.2s',
                 fontWeight: isSubtask ? '400' : '500',
-                cursor: 'pointer',
-                textDecoration: hoveredRow === uniqueRowId ? 'underline' : 'none'
+                cursor: 'pointer'
               }}>
               {task.name}
               {isSubtask && (

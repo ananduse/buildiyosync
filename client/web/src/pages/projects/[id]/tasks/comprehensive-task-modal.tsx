@@ -19,6 +19,7 @@ import {
 import { TemplateManagementModal } from './template-management-modal';
 import { ChecklistItemDetailModal } from './checklist-item-detail-modal';
 import { CustomFieldsTab } from './custom-fields-tab';
+import { pickerStyles, mergeStyles, usePickerBehavior } from './unified-picker-styles';
 import {
   X,
   Calendar,
@@ -116,6 +117,156 @@ interface TaskModalProps {
   onSave: (taskData: any) => void;
   mode?: 'add' | 'edit';
 }
+
+// Custom SelectPicker component using unified styles
+const SelectPicker = ({ value, onChange, options, placeholder, label }: any) => {
+  const [isOpen, setIsOpen] = useState(false);
+  const [searchTerm, setSearchTerm] = useState('');
+  
+  usePickerBehavior(() => setIsOpen(false));
+  
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      const target = e.target as HTMLElement;
+      if (!target.closest('.select-picker-container')) {
+        setIsOpen(false);
+      }
+    };
+    
+    if (isOpen) {
+      const timer = setTimeout(() => {
+        document.addEventListener('mousedown', handleClickOutside);
+      }, 0);
+      
+      return () => {
+        clearTimeout(timer);
+        document.removeEventListener('mousedown', handleClickOutside);
+      };
+    }
+  }, [isOpen]);
+  
+  const filteredOptions = options.filter((opt: any) => 
+    opt.label.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+  
+  const selectedOption = options.find((opt: any) => opt.value === value);
+  
+  return (
+    <div className="select-picker-container" style={{ position: 'relative' }}>
+      {label && (
+        <label style={{
+          fontSize: '12px',
+          color: '#6b7280',
+          fontWeight: '500',
+          marginBottom: '4px',
+          display: 'block'
+        }}>
+          {label}
+        </label>
+      )}
+      
+      <div
+        onClick={() => setIsOpen(!isOpen)}
+        style={{
+          padding: '8px 12px',
+          border: '1px solid #d1d5db',
+          borderRadius: '6px',
+          fontSize: '14px',
+          cursor: 'pointer',
+          backgroundColor: 'white',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          transition: 'border-color 0.2s'
+        }}
+        onMouseEnter={(e) => e.currentTarget.style.borderColor = '#9ca3af'}
+        onMouseLeave={(e) => e.currentTarget.style.borderColor = '#d1d5db'}
+      >
+        <span style={{ 
+          color: selectedOption ? '#111827' : '#9ca3af',
+          fontWeight: selectedOption ? '500' : '400'
+        }}>
+          {selectedOption?.label || placeholder || 'Select...'}
+        </span>
+        <ChevronDown style={{ 
+          width: '16px', 
+          height: '16px', 
+          color: '#6b7280',
+          transform: isOpen ? 'rotate(180deg)' : 'rotate(0deg)',
+          transition: 'transform 0.2s'
+        }} />
+      </div>
+      
+      {isOpen && (
+        <div style={mergeStyles(pickerStyles.container, {
+          width: '100%',
+          left: 0,
+          transform: 'none'
+        })}>
+          {options.length > 5 && (
+            <div style={pickerStyles.header}>
+              <input
+                type="text"
+                placeholder="Search..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                style={pickerStyles.searchInput}
+                onClick={(e) => e.stopPropagation()}
+              />
+            </div>
+          )}
+          
+          <div style={pickerStyles.content}>
+            {filteredOptions.length === 0 ? (
+              <div style={pickerStyles.emptyState}>No options found</div>
+            ) : (
+              filteredOptions.map((option: any) => (
+                <div
+                  key={option.value}
+                  onClick={() => {
+                    onChange(option.value);
+                    setIsOpen(false);
+                    setSearchTerm('');
+                  }}
+                  style={mergeStyles(
+                    pickerStyles.option,
+                    value === option.value ? pickerStyles.optionSelected : {}
+                  )}
+                  onMouseEnter={(e) => {
+                    Object.assign(e.currentTarget.style,
+                      value === option.value ? pickerStyles.optionSelected : pickerStyles.optionHover
+                    );
+                  }}
+                  onMouseLeave={(e) => {
+                    Object.assign(e.currentTarget.style,
+                      value === option.value ? pickerStyles.optionSelected : pickerStyles.option
+                    );
+                  }}
+                >
+                  {option.icon && (
+                    <span style={pickerStyles.iconContainer}>{option.icon}</span>
+                  )}
+                  {option.color && (
+                    <div style={mergeStyles(pickerStyles.colorDot, {
+                      backgroundColor: option.color
+                    })} />
+                  )}
+                  <span style={pickerStyles.optionLabel}>{option.label}</span>
+                  {option.badge && (
+                    <span style={pickerStyles.optionBadge}>{option.badge}</span>
+                  )}
+                  {value === option.value && (
+                    <Check style={pickerStyles.checkmark} />
+                  )}
+                </div>
+              ))
+            )}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
 
 const ComprehensiveTaskModal: React.FC<TaskModalProps> = ({ isOpen, onClose, task, onSave, mode = 'edit' }) => {
   // State for all task fields
@@ -866,101 +1017,68 @@ const ComprehensiveTaskModal: React.FC<TaskModalProps> = ({ isOpen, onClose, tas
                 {/* Type and Category */}
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
                   <div>
-                    <label style={{ fontSize: '14px', fontWeight: '500', color: '#374151', marginBottom: '6px', display: 'block' }}>
-                      Type
-                    </label>
-                    <select
+                    <SelectPicker
+                      label="Type"
                       value={taskData.type}
-                      onChange={(e) => setTaskData({ ...taskData, type: e.target.value })}
-                      style={{
-                        width: '100%',
-                        padding: '8px 12px',
-                        border: '1px solid #d1d5db',
-                        borderRadius: '6px',
-                        fontSize: '14px',
-                        backgroundColor: 'white'
-                      }}
-                    >
-                      <option value="task">Task</option>
-                      <option value="milestone">Milestone</option>
-                      <option value="bug">Bug</option>
-                      <option value="feature">Feature</option>
-                      <option value="epic">Epic</option>
-                    </select>
+                      onChange={(value: string) => setTaskData({ ...taskData, type: value })}
+                      options={[
+                        { value: 'task', label: 'Task' },
+                        { value: 'milestone', label: 'Milestone' },
+                        { value: 'bug', label: 'Bug' },
+                        { value: 'feature', label: 'Feature' },
+                        { value: 'epic', label: 'Epic' }
+                      ]}
+                      placeholder="Select type"
+                    />
                   </div>
                   <div>
-                    <label style={{ fontSize: '14px', fontWeight: '500', color: '#374151', marginBottom: '6px', display: 'block' }}>
-                      Category
-                    </label>
-                    <select
+                    <SelectPicker
+                      label="Category"
                       value={taskData.category}
-                      onChange={(e) => setTaskData({ ...taskData, category: e.target.value })}
-                      style={{
-                        width: '100%',
-                        padding: '8px 12px',
-                        border: '1px solid #d1d5db',
-                        borderRadius: '6px',
-                        fontSize: '14px',
-                        backgroundColor: 'white'
-                      }}
-                    >
-                      <option value="">Select Category</option>
-                      <option value="planning">Planning</option>
-                      <option value="development">Development</option>
-                      <option value="foundation">Foundation</option>
-                      <option value="electrical">Electrical</option>
-                      <option value="plumbing">Plumbing</option>
-                      <option value="finalization">Finalization</option>
-                    </select>
+                      onChange={(value: string) => setTaskData({ ...taskData, category: value })}
+                      options={[
+                        { value: 'planning', label: 'Planning', color: '#e91e63' },
+                        { value: 'development', label: 'Development', color: '#5b5fc7' },
+                        { value: 'foundation', label: 'Foundation', color: '#f97316' },
+                        { value: 'electrical', label: 'Electrical', color: '#c084fc' },
+                        { value: 'plumbing', label: 'Plumbing', color: '#14b8a6' },
+                        { value: 'finalization', label: 'Finalization', color: '#fbbf24' }
+                      ]}
+                      placeholder="Select category"
+                    />
                   </div>
                 </div>
 
                 {/* Status and Priority */}
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
                   <div>
-                    <label style={{ fontSize: '14px', fontWeight: '500', color: '#374151', marginBottom: '6px', display: 'block' }}>
-                      Status
-                    </label>
-                    <select
+                    <SelectPicker
+                      label="Status"
                       value={taskData.status}
-                      onChange={(e) => setTaskData({ ...taskData, status: e.target.value })}
-                      style={{
-                        width: '100%',
-                        padding: '8px 12px',
-                        border: '1px solid #d1d5db',
-                        borderRadius: '6px',
-                        fontSize: '14px',
-                        backgroundColor: 'white'
-                      }}
-                    >
-                      <option value="todo">To Do</option>
-                      <option value="in-progress">In Progress</option>
-                      <option value="in-review">In Review</option>
-                      <option value="blocked">Blocked</option>
-                      <option value="completed">Completed</option>
-                    </select>
+                      onChange={(value: string) => setTaskData({ ...taskData, status: value })}
+                      options={[
+                        { value: 'todo', label: 'To Do', color: '#6b7280' },
+                        { value: 'in-progress', label: 'In Progress', color: '#3b82f6' },
+                        { value: 'in-review', label: 'In Review', color: '#8b5cf6' },
+                        { value: 'blocked', label: 'Blocked', color: '#ef4444' },
+                        { value: 'completed', label: 'Completed', color: '#10b981' }
+                      ]}
+                      placeholder="Select status"
+                    />
                   </div>
                   <div>
-                    <label style={{ fontSize: '14px', fontWeight: '500', color: '#374151', marginBottom: '6px', display: 'block' }}>
-                      Priority
-                    </label>
-                    <select
+                    <SelectPicker
+                      label="Priority"
                       value={taskData.priority}
-                      onChange={(e) => setTaskData({ ...taskData, priority: e.target.value })}
-                      style={{
-                        width: '100%',
-                        padding: '8px 12px',
-                        border: '1px solid #d1d5db',
-                        borderRadius: '6px',
-                        fontSize: '14px',
-                        backgroundColor: 'white'
-                      }}
-                    >
-                      <option value="critical">Critical</option>
-                      <option value="high">High</option>
-                      <option value="medium">Medium</option>
-                      <option value="low">Low</option>
-                    </select>
+                      onChange={(value: string) => setTaskData({ ...taskData, priority: value })}
+                      options={[
+                        { value: 'critical', label: 'Critical', color: '#dc2626', icon: '🔴' },
+                        { value: 'high', label: 'High', color: '#ef4444', icon: '🟠' },
+                        { value: 'medium', label: 'Medium', color: '#fbbf24', icon: '🟡' },
+                        { value: 'low', label: 'Low', color: '#3b82f6', icon: '🔵' }
+                      ]}
+                      placeholder="Select priority"
+                    />
                   </div>
                 </div>
 
@@ -1089,48 +1207,32 @@ const ComprehensiveTaskModal: React.FC<TaskModalProps> = ({ isOpen, onClose, tas
                 {/* Risk and Impact */}
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
                   <div>
-                    <label style={{ fontSize: '14px', fontWeight: '500', color: '#374151', marginBottom: '6px', display: 'block' }}>
-                      Risk Level
-                    </label>
-                    <select
+                    <SelectPicker
+                      label="Risk Level"
                       value={taskData.risk}
-                      onChange={(e) => setTaskData({ ...taskData, risk: e.target.value })}
-                      style={{
-                        width: '100%',
-                        padding: '8px 12px',
-                        border: '1px solid #d1d5db',
-                        borderRadius: '6px',
-                        fontSize: '14px',
-                        backgroundColor: 'white'
-                      }}
-                    >
-                      <option value="low">Low</option>
-                      <option value="medium">Medium</option>
-                      <option value="high">High</option>
-                      <option value="critical">Critical</option>
-                    </select>
+                      onChange={(value: string) => setTaskData({ ...taskData, risk: value })}
+                      options={[
+                        { value: 'low', label: 'Low', color: '#10b981' },
+                        { value: 'medium', label: 'Medium', color: '#fbbf24' },
+                        { value: 'high', label: 'High', color: '#ef4444' },
+                        { value: 'critical', label: 'Critical', color: '#dc2626' }
+                      ]}
+                      placeholder="Select risk level"
+                    />
                   </div>
                   <div>
-                    <label style={{ fontSize: '14px', fontWeight: '500', color: '#374151', marginBottom: '6px', display: 'block' }}>
-                      Impact Level
-                    </label>
-                    <select
+                    <SelectPicker
+                      label="Impact Level"
                       value={taskData.impact}
-                      onChange={(e) => setTaskData({ ...taskData, impact: e.target.value })}
-                      style={{
-                        width: '100%',
-                        padding: '8px 12px',
-                        border: '1px solid #d1d5db',
-                        borderRadius: '6px',
-                        fontSize: '14px',
-                        backgroundColor: 'white'
-                      }}
-                    >
-                      <option value="low">Low</option>
-                      <option value="medium">Medium</option>
-                      <option value="high">High</option>
-                      <option value="critical">Critical</option>
-                    </select>
+                      onChange={(value: string) => setTaskData({ ...taskData, impact: value })}
+                      options={[
+                        { value: 'low', label: 'Low', color: '#10b981' },
+                        { value: 'medium', label: 'Medium', color: '#fbbf24' },
+                        { value: 'high', label: 'High', color: '#ef4444' },
+                        { value: 'critical', label: 'Critical', color: '#dc2626' }
+                      ]}
+                      placeholder="Select impact level"
+                    />
                   </div>
                 </div>
 
@@ -1302,26 +1404,18 @@ const ComprehensiveTaskModal: React.FC<TaskModalProps> = ({ isOpen, onClose, tas
               </h3>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px' }}>
                 <div>
-                  <label style={{ fontSize: '14px', fontWeight: '500', color: '#374151', marginBottom: '6px', display: 'block' }}>
-                    Currency
-                  </label>
-                  <select
+                  <SelectPicker
+                    label="Currency"
                     value={taskData.currency}
-                    onChange={(e) => setTaskData({ ...taskData, currency: e.target.value })}
-                    style={{
-                      width: '100%',
-                      padding: '8px 12px',
-                      border: '1px solid #d1d5db',
-                      borderRadius: '6px',
-                      fontSize: '14px',
-                      backgroundColor: 'white'
-                    }}
-                  >
-                    <option value="USD">USD ($)</option>
-                    <option value="EUR">EUR (€)</option>
-                    <option value="GBP">GBP (£)</option>
-                    <option value="INR">INR (₹)</option>
-                  </select>
+                    onChange={(value: string) => setTaskData({ ...taskData, currency: value })}
+                    options={[
+                      { value: 'USD', label: 'USD ($)' },
+                      { value: 'EUR', label: 'EUR (€)' },
+                      { value: 'GBP', label: 'GBP (£)' },
+                      { value: 'INR', label: 'INR (₹)' }
+                    ]}
+                    placeholder="Select currency"
+                  />
                 </div>
                 <div />
                 
