@@ -49,6 +49,7 @@ import {
   ChevronRight,
   Hash,
   Percent,
+  Check,
   TrendingUp,
   TrendingDown,
   Activity,
