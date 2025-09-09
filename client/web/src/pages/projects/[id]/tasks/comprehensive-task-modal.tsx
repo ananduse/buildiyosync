@@ -18,6 +18,7 @@ import {
 } from './comprehensive-checklist-templates';
 import { TemplateManagementModal } from './template-management-modal';
 import { ChecklistItemDetailModal } from './checklist-item-detail-modal';
+import { CustomFieldsTab } from './custom-fields-tab';
 import {
   X,
   Calendar,
@@ -113,12 +114,12 @@ interface TaskModalProps {
   onClose: () => void;
   task?: any;
   onSave: (taskData: any) => void;
-  mode: 'add' | 'edit';
+  mode?: 'add' | 'edit';
 }
 
-const ComprehensiveTaskModal: React.FC<TaskModalProps> = ({ isOpen, onClose, task, onSave, mode }) => {
+const ComprehensiveTaskModal: React.FC<TaskModalProps> = ({ isOpen, onClose, task, onSave, mode = 'edit' }) => {
   // State for all task fields
-  const [activeTab, setActiveTab] = useState('details');
+  const [activeTab, setActiveTab] = useState(task?.defaultTab || 'details');
   const [taskData, setTaskData] = useState({
     // Basic Information
     title: '',
@@ -176,7 +177,18 @@ const ComprehensiveTaskModal: React.FC<TaskModalProps> = ({ isOpen, onClose, tas
     impact: 'low',
     
     // Custom Fields
-    customFields: {} as any,
+    customFields: [] as Array<{
+      id: string;
+      name: string;
+      type: 'text' | 'number' | 'date' | 'dropdown' | 'checkbox' | 'url' | 'email' | 'phone' | 'currency' | 'percentage';
+      value: any;
+      required: boolean;
+      options?: string[]; // for dropdown type
+      placeholder?: string;
+      validation?: string; // regex pattern
+      min?: number; // for number type
+      max?: number; // for number type
+    }>,
     
     // Metadata
     createdAt: '',
@@ -197,6 +209,22 @@ const ComprehensiveTaskModal: React.FC<TaskModalProps> = ({ isOpen, onClose, tas
   const [expandedChecklistItems, setExpandedChecklistItems] = useState<Set<string>>(new Set());
   const [editingChecklistItem, setEditingChecklistItem] = useState<ChecklistItemDetail | null>(null);
   const [showItemDetailModal, setShowItemDetailModal] = useState(false);
+  const [showAddCustomField, setShowAddCustomField] = useState(false);
+  const [newCustomField, setNewCustomField] = useState({
+    name: '',
+    type: 'text' as const,
+    required: false,
+    options: [] as string[],
+    placeholder: '',
+    validation: '',
+    min: undefined as number | undefined,
+    max: undefined as number | undefined
+  });
+  const [isStarred, setIsStarred] = useState(task?.isStarred || false);
+  const [isWatching, setIsWatching] = useState(task?.isWatching || false);
+  const [showMoreMenu, setShowMoreMenu] = useState(false);
+  const [showDuplicateConfirm, setShowDuplicateConfirm] = useState(false);
+  const [showArchiveConfirm, setShowArchiveConfirm] = useState(false);
 
   // Initialize task data
   useEffect(() => {
@@ -224,6 +252,21 @@ const ComprehensiveTaskModal: React.FC<TaskModalProps> = ({ isOpen, onClose, tas
     }
     return () => clearInterval(interval);
   }, [taskData.isTimerRunning]);
+
+  // Close more menu on click outside
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      const target = e.target as HTMLElement;
+      if (showMoreMenu && !target.closest('[data-more-menu]')) {
+        setShowMoreMenu(false);
+      }
+    };
+    
+    if (showMoreMenu) {
+      document.addEventListener('mousedown', handleClickOutside);
+      return () => document.removeEventListener('mousedown', handleClickOutside);
+    }
+  }, [showMoreMenu]);
 
   // Format timer display
   const formatTime = (seconds: number) => {
@@ -423,8 +466,32 @@ const ComprehensiveTaskModal: React.FC<TaskModalProps> = ({ isOpen, onClose, tas
         }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
             <h2 style={{ fontSize: '20px', fontWeight: '600', color: '#111827' }}>
-              {mode === 'add' ? 'Create New Task' : 'Edit Task'}
+              {mode === 'add' ? 'Create New Task' : task?.isManagingSubtasks ? 'Manage Subtasks' : task?.parentTaskId ? 'Edit Subtask' : 'Edit Task'}
             </h2>
+            {task?.parentTaskId && (
+              <span style={{
+                fontSize: '12px',
+                backgroundColor: '#dbeafe',
+                color: '#1e40af',
+                padding: '4px 10px',
+                borderRadius: '20px',
+                fontWeight: '500'
+              }}>
+                Subtask
+              </span>
+            )}
+            {task?.isManagingSubtasks && (
+              <span style={{
+                fontSize: '12px',
+                backgroundColor: '#f3e8ff',
+                color: '#6b21a8',
+                padding: '4px 10px',
+                borderRadius: '20px',
+                fontWeight: '500'
+              }}>
+                {task?.subtasks?.length || 0} Subtasks
+              </span>
+            )}
             <span style={{
               fontSize: '12px',
               backgroundColor: '#f3f4f6',
@@ -469,30 +536,211 @@ const ComprehensiveTaskModal: React.FC<TaskModalProps> = ({ isOpen, onClose, tas
               </button>
             </div>
             
-            <button style={{
-              padding: '8px',
-              backgroundColor: 'transparent',
-              border: 'none',
-              cursor: 'pointer'
-            }}>
-              <Star style={{ width: '20px', height: '20px', color: '#6b7280' }} />
+            <button 
+              onClick={() => setIsStarred(!isStarred)}
+              title={isStarred ? 'Remove from favorites' : 'Add to favorites'}
+              style={{
+                padding: '8px',
+                backgroundColor: 'transparent',
+                border: 'none',
+                cursor: 'pointer',
+                transition: 'transform 0.2s'
+              }}
+              onMouseEnter={(e) => e.currentTarget.style.transform = 'scale(1.1)'}
+              onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}
+            >
+              <Star style={{ 
+                width: '20px', 
+                height: '20px', 
+                color: isStarred ? '#fbbf24' : '#6b7280',
+                fill: isStarred ? '#fbbf24' : 'none'
+              }} />
             </button>
-            <button style={{
-              padding: '8px',
-              backgroundColor: 'transparent',
-              border: 'none',
-              cursor: 'pointer'
-            }}>
-              <Bell style={{ width: '20px', height: '20px', color: '#6b7280' }} />
+            <button 
+              onClick={() => setIsWatching(!isWatching)}
+              title={isWatching ? 'Stop watching' : 'Watch for updates'}
+              style={{
+                padding: '8px',
+                backgroundColor: 'transparent',
+                border: 'none',
+                cursor: 'pointer',
+                position: 'relative',
+                transition: 'transform 0.2s'
+              }}
+              onMouseEnter={(e) => e.currentTarget.style.transform = 'scale(1.1)'}
+              onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}
+            >
+              <Bell style={{ 
+                width: '20px', 
+                height: '20px', 
+                color: isWatching ? '#3b82f6' : '#6b7280',
+                fill: isWatching ? '#3b82f6' : 'none'
+              }} />
+              {isWatching && (
+                <span style={{
+                  position: 'absolute',
+                  top: '6px',
+                  right: '6px',
+                  width: '8px',
+                  height: '8px',
+                  backgroundColor: '#ef4444',
+                  borderRadius: '50%',
+                  border: '2px solid white'
+                }} />
+              )}
             </button>
-            <button style={{
-              padding: '8px',
-              backgroundColor: 'transparent',
-              border: 'none',
-              cursor: 'pointer'
-            }}>
-              <MoreVertical style={{ width: '20px', height: '20px', color: '#6b7280' }} />
-            </button>
+            <div style={{ position: 'relative' }} data-more-menu>
+              <button 
+                onClick={() => setShowMoreMenu(!showMoreMenu)}
+                style={{
+                  padding: '8px',
+                  backgroundColor: showMoreMenu ? '#f3f4f6' : 'transparent',
+                  border: 'none',
+                  cursor: 'pointer',
+                  borderRadius: '6px',
+                  transition: 'background-color 0.2s'
+                }}
+              >
+                <MoreVertical style={{ width: '20px', height: '20px', color: '#6b7280' }} />
+              </button>
+              
+              {showMoreMenu && (
+                <div style={{
+                  position: 'absolute',
+                  top: '100%',
+                  right: 0,
+                  marginTop: '4px',
+                  backgroundColor: 'white',
+                  border: '1px solid #e5e7eb',
+                  borderRadius: '8px',
+                  boxShadow: '0 10px 25px rgba(0,0,0,0.1)',
+                  zIndex: 1000,
+                  minWidth: '180px',
+                  padding: '8px'
+                }}>
+                  <button
+                    onClick={() => {
+                      navigator.clipboard.writeText(window.location.href + '/' + taskData.taskCode);
+                      setShowMoreMenu(false);
+                    }}
+                    style={{
+                      width: '100%',
+                      padding: '8px 12px',
+                      backgroundColor: 'transparent',
+                      border: 'none',
+                      borderRadius: '6px',
+                      fontSize: '14px',
+                      color: '#374151',
+                      cursor: 'pointer',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '8px',
+                      textAlign: 'left',
+                      transition: 'background-color 0.2s'
+                    }}
+                    onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#f3f4f6'}
+                    onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
+                  >
+                    <Link2 style={{ width: '16px', height: '16px' }} />
+                    Copy Link
+                  </button>
+                  
+                  <button
+                    onClick={() => {
+                      const printContent = document.getElementById('task-content');
+                      if (printContent) {
+                        window.print();
+                      }
+                      setShowMoreMenu(false);
+                    }}
+                    style={{
+                      width: '100%',
+                      padding: '8px 12px',
+                      backgroundColor: 'transparent',
+                      border: 'none',
+                      borderRadius: '6px',
+                      fontSize: '14px',
+                      color: '#374151',
+                      cursor: 'pointer',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '8px',
+                      textAlign: 'left',
+                      transition: 'background-color 0.2s'
+                    }}
+                    onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#f3f4f6'}
+                    onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
+                  >
+                    <FileText style={{ width: '16px', height: '16px' }} />
+                    Print
+                  </button>
+                  
+                  <button
+                    onClick={() => {
+                      // Export as JSON
+                      const dataStr = JSON.stringify(taskData, null, 2);
+                      const dataUri = 'data:application/json;charset=utf-8,'+ encodeURIComponent(dataStr);
+                      const exportFileDefaultName = `task-${taskData.taskCode}.json`;
+                      const linkElement = document.createElement('a');
+                      linkElement.setAttribute('href', dataUri);
+                      linkElement.setAttribute('download', exportFileDefaultName);
+                      linkElement.click();
+                      setShowMoreMenu(false);
+                    }}
+                    style={{
+                      width: '100%',
+                      padding: '8px 12px',
+                      backgroundColor: 'transparent',
+                      border: 'none',
+                      borderRadius: '6px',
+                      fontSize: '14px',
+                      color: '#374151',
+                      cursor: 'pointer',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '8px',
+                      textAlign: 'left',
+                      transition: 'background-color 0.2s'
+                    }}
+                    onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#f3f4f6'}
+                    onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
+                  >
+                    <Download style={{ width: '16px', height: '16px' }} />
+                    Export
+                  </button>
+                  
+                  <div style={{ height: '1px', backgroundColor: '#e5e7eb', margin: '8px 0' }} />
+                  
+                  <button
+                    onClick={() => {
+                      // Convert to template functionality
+                      console.log('Convert to template');
+                      setShowMoreMenu(false);
+                    }}
+                    style={{
+                      width: '100%',
+                      padding: '8px 12px',
+                      backgroundColor: 'transparent',
+                      border: 'none',
+                      borderRadius: '6px',
+                      fontSize: '14px',
+                      color: '#374151',
+                      cursor: 'pointer',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '8px',
+                      textAlign: 'left',
+                      transition: 'background-color 0.2s'
+                    }}
+                    onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#f3f4f6'}
+                    onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
+                  >
+                    <ClipboardList style={{ width: '16px', height: '16px' }} />
+                    Convert to Template
+                  </button>
+                </div>
+              )}
+            </div>
             <button
               onClick={onClose}
               style={{
@@ -514,7 +762,7 @@ const ComprehensiveTaskModal: React.FC<TaskModalProps> = ({ isOpen, onClose, tas
           padding: '0 24px',
           gap: '24px'
         }}>
-          {['details', 'timeline', 'budget', 'dependencies', 'checklist', 'attachments', 'comments', 'activity'].map(tab => (
+          {['details', 'timeline', 'budget', 'dependencies', 'checklist', 'custom', 'attachments', 'comments', 'activity'].map(tab => (
             <button
               key={tab}
               onClick={() => setActiveTab(tab)}
@@ -2039,6 +2287,14 @@ const ComprehensiveTaskModal: React.FC<TaskModalProps> = ({ isOpen, onClose, tas
               </div>
             </div>
           )}
+
+          {/* Custom Fields Tab */}
+          {activeTab === 'custom' && (
+            <CustomFieldsTab
+              customFields={taskData.customFields}
+              onUpdateFields={(fields) => setTaskData({ ...taskData, customFields: fields })}
+            />
+          )}
         </div>
 
         {/* Footer */}
@@ -2051,33 +2307,83 @@ const ComprehensiveTaskModal: React.FC<TaskModalProps> = ({ isOpen, onClose, tas
           backgroundColor: '#f9fafb'
         }}>
           <div style={{ display: 'flex', gap: '8px' }}>
-            <button style={{
-              padding: '8px 16px',
-              backgroundColor: 'white',
-              border: '1px solid #d1d5db',
-              borderRadius: '6px',
-              fontSize: '14px',
-              color: '#374151',
-              cursor: 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '6px'
-            }}>
+            <button 
+              onClick={() => {
+                // Create a duplicate of the task
+                const duplicatedTask = {
+                  ...taskData,
+                  taskCode: `${taskData.taskCode}-COPY`,
+                  title: `${taskData.title} (Copy)`,
+                  createdAt: new Date().toISOString(),
+                  updatedAt: new Date().toISOString(),
+                  id: undefined // New task should get new ID
+                };
+                onSave(duplicatedTask);
+                onClose();
+              }}
+              title="Create a duplicate of this task"
+              style={{
+                padding: '8px 16px',
+                backgroundColor: 'white',
+                border: '1px solid #d1d5db',
+                borderRadius: '6px',
+                fontSize: '14px',
+                color: '#374151',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '6px',
+                transition: 'all 0.2s'
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.backgroundColor = '#f3f4f6';
+                e.currentTarget.style.borderColor = '#9ca3af';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.backgroundColor = 'white';
+                e.currentTarget.style.borderColor = '#d1d5db';
+              }}
+            >
               <Copy style={{ width: '16px', height: '16px' }} />
               Duplicate
             </button>
-            <button style={{
-              padding: '8px 16px',
-              backgroundColor: 'white',
-              border: '1px solid #d1d5db',
-              borderRadius: '6px',
-              fontSize: '14px',
-              color: '#374151',
-              cursor: 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '6px'
-            }}>
+            <button 
+              onClick={() => {
+                // Archive the task
+                const archivedTask = {
+                  ...taskData,
+                  status: 'archived',
+                  archivedAt: new Date().toISOString(),
+                  archivedBy: 'current-user' // Replace with actual user
+                };
+                onSave(archivedTask);
+                onClose();
+              }}
+              title="Archive this task"
+              style={{
+                padding: '8px 16px',
+                backgroundColor: 'white',
+                border: '1px solid #d1d5db',
+                borderRadius: '6px',
+                fontSize: '14px',
+                color: '#374151',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '6px',
+                transition: 'all 0.2s'
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.backgroundColor = '#fef2f2';
+                e.currentTarget.style.borderColor = '#fca5a5';
+                e.currentTarget.style.color = '#dc2626';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.backgroundColor = 'white';
+                e.currentTarget.style.borderColor = '#d1d5db';
+                e.currentTarget.style.color = '#374151';
+              }}
+            >
               <Archive style={{ width: '16px', height: '16px' }} />
               Archive
             </button>

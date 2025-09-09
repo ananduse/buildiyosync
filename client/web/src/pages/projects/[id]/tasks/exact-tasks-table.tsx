@@ -20,8 +20,18 @@ import {
   Users,
   Calendar,
   DollarSign,
-  Circle
+  Circle,
+  Paperclip,
+  MessageSquare,
+  CheckCircle,
+  ListTodo,
+  GitBranch,
+  Clock,
+  AlertTriangle,
+  FileText
 } from 'lucide-react';
+import ComprehensiveTaskModal from './comprehensive-task-modal';
+import { ConfirmationDialog, useNotification } from './confirmation-dialog';
 
 // Status picker component
 const StatusPicker = ({ value, onChange, onClose, taskId }: any) => {
@@ -1084,6 +1094,9 @@ const ExactTasksTable: React.FC = () => {
   const hoveredTimeout = useRef<NodeJS.Timeout | null>(null);
   const [draggedTask, setDraggedTask] = useState<any>(null);
   const [openPicker, setOpenPicker] = useState<{ type: string; taskId: string } | null>(null);
+  const [selectedTaskForEdit, setSelectedTaskForEdit] = useState<any>(null);
+  const [deleteConfirmation, setDeleteConfirmation] = useState<{ isOpen: boolean; taskId: string | null; taskName: string; taskGroup: string }>({ isOpen: false, taskId: null, taskName: '', taskGroup: '' });
+  const { showNotification, NotificationContainer } = useNotification();
   
   // Close any open picker when clicking to open a new one
   const handleOpenPicker = (type: string, taskId: string) => {
@@ -1091,6 +1104,19 @@ const ExactTasksTable: React.FC = () => {
       setOpenPicker(null);
     } else {
       setOpenPicker({ type, taskId });
+    }
+  };
+  
+  const confirmDeleteTask = () => {
+    if (deleteConfirmation.taskId && deleteConfirmation.taskGroup) {
+      setTasks((prev: any) => {
+        const newTasks = { ...prev };
+        newTasks[deleteConfirmation.taskGroup] = newTasks[deleteConfirmation.taskGroup].filter(
+          (t: any) => t.id !== deleteConfirmation.taskId
+        );
+        return newTasks;
+      });
+      showNotification(`Task "${deleteConfirmation.taskName}" deleted successfully`, 'success');
     }
   };
   const [tasks, setTasks] = useState<any>({
@@ -1570,15 +1596,105 @@ const ExactTasksTable: React.FC = () => {
               </span>
             )}
             <ProgressCircle progress={task.progress} size={isSubtask ? 24 : 28} />
-            <span style={{ 
-              fontSize: '14px', 
-              color: hoveredRow === uniqueRowId ? '#3b82f6' : isSubtask ? '#6b7280' : '#111827',
-              transition: 'color 0.2s',
-              fontWeight: isSubtask ? '400' : '500',
-              cursor: 'pointer'
-            }}>
+            <span 
+              onClick={() => {
+                // Mark subtasks with parentTaskId for proper handling
+                const taskToEdit = isSubtask ? { ...task, parentTaskId: group } : task;
+                setSelectedTaskForEdit(taskToEdit);
+              }}
+              style={{ 
+                fontSize: '14px', 
+                color: hoveredRow === uniqueRowId ? '#3b82f6' : isSubtask ? '#6b7280' : '#111827',
+                transition: 'color 0.2s',
+                fontWeight: isSubtask ? '400' : '500',
+                cursor: 'pointer',
+                textDecoration: hoveredRow === uniqueRowId ? 'underline' : 'none'
+              }}>
               {task.name}
+              {isSubtask && (
+                <span style={{
+                  fontSize: '11px',
+                  color: '#9ca3af',
+                  marginLeft: '8px',
+                  fontStyle: 'italic'
+                }}>
+                  (subtask)
+                </span>
+              )}
             </span>
+            
+            {/* Task Quick Stats */}
+            <div style={{ display: 'flex', gap: '12px', marginLeft: '12px' }}>
+              {/* Subtasks */}
+              {task.hasSubtasks && (
+                <div 
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    // Open comprehensive modal with subtasks tab selected
+                    setSelectedTaskForEdit({ ...task, defaultTab: 'checklist', isManagingSubtasks: true });
+                  }}
+                  style={{ 
+                    display: 'flex', 
+                    alignItems: 'center', 
+                    gap: '4px',
+                    cursor: 'pointer',
+                    padding: '2px 6px',
+                    borderRadius: '4px',
+                    backgroundColor: '#f3f4f6',
+                    transition: 'background-color 0.2s'
+                  }}
+                  onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#e5e7eb'}
+                  onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#f3f4f6'}
+                >
+                  <ListTodo style={{ width: '14px', height: '14px', color: '#6b7280' }} />
+                  <span style={{ fontSize: '12px', color: '#6b7280', fontWeight: '500' }}>
+                    {task.subtasks?.length || 0}
+                  </span>
+                </div>
+              )}
+              
+              {/* Attachments */}
+              {task.attachments && task.attachments.length > 0 && (
+                <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                  <Paperclip style={{ width: '14px', height: '14px', color: '#6b7280' }} />
+                  <span style={{ fontSize: '12px', color: '#6b7280' }}>{task.attachments.length}</span>
+                </div>
+              )}
+              
+              {/* Comments */}
+              {task.comments && task.comments.length > 0 && (
+                <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                  <MessageSquare style={{ width: '14px', height: '14px', color: '#6b7280' }} />
+                  <span style={{ fontSize: '12px', color: '#6b7280' }}>{task.comments.length}</span>
+                </div>
+              )}
+              
+              {/* Checklist Progress */}
+              {task.checklist && task.checklist.length > 0 && (
+                <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                  <CheckCircle style={{ width: '14px', height: '14px', color: '#22c55e' }} />
+                  <span style={{ fontSize: '12px', color: '#6b7280' }}>
+                    {task.checklist.filter((c: any) => c.completed).length}/{task.checklist.length}
+                  </span>
+                </div>
+              )}
+              
+              {/* Time Tracked */}
+              {task.timeTracked && task.timeTracked > 0 && (
+                <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                  <Clock style={{ width: '14px', height: '14px', color: '#6b7280' }} />
+                  <span style={{ fontSize: '12px', color: '#6b7280' }}>{task.timeTracked}h</span>
+                </div>
+              )}
+              
+              {/* Overdue Indicator */}
+              {task.isOverdue && (
+                <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                  <AlertTriangle style={{ width: '14px', height: '14px', color: '#ef4444' }} />
+                  <span style={{ fontSize: '12px', color: '#ef4444', fontWeight: '500' }}>Overdue</span>
+                </div>
+              )}
+            </div>
             {hoveredRow === uniqueRowId && (
               <div 
                 key={`actions-${uniqueRowId}`}
@@ -1610,7 +1726,8 @@ const ExactTasksTable: React.FC = () => {
                   }}
                   onClick={(e) => {
                     e.stopPropagation();
-                    alert('Add subtask functionality');
+                    // Open comprehensive modal for adding/managing subtasks
+                    setSelectedTaskForEdit({ ...task, isManagingSubtasks: true });
                   }}
                 >
                   <Plus style={{ width: '18px', height: '18px', color: '#6b7280' }} />
@@ -1664,7 +1781,7 @@ const ExactTasksTable: React.FC = () => {
                   }}
                   onClick={(e) => {
                     e.stopPropagation();
-                    alert('Edit task functionality');
+                    setSelectedTaskForEdit(task);
                   }}
                 >
                   <Edit2 style={{ width: '18px', height: '18px', color: '#6b7280' }} />
@@ -1691,9 +1808,12 @@ const ExactTasksTable: React.FC = () => {
                   }}
                   onClick={(e) => {
                     e.stopPropagation();
-                    if (confirm('Are you sure you want to delete this task?')) {
-                      alert('Delete task functionality');
-                    }
+                    setDeleteConfirmation({
+                      isOpen: true,
+                      taskId: task.id,
+                      taskName: task.name,
+                      taskGroup: group
+                    });
                   }}
                 >
                   <Trash2 style={{ width: '18px', height: '18px', color: '#ef4444' }} />
@@ -2073,6 +2193,43 @@ const ExactTasksTable: React.FC = () => {
           ))}
         </tbody>
       </table>
+      
+      {/* Comprehensive Task Edit Modal (Used for both tasks and subtasks) */}
+      {selectedTaskForEdit && (
+        <ComprehensiveTaskModal
+          isOpen={true}
+          onClose={() => setSelectedTaskForEdit(null)}
+          task={selectedTaskForEdit}
+          onSave={(updatedTask) => {
+            // Update the task
+            setTasks((prev: any) => {
+              const newTasks = { ...prev };
+              Object.keys(newTasks).forEach(group => {
+                newTasks[group] = newTasks[group].map((t: any) => 
+                  t.id === selectedTaskForEdit.id ? updatedTask : t
+                );
+              });
+              return newTasks;
+            });
+            setSelectedTaskForEdit(null);
+          }}
+        />
+      )}
+      
+      {/* Delete Confirmation Dialog */}
+      <ConfirmationDialog
+        isOpen={deleteConfirmation.isOpen}
+        onClose={() => setDeleteConfirmation({ isOpen: false, taskId: null, taskName: '', taskGroup: '' })}
+        onConfirm={confirmDeleteTask}
+        title="Delete Task"
+        message={`Are you sure you want to delete the task "${deleteConfirmation.taskName}"? This will also delete all its subtasks and cannot be undone.`}
+        type="danger"
+        confirmText="Delete Task"
+        cancelText="Keep Task"
+      />
+      
+      {/* Notifications */}
+      <NotificationContainer />
     </div>
   );
 };
