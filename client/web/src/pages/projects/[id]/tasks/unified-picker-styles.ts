@@ -5,10 +5,7 @@ import React from 'react';
 export const pickerStyles = {
   // Main container for the picker dropdown
   container: {
-    position: 'absolute' as const,
-    top: 'calc(100% + 8px)',
-    left: '50%',
-    transform: 'translateX(-50%)',
+    position: 'fixed' as const,
     backgroundColor: 'white',
     border: '1px solid #e5e7eb',
     borderRadius: '12px',
@@ -16,8 +13,8 @@ export const pickerStyles = {
     minWidth: '240px',
     maxWidth: '320px',
     boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)',
-    zIndex: 1500,
-    animation: 'slideDown 0.2s ease-out'
+    zIndex: 9999,
+    opacity: 1
   },
 
   // Header section with title and search
@@ -211,7 +208,7 @@ export const pickerStyles = {
 
   // Animation keyframes (to be added to global styles)
   animations: `
-    @keyframes slideDown {
+    @keyframes fadeInDown {
       from {
         opacity: 0;
         transform: translateX(-50%) translateY(-10px);

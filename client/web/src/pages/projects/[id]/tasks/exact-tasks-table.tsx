@@ -37,6 +37,7 @@ import { pickerStyles, mergeStyles, usePickerBehavior } from './unified-picker-s
 // Status picker component
 const StatusPicker = ({ value, onChange, onClose, taskId }: any) => {
   const [showEdit, setShowEdit] = useState(false);
+  const [position, setPosition] = useState({ top: 0, left: 0 });
   const [customStatuses, setCustomStatuses] = useState([
     { id: 'todo', label: 'TO DO', color: '#6b7280', group: 'Not started' },
     { id: 'in-progress', label: 'IN PROGRESS', color: '#5b5fc7', group: 'Active' },
@@ -52,6 +53,16 @@ const StatusPicker = ({ value, onChange, onClose, taskId }: any) => {
   ];
 
   useEffect(() => {
+    // Calculate position based on trigger element
+    const triggerElement = document.querySelector(`[data-status-trigger="${taskId}"]`);
+    if (triggerElement) {
+      const rect = triggerElement.getBoundingClientRect();
+      setPosition({
+        top: rect.bottom + 8,
+        left: rect.left + rect.width / 2
+      });
+    }
+
     const handleClickOutside = (e: MouseEvent) => {
       const target = e.target as HTMLElement;
       // Check if click is on the picker itself
@@ -194,7 +205,10 @@ const StatusPicker = ({ value, onChange, onClose, taskId }: any) => {
 
   return (
     <div data-status-picker={taskId} style={mergeStyles(pickerStyles.container, {
-      minWidth: '240px'
+      minWidth: '240px',
+      top: position.top,
+      left: position.left,
+      transform: 'translateX(-50%)'
     })}>
       {customStatuses.map(status => (
         <div
@@ -254,6 +268,7 @@ const StatusPicker = ({ value, onChange, onClose, taskId }: any) => {
 
 // Category picker component
 const CategoryPicker = ({ value, onChange, onClose, taskId }: any) => {
+  const [position, setPosition] = useState({ top: 0, left: 0 });
   const [categories, setCategories] = useState([
     { id: 'planning', label: 'Planning', color: '#e91e63' },
     { id: 'development', label: 'Development', color: '#5b5fc7' },
@@ -274,6 +289,16 @@ const CategoryPicker = ({ value, onChange, onClose, taskId }: any) => {
   const [newCategoryColor, setNewCategoryColor] = useState('#7c3aed');
 
   useEffect(() => {
+    // Calculate position based on trigger element
+    const triggerElement = document.querySelector(`[data-category-trigger="${taskId}"]`);
+    if (triggerElement) {
+      const rect = triggerElement.getBoundingClientRect();
+      setPosition({
+        top: rect.bottom + 8,
+        left: rect.left + rect.width / 2
+      });
+    }
+
     const handleClickOutside = (e: MouseEvent) => {
       const target = e.target as HTMLElement;
       // Check if click is on the picker itself
@@ -522,7 +547,10 @@ const CategoryPicker = ({ value, onChange, onClose, taskId }: any) => {
 
   return (
     <div data-category-picker={taskId} style={mergeStyles(pickerStyles.container, {
-      width: '280px'
+      width: '280px',
+      top: position.top,
+      left: position.left,
+      transform: 'translateX(-50%)'
     })}>
       <div style={pickerStyles.header}>
         <h4 style={pickerStyles.title}>
@@ -890,7 +918,10 @@ const PriorityPicker = ({ value, onChange, onClose, taskId }: any) => {
 
   return (
     <div data-priority-picker={taskId} style={mergeStyles(pickerStyles.container, {
-      width: '260px'
+      width: '260px',
+      top: position.top,
+      left: position.left,
+      transform: 'translateX(-50%)'
     })}>
       <div style={pickerStyles.header}>
         <h4 style={pickerStyles.title}>
@@ -994,7 +1025,10 @@ const AssigneePicker = ({ value, onChange, onClose, taskId }: any) => {
 
   return (
     <div data-assignee-picker={taskId} style={mergeStyles(pickerStyles.container, {
-      minWidth: '240px'
+      minWidth: '240px',
+      top: position.top,
+      left: position.left,
+      transform: 'translateX(-50%)'
     })}>
       <div style={pickerStyles.header}>
         <input
@@ -1910,6 +1944,7 @@ const ExactTasksTable: React.FC = () => {
         </td>
         <td style={{ padding: '4px 6px', position: 'relative' }}>
           <div 
+            data-priority-trigger={task.id}
             onClick={(e) => {
               e.stopPropagation();
               handleOpenPicker('priority', task.id);
