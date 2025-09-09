@@ -1,4 +1,23 @@
 import React, { useState, useEffect } from 'react';
+import { 
+  getTemplatesByType,
+  getTemplatesByCategory,
+  getTemplateById,
+  searchTemplates,
+  getTemplateCategories,
+  getTemplateTypes,
+  createChecklistFromTemplate,
+  calculateChecklistProgress,
+  validateChecklistCompletion,
+  exportChecklistToExcel,
+  allChecklistTemplates,
+  ChecklistTemplate,
+  ChecklistItemDetail,
+  ChecklistAttachment,
+  ChecklistComment
+} from './comprehensive-checklist-templates';
+import { TemplateManagementModal } from './template-management-modal';
+import { ChecklistItemDetailModal } from './checklist-item-detail-modal';
 import {
   X,
   Calendar,
@@ -82,7 +101,11 @@ import {
   Triangle,
   Hexagon,
   Octagon,
-  Pentagon
+  Pentagon,
+  Shield,
+  Edit,
+  ClipboardList,
+  Edit2
 } from 'lucide-react';
 
 interface TaskModalProps {
@@ -169,15 +192,25 @@ const ComprehensiveTaskModal: React.FC<TaskModalProps> = ({ isOpen, onClose, tas
   const [showDependencySearch, setShowDependencySearch] = useState(false);
   const [dependencySearch, setDependencySearch] = useState('');
   const [attachmentDragActive, setAttachmentDragActive] = useState(false);
+  const [showTemplateManagement, setShowTemplateManagement] = useState(false);
+  const [selectedTemplates, setSelectedTemplates] = useState<ChecklistTemplate[]>([]);
+  const [expandedChecklistItems, setExpandedChecklistItems] = useState<Set<string>>(new Set());
+  const [editingChecklistItem, setEditingChecklistItem] = useState<ChecklistItemDetail | null>(null);
+  const [showItemDetailModal, setShowItemDetailModal] = useState(false);
 
   // Initialize task data
   useEffect(() => {
     if (task) {
-      setTaskData({ ...taskData, ...task });
+      // Ensure checklist is an array
+      const taskWithChecklist = {
+        ...task,
+        checklist: Array.isArray(task.checklist) ? task.checklist : []
+      };
+      setTaskData({ ...taskData, ...taskWithChecklist });
     } else {
       // Generate new task code
       const newTaskCode = `TSK-${Date.now().toString().slice(-6)}`;
-      setTaskData({ ...taskData, taskCode: newTaskCode });
+      setTaskData({ ...taskData, taskCode: newTaskCode, checklist: [] });
     }
   }, [task]);
 
@@ -285,11 +318,16 @@ const ComprehensiveTaskModal: React.FC<TaskModalProps> = ({ isOpen, onClose, tas
   };
 
   // Toggle checklist item
-  const toggleChecklistItem = (id: number) => {
+  const toggleChecklistItem = (id: number | string) => {
     setTaskData({
       ...taskData,
-      checklist: taskData.checklist.map(item =>
-        item.id === id ? { ...item, completed: !item.completed } : item
+      checklist: taskData.checklist.map((item: any) =>
+        item.id === id ? { 
+          ...item, 
+          completed: !item.completed,
+          completedDate: !item.completed ? new Date().toISOString() : null,
+          completedBy: !item.completed ? 'Current User' : null
+        } : item
       )
     });
   };
@@ -327,9 +365,8 @@ const ComprehensiveTaskModal: React.FC<TaskModalProps> = ({ isOpen, onClose, tas
 
   // Calculate metrics
   const calculateMetrics = () => {
-    const completedChecklist = taskData.checklist.filter(item => item.completed).length;
-    const totalChecklist = taskData.checklist.length;
-    const checklistProgress = totalChecklist > 0 ? (completedChecklist / totalChecklist) * 100 : 0;
+    const checklist = Array.isArray(taskData.checklist) ? taskData.checklist : [];
+    const checklistStats = calculateChecklistProgress(checklist as ChecklistItemDetail[]);
     
     const costVariance = taskData.estimatedCost > 0 
       ? ((taskData.actualCost - taskData.estimatedCost) / taskData.estimatedCost) * 100 
@@ -339,7 +376,14 @@ const ComprehensiveTaskModal: React.FC<TaskModalProps> = ({ isOpen, onClose, tas
       ? ((taskData.actualHours - taskData.estimatedHours) / taskData.estimatedHours) * 100
       : 0;
     
-    return { checklistProgress, costVariance, timeVariance };
+    return { 
+      checklistProgress: checklistStats.completionPercentage,
+      mandatoryProgress: checklistStats.mandatoryCompletion,
+      criticalProgress: checklistStats.criticalCompletion,
+      checklistStats,
+      costVariance, 
+      timeVariance 
+    };
   };
 
   const metrics = calculateMetrics();
@@ -1224,106 +1268,475 @@ const ComprehensiveTaskModal: React.FC<TaskModalProps> = ({ isOpen, onClose, tas
 
           {activeTab === 'checklist' && (
             <div>
-              <h3 style={{ fontSize: '16px', fontWeight: '600', marginBottom: '16px', color: '#111827' }}>
-                Checklist ({taskData.checklist.filter((item: any) => item.completed).length}/{taskData.checklist.length})
-              </h3>
-              
-              <div style={{
-                height: '8px',
-                backgroundColor: '#e5e7eb',
-                borderRadius: '4px',
-                marginBottom: '20px',
-                overflow: 'hidden'
-              }}>
-                <div style={{
-                  height: '100%',
-                  width: `${metrics.checklistProgress}%`,
-                  backgroundColor: '#10b981',
-                  transition: 'width 0.3s ease'
-                }} />
-              </div>
-
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginBottom: '16px' }}>
-                {taskData.checklist.map((item: any) => (
-                  <div
-                    key={item.id}
-                    style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '12px',
-                      padding: '12px',
-                      backgroundColor: item.completed ? '#f0fdf4' : 'white',
-                      border: '1px solid #e5e7eb',
-                      borderRadius: '6px'
-                    }}
-                  >
-                    <input
-                      type="checkbox"
-                      checked={item.completed}
-                      onChange={() => toggleChecklistItem(item.id)}
-                      style={{ width: '16px', height: '16px', cursor: 'pointer' }}
-                    />
-                    <span style={{
-                      flex: 1,
-                      fontSize: '14px',
-                      color: item.completed ? '#6b7280' : '#374151',
-                      textDecoration: item.completed ? 'line-through' : 'none'
-                    }}>
-                      {item.text}
-                    </span>
+              {/* Header with Template Selector */}
+              <div style={{ marginBottom: '20px' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+                  <h3 style={{ fontSize: '16px', fontWeight: '600', color: '#111827' }}>
+                    Checklist Management
+                  </h3>
+                  <div style={{ display: 'flex', gap: '8px' }}>
                     <button
-                      onClick={() => setTaskData({
-                        ...taskData,
-                        checklist: taskData.checklist.filter((i: any) => i.id !== item.id)
-                      })}
+                      onClick={() => setShowTemplateManagement(true)}
                       style={{
-                        padding: '4px',
-                        backgroundColor: 'transparent',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '6px',
+                        padding: '8px 12px',
+                        backgroundColor: '#7c3aed',
+                        color: 'white',
                         border: 'none',
+                        borderRadius: '6px',
+                        fontSize: '13px',
+                        fontWeight: '500',
                         cursor: 'pointer'
                       }}
                     >
-                      <Trash2 style={{ width: '16px', height: '16px', color: '#ef4444' }} />
+                      <ClipboardList style={{ width: '16px', height: '16px' }} />
+                      Manage Templates
                     </button>
+                    <button
+                      onClick={() => {
+                        const data = exportChecklistToExcel(taskData.checklist || [], taskData.title);
+                        console.log('Export data:', data);
+                        // Implement actual export functionality
+                      }}
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '6px',
+                        padding: '8px 12px',
+                        backgroundColor: '#10b981',
+                        color: 'white',
+                        border: 'none',
+                        borderRadius: '6px',
+                        fontSize: '13px',
+                        fontWeight: '500',
+                        cursor: 'pointer'
+                      }}
+                    >
+                      <Download style={{ width: '16px', height: '16px' }} />
+                      Export
+                    </button>
+                  </div>
+                </div>
+
+                {/* Selected Templates Display */}
+                {selectedTemplates.length > 0 && (
+                  <div style={{
+                    padding: '12px',
+                    backgroundColor: '#ede9fe',
+                    borderRadius: '8px',
+                    marginBottom: '16px'
+                  }}>
+                    <div style={{ fontSize: '13px', fontWeight: '600', color: '#7c3aed', marginBottom: '8px' }}>
+                      Selected Templates ({selectedTemplates.length})
+                    </div>
+                    <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                      {selectedTemplates.map(template => (
+                        <span
+                          key={template.id}
+                          style={{
+                            padding: '4px 10px',
+                            backgroundColor: 'white',
+                            color: '#7c3aed',
+                            border: '1px solid #c084fc',
+                            borderRadius: '6px',
+                            fontSize: '12px',
+                            fontWeight: '500'
+                          }}
+                        >
+                          {template.name} ({template.items.length} items)
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* Progress Bars */}
+              <div style={{ marginBottom: '20px' }}>
+                <div style={{ marginBottom: '12px' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '4px' }}>
+                    <span style={{ fontSize: '13px', color: '#374151' }}>Overall Progress</span>
+                    <span style={{ fontSize: '13px', fontWeight: '600', color: '#374151' }}>
+                      {metrics.checklistProgress.toFixed(0)}%
+                    </span>
+                  </div>
+                  <div style={{
+                    height: '8px',
+                    backgroundColor: '#e5e7eb',
+                    borderRadius: '4px',
+                    overflow: 'hidden'
+                  }}>
+                    <div style={{
+                      height: '100%',
+                      width: `${metrics.checklistProgress}%`,
+                      backgroundColor: '#10b981',
+                      transition: 'width 0.3s ease'
+                    }} />
+                  </div>
+                </div>
+
+                {/* Mandatory Items Progress */}
+                <div style={{ marginBottom: '12px' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '4px' }}>
+                    <span style={{ fontSize: '12px', color: '#6b7280' }}>Mandatory Items</span>
+                    <span style={{ fontSize: '12px', color: '#6b7280' }}>
+                      {taskData.checklist.filter((i: any) => i.mandatory && i.completed).length}/
+                      {taskData.checklist.filter((i: any) => i.mandatory).length}
+                    </span>
+                  </div>
+                  <div style={{
+                    height: '4px',
+                    backgroundColor: '#e5e7eb',
+                    borderRadius: '2px',
+                    overflow: 'hidden'
+                  }}>
+                    <div style={{
+                      height: '100%',
+                      width: `${taskData.checklist.filter((i: any) => i.mandatory).length > 0 
+                        ? (taskData.checklist.filter((i: any) => i.mandatory && i.completed).length / 
+                           taskData.checklist.filter((i: any) => i.mandatory).length) * 100 
+                        : 0}%`,
+                      backgroundColor: '#ef4444',
+                      transition: 'width 0.3s ease'
+                    }} />
+                  </div>
+                </div>
+
+                {/* Critical Items Progress */}
+                <div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '4px' }}>
+                    <span style={{ fontSize: '12px', color: '#6b7280' }}>Critical Items</span>
+                    <span style={{ fontSize: '12px', color: '#6b7280' }}>
+                      {taskData.checklist.filter((i: any) => i.priority === 'critical' && i.completed).length}/
+                      {taskData.checklist.filter((i: any) => i.priority === 'critical').length}
+                    </span>
+                  </div>
+                  <div style={{
+                    height: '4px',
+                    backgroundColor: '#e5e7eb',
+                    borderRadius: '2px',
+                    overflow: 'hidden'
+                  }}>
+                    <div style={{
+                      height: '100%',
+                      width: `${taskData.checklist.filter((i: any) => i.priority === 'critical').length > 0 
+                        ? (taskData.checklist.filter((i: any) => i.priority === 'critical' && i.completed).length / 
+                           taskData.checklist.filter((i: any) => i.priority === 'critical').length) * 100 
+                        : 0}%`,
+                      backgroundColor: '#f59e0b',
+                      transition: 'width 0.3s ease'
+                    }} />
+                  </div>
+                </div>
+              </div>
+
+              {/* Filter Tabs */}
+              <div style={{ 
+                display: 'flex', 
+                gap: '8px', 
+                marginBottom: '16px',
+                borderBottom: '1px solid #e5e7eb',
+                paddingBottom: '8px'
+              }}>
+                {['All', 'Mandatory', 'Critical', 'Pending', 'Completed'].map(filter => (
+                  <button
+                    key={filter}
+                    style={{
+                      padding: '6px 12px',
+                      backgroundColor: 'transparent',
+                      border: '1px solid #e5e7eb',
+                      borderRadius: '6px',
+                      fontSize: '12px',
+                      color: '#6b7280',
+                      cursor: 'pointer'
+                    }}
+                  >
+                    {filter}
+                  </button>
+                ))}
+              </div>
+
+              {/* Grouped Checklist Items */}
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', marginBottom: '16px', maxHeight: '400px', overflowY: 'auto' }}>
+                {/* Group items by category */}
+                {Object.entries(
+                  taskData.checklist.reduce((groups: any, item: any) => {
+                    const category = item.category || 'General';
+                    if (!groups[category]) groups[category] = [];
+                    groups[category].push(item);
+                    return groups;
+                  }, {})
+                ).map(([category, items]: [string, any]) => (
+                  <div key={category}>
+                    <h4 style={{ 
+                      fontSize: '13px', 
+                      fontWeight: '600', 
+                      color: '#6b7280', 
+                      marginBottom: '8px',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '8px'
+                    }}>
+                      <Layers style={{ width: '14px', height: '14px' }} />
+                      {category}
+                      <span style={{ fontSize: '11px', fontWeight: '400' }}>
+                        ({items.filter((i: any) => i.completed).length}/{items.length})
+                      </span>
+                    </h4>
+                    
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', paddingLeft: '22px' }}>
+                      {items.map((item: ChecklistItemDetail) => {
+                        const isExpanded = expandedChecklistItems.has(item.id);
+                        return (
+                          <div
+                            key={item.id}
+                          style={{
+                            display: 'flex',
+                            flexDirection: 'column',
+                            padding: '12px',
+                            backgroundColor: item.status === 'completed' ? '#f0fdf4' : 
+                                           item.status === 'verified' ? '#eff6ff' :
+                                           item.status === 'failed' ? '#fef2f2' : 'white',
+                            border: `1px solid ${item.critical ? '#dc2626' : 
+                                                item.mandatory ? '#f59e0b' : '#e5e7eb'}`,
+                            borderRadius: '8px',
+                            position: 'relative'
+                          }}
+                        >
+                          {/* Priority Indicator */}
+                          {item.priority === 'critical' && (
+                            <div style={{
+                              position: 'absolute',
+                              left: '-2px',
+                              top: '50%',
+                              transform: 'translateY(-50%)',
+                              width: '4px',
+                              height: '70%',
+                              backgroundColor: '#ef4444',
+                              borderRadius: '2px'
+                            }} />
+                          )}
+                          
+                          <input
+                            type="checkbox"
+                            checked={item.completed}
+                            onChange={() => toggleChecklistItem(item.id)}
+                            style={{ width: '16px', height: '16px', cursor: 'pointer', marginTop: '2px' }}
+                          />
+                          
+                          <div style={{ flex: 1 }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
+                              <span style={{
+                                fontSize: '13px',
+                                fontWeight: item.mandatory ? '600' : '400',
+                                color: item.completed ? '#6b7280' : '#111827',
+                                textDecoration: item.completed ? 'line-through' : 'none'
+                              }}>
+                                {item.text}
+                              </span>
+                              {item.mandatory && (
+                                <span style={{
+                                  fontSize: '10px',
+                                  padding: '2px 6px',
+                                  backgroundColor: '#fee2e2',
+                                  color: '#dc2626',
+                                  borderRadius: '4px',
+                                  fontWeight: '600'
+                                }}>
+                                  MANDATORY
+                                </span>
+                              )}
+                              {item.verificationRequired && (
+                                <Shield style={{ width: '14px', height: '14px', color: '#f59e0b' }} />
+                              )}
+                            </div>
+                            
+                            {item.description && (
+                              <p style={{ fontSize: '11px', color: '#6b7280', marginBottom: '4px' }}>
+                                {item.description}
+                              </p>
+                            )}
+                            
+                            <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
+                              {item.estimatedTime && (
+                                <span style={{ fontSize: '11px', color: '#9ca3af', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                                  <Clock style={{ width: '12px', height: '12px' }} />
+                                  {item.estimatedTime} min
+                                </span>
+                              )}
+                              {item.assignee && (
+                                <span style={{ fontSize: '11px', color: '#9ca3af', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                                  <Users style={{ width: '12px', height: '12px' }} />
+                                  {item.assignee}
+                                </span>
+                              )}
+                              {item.dueDate && (
+                                <span style={{ fontSize: '11px', color: '#9ca3af', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                                  <Calendar style={{ width: '12px', height: '12px' }} />
+                                  {new Date(item.dueDate).toLocaleDateString()}
+                                </span>
+                              )}
+                              {item.tags && item.tags.length > 0 && (
+                                <div style={{ display: 'flex', gap: '4px' }}>
+                                  {item.tags.map((tag: string, idx: number) => (
+                                    <span key={idx} style={{
+                                      fontSize: '10px',
+                                      padding: '1px 4px',
+                                      backgroundColor: '#e0e7ff',
+                                      color: '#4338ca',
+                                      borderRadius: '3px'
+                                    }}>
+                                      {tag}
+                                    </span>
+                                  ))}
+                                </div>
+                              )}
+                            </div>
+                            
+                            {item.completed && item.completedBy && (
+                              <div style={{ 
+                                marginTop: '4px', 
+                                fontSize: '10px', 
+                                color: '#10b981',
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '4px'
+                              }}>
+                                <CheckCircle style={{ width: '12px', height: '12px' }} />
+                                Completed by {item.completedBy} on {new Date(item.completedDate).toLocaleDateString()}
+                              </div>
+                            )}
+                          </div>
+                          
+                          <div style={{ display: 'flex', gap: '4px' }}>
+                            <button
+                              onClick={() => {
+                                setEditingChecklistItem(item);
+                                setShowItemDetailModal(true);
+                              }}
+                              style={{
+                                padding: '4px',
+                                backgroundColor: 'transparent',
+                                border: 'none',
+                                cursor: 'pointer'
+                              }}
+                            >
+                              <Edit style={{ width: '14px', height: '14px', color: '#6b7280' }} />
+                            </button>
+                            <button
+                              onClick={() => setTaskData({
+                                ...taskData,
+                                checklist: taskData.checklist.filter((i: any) => i.id !== item.id)
+                              })}
+                              style={{
+                                padding: '4px',
+                                backgroundColor: 'transparent',
+                                border: 'none',
+                                cursor: 'pointer'
+                              }}
+                            >
+                              <Trash2 style={{ width: '14px', height: '14px', color: '#ef4444' }} />
+                            </button>
+                          </div>
+                        </div>
+                        );
+                      })}
+                    </div>
                   </div>
                 ))}
               </div>
 
-              <div style={{ display: 'flex', gap: '8px' }}>
-                <input
-                  type="text"
-                  value={newChecklistItem}
-                  onChange={(e) => setNewChecklistItem(e.target.value)}
-                  placeholder="Add new checklist item..."
-                  onKeyPress={(e) => e.key === 'Enter' && addChecklistItem()}
-                  style={{
-                    flex: 1,
-                    padding: '8px 12px',
+              {/* Add Custom Item */}
+              <div style={{ 
+                padding: '12px',
+                backgroundColor: '#f9fafb',
+                borderRadius: '8px',
+                border: '1px solid #e5e7eb'
+              }}>
+                <h4 style={{ fontSize: '13px', fontWeight: '600', marginBottom: '8px', color: '#374151' }}>
+                  Add Custom Checklist Item
+                </h4>
+                <div style={{ display: 'flex', gap: '8px', marginBottom: '8px' }}>
+                  <input
+                    type="text"
+                    value={newChecklistItem}
+                    onChange={(e) => setNewChecklistItem(e.target.value)}
+                    placeholder="Enter checklist item..."
+                    style={{
+                      flex: 1,
+                      padding: '6px 10px',
+                      border: '1px solid #d1d5db',
+                      borderRadius: '4px',
+                      fontSize: '13px'
+                    }}
+                  />
+                  <select style={{
+                    padding: '6px 10px',
                     border: '1px solid #d1d5db',
-                    borderRadius: '6px',
-                    fontSize: '14px'
-                  }}
-                />
-                <button
-                  onClick={addChecklistItem}
-                  style={{
-                    padding: '8px 16px',
-                    backgroundColor: '#7c3aed',
-                    color: 'white',
-                    border: 'none',
-                    borderRadius: '6px',
-                    fontSize: '14px',
-                    fontWeight: '500',
-                    cursor: 'pointer',
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '6px'
-                  }}
-                >
-                  <Plus style={{ width: '16px', height: '16px' }} />
-                  Add Item
-                </button>
+                    borderRadius: '4px',
+                    fontSize: '13px',
+                    backgroundColor: 'white'
+                  }}>
+                    <option value="low">Low Priority</option>
+                    <option value="medium">Medium Priority</option>
+                    <option value="high">High Priority</option>
+                    <option value="critical">Critical</option>
+                  </select>
+                  <label style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '13px' }}>
+                    <input type="checkbox" />
+                    Mandatory
+                  </label>
+                  <button
+                    onClick={addChecklistItem}
+                    style={{
+                      padding: '6px 12px',
+                      backgroundColor: '#7c3aed',
+                      color: 'white',
+                      border: 'none',
+                      borderRadius: '4px',
+                      fontSize: '13px',
+                      fontWeight: '500',
+                      cursor: 'pointer',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '4px'
+                    }}
+                  >
+                    <Plus style={{ width: '14px', height: '14px' }} />
+                    Add
+                  </button>
+                </div>
               </div>
+
+              {/* Validation Summary */}
+              {taskData.checklist.length > 0 && (
+                <div style={{
+                  marginTop: '16px',
+                  padding: '12px',
+                  backgroundColor: taskData.checklist.filter((i: any) => i.mandatory && !i.completed).length > 0 
+                    ? '#fee2e2' 
+                    : '#f0fdf4',
+                  borderRadius: '6px',
+                  border: `1px solid ${taskData.checklist.filter((i: any) => i.mandatory && !i.completed).length > 0 
+                    ? '#fecaca' 
+                    : '#bbf7d0'}`
+                }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    {taskData.checklist.filter((i: any) => i.mandatory && !i.completed).length > 0 ? (
+                      <AlertTriangle style={{ width: '16px', height: '16px', color: '#ef4444' }} />
+                    ) : (
+                      <CheckCircle style={{ width: '16px', height: '16px', color: '#10b981' }} />
+                    )}
+                    <span style={{ fontSize: '13px', fontWeight: '500', color: '#374151' }}>
+                      {taskData.checklist.filter((i: any) => i.mandatory && !i.completed).length > 0 
+                        ? `${taskData.checklist.filter((i: any) => i.mandatory && !i.completed).length} mandatory items pending completion`
+                        : 'All mandatory items completed'}
+                    </span>
+                  </div>
+                </div>
+              )}
             </div>
           )}
 
@@ -1707,6 +2120,44 @@ const ComprehensiveTaskModal: React.FC<TaskModalProps> = ({ isOpen, onClose, tas
           </div>
         </div>
       </div>
+
+      {/* Template Management Modal */}
+      <TemplateManagementModal
+        isOpen={showTemplateManagement}
+        onClose={() => setShowTemplateManagement(false)}
+        onSelectTemplate={(template) => {
+          const newItems = createChecklistFromTemplate(template.id);
+          setTaskData({
+            ...taskData,
+            checklist: [...(taskData.checklist || []), ...newItems]
+          });
+          setSelectedTemplates([...selectedTemplates, template]);
+        }}
+        onCreateTemplate={(template) => {
+          // Handle template creation - could save to a database or local storage
+          console.log('New template created:', template);
+        }}
+        selectedTemplates={selectedTemplates}
+      />
+
+      {/* Checklist Item Detail Modal */}
+      {editingChecklistItem && (
+        <ChecklistItemDetailModal
+          isOpen={showItemDetailModal}
+          onClose={() => {
+            setShowItemDetailModal(false);
+            setEditingChecklistItem(null);
+          }}
+          item={editingChecklistItem}
+          onUpdate={(updatedItem) => {
+            const updatedChecklist = taskData.checklist.map((item: ChecklistItemDetail) =>
+              item.id === updatedItem.id ? updatedItem : item
+            );
+            setTaskData({ ...taskData, checklist: updatedChecklist });
+            setEditingChecklistItem(updatedItem);
+          }}
+        />
+      )}
     </div>
   );
 };
