@@ -32,6 +32,7 @@ import {
 } from 'lucide-react';
 import ComprehensiveTaskModal from './comprehensive-task-modal';
 import { ConfirmationDialog, useNotification } from './confirmation-dialog';
+import { pickerStyles, mergeStyles, usePickerBehavior } from './unified-picker-styles';
 
 // Status picker component
 const StatusPicker = ({ value, onChange, onClose, taskId }: any) => {
@@ -53,13 +54,23 @@ const StatusPicker = ({ value, onChange, onClose, taskId }: any) => {
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
       const target = e.target as HTMLElement;
-      if (!target.closest(`[data-status-picker="${taskId}"]`)) {
-        onClose();
+      // Check if click is on the picker itself
+      if (target.closest(`[data-status-picker="${taskId}"]`)) {
+        return;
       }
+      // Close the picker for any outside click
+      onClose();
     };
 
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
+    // Use setTimeout to avoid immediate close on open
+    const timer = setTimeout(() => {
+      document.addEventListener('mousedown', handleClickOutside);
+    }, 0);
+
+    return () => {
+      clearTimeout(timer);
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
   }, [taskId, onClose]);
 
   if (showEdit) {
@@ -182,19 +193,9 @@ const StatusPicker = ({ value, onChange, onClose, taskId }: any) => {
   }
 
   return (
-    <div data-status-picker={taskId} style={{
-      position: 'absolute',
-      top: 'calc(100% + 8px)',
-      left: '50%',
-      transform: 'translateX(-50%)',
-      backgroundColor: 'white',
-      border: '1px solid #e5e7eb',
-      borderRadius: '12px',
-      padding: '8px',
-      minWidth: '240px',
-      boxShadow: '0 10px 25px rgba(0,0,0,0.12), 0 4px 10px rgba(0,0,0,0.06)',
-      zIndex: 1500
-    }}>
+    <div data-status-picker={taskId} style={mergeStyles(pickerStyles.container, {
+      minWidth: '240px'
+    })}>
       {customStatuses.map(status => (
         <div
           key={`${taskId}-status-${status.id}`}
@@ -202,26 +203,30 @@ const StatusPicker = ({ value, onChange, onClose, taskId }: any) => {
             onChange(status);
             onClose();
           }}
-          style={{
-            padding: '8px 12px',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '10px',
-            cursor: 'pointer',
-            borderRadius: '6px',
-            transition: 'background-color 0.15s'
+          style={mergeStyles(
+            pickerStyles.option,
+            value?.id === status.id ? pickerStyles.optionSelected : {}
+          )}
+          onMouseEnter={(e) => {
+            Object.assign(e.currentTarget.style, 
+              value?.id === status.id ? pickerStyles.optionSelected : pickerStyles.optionHover
+            );
           }}
-          onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#f3f4f6'}
-          onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
+          onMouseLeave={(e) => {
+            Object.assign(e.currentTarget.style, 
+              value?.id === status.id ? pickerStyles.optionSelected : pickerStyles.option
+            );
+          }}
         >
-          <div style={{
-            width: '10px',
-            height: '10px',
-            borderRadius: '50%',
-            backgroundColor: status.color,
-            flexShrink: 0
-          }} />
-          <span style={{ fontSize: '13px', color: '#374151', fontWeight: '600' }}>{status.label}</span>
+          <div style={mergeStyles(pickerStyles.colorDot, {
+            backgroundColor: status.color
+          })} />
+          <span style={mergeStyles(pickerStyles.optionLabel, {
+            fontWeight: '600'
+          })}>{status.label}</span>
+          {value?.id === status.id && (
+            <Check style={pickerStyles.checkmark} />
+          )}
         </div>
       ))}
       <div style={{ borderTop: '1px solid #e5e7eb', marginTop: '6px', paddingTop: '6px' }}>
@@ -271,13 +276,23 @@ const CategoryPicker = ({ value, onChange, onClose, taskId }: any) => {
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
       const target = e.target as HTMLElement;
-      if (!target.closest(`[data-category-picker="${taskId}"]`)) {
-        onClose();
+      // Check if click is on the picker itself
+      if (target.closest(`[data-category-picker="${taskId}"]`)) {
+        return;
       }
+      // Close the picker for any outside click
+      onClose();
     };
 
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
+    // Use setTimeout to avoid immediate close on open
+    const timer = setTimeout(() => {
+      document.addEventListener('mousedown', handleClickOutside);
+    }, 0);
+
+    return () => {
+      clearTimeout(timer);
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
   }, [taskId, onClose]);
 
   const handleAddCategory = () => {
@@ -506,19 +521,9 @@ const CategoryPicker = ({ value, onChange, onClose, taskId }: any) => {
   }
 
   return (
-    <div data-category-picker={taskId} style={{
-      position: 'absolute',
-      top: 'calc(100% + 8px)',
-      left: '50%',
-      transform: 'translateX(-50%)',
-      backgroundColor: 'white',
-      border: '1px solid #e5e7eb',
-      borderRadius: '12px',
-      padding: '12px',
-      width: '280px',
-      boxShadow: '0 10px 25px rgba(0,0,0,0.1)',
-      zIndex: 1500
-    }}>
+    <div data-category-picker={taskId} style={mergeStyles(pickerStyles.container, {
+      width: '280px'
+    })}>
       <div style={{ marginBottom: '10px' }}>
         <h4 style={{ fontSize: '11px', color: '#9ca3af', textTransform: 'uppercase', marginBottom: '6px', fontWeight: '600', letterSpacing: '0.5px' }}>
           SELECT AN OPTION
@@ -617,13 +622,23 @@ const PriorityPicker = ({ value, onChange, onClose, taskId }: any) => {
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
       const target = e.target as HTMLElement;
-      if (!target.closest(`[data-priority-picker="${taskId}"]`)) {
-        onClose();
+      // Check if click is on the picker itself
+      if (target.closest(`[data-priority-picker="${taskId}"]`)) {
+        return;
       }
+      // Close the picker for any outside click
+      onClose();
     };
 
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
+    // Use setTimeout to avoid immediate close on open
+    const timer = setTimeout(() => {
+      document.addEventListener('mousedown', handleClickOutside);
+    }, 0);
+
+    return () => {
+      clearTimeout(timer);
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
   }, [taskId, onClose]);
 
   const handleAddPriority = () => {
@@ -889,19 +904,9 @@ const PriorityPicker = ({ value, onChange, onClose, taskId }: any) => {
   }
 
   return (
-    <div data-priority-picker={taskId} style={{
-      position: 'absolute',
-      top: 'calc(100% + 8px)',
-      left: '50%',
-      transform: 'translateX(-50%)',
-      backgroundColor: 'white',
-      border: '1px solid #e5e7eb',
-      borderRadius: '12px',
-      padding: '12px',
-      width: '260px',
-      boxShadow: '0 10px 25px rgba(0,0,0,0.1)',
-      zIndex: 1500
-    }}>
+    <div data-priority-picker={taskId} style={mergeStyles(pickerStyles.container, {
+      width: '260px'
+    })}>
       <div style={{ marginBottom: '10px' }}>
         <h4 style={{ fontSize: '11px', color: '#9ca3af', textTransform: 'uppercase', marginBottom: '6px', fontWeight: '600', letterSpacing: '0.5px' }}>
           SELECT PRIORITY
@@ -1006,29 +1011,29 @@ const AssigneePicker = ({ value, onChange, onClose, taskId }: any) => {
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
       const target = e.target as HTMLElement;
-      if (!target.closest(`[data-assignee-picker="${taskId}"]`)) {
-        onClose();
+      // Check if click is on the picker itself
+      if (target.closest(`[data-assignee-picker="${taskId}"]`)) {
+        return;
       }
+      // Close the picker for any outside click
+      onClose();
     };
 
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
+    // Use setTimeout to avoid immediate close on open
+    const timer = setTimeout(() => {
+      document.addEventListener('mousedown', handleClickOutside);
+    }, 0);
+
+    return () => {
+      clearTimeout(timer);
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
   }, [taskId, onClose]);
 
   return (
-    <div data-assignee-picker={taskId} style={{
-      position: 'absolute',
-      top: 'calc(100% + 4px)',
-      left: '50%',
-      transform: 'translateX(-50%)',
-      backgroundColor: 'white',
-      border: '1px solid #e5e7eb',
-      borderRadius: '8px',
-      padding: '8px',
-      minWidth: '240px',
-      boxShadow: '0 10px 20px rgba(0,0,0,0.1)',
-      zIndex: 1500
-    }}>
+    <div data-assignee-picker={taskId} style={mergeStyles(pickerStyles.container, {
+      minWidth: '240px'
+    })}>
       <div style={{ marginBottom: '8px', padding: '0 8px' }}>
         <input
           type="text"
@@ -1826,6 +1831,7 @@ const ExactTasksTable: React.FC = () => {
           {task.status && (
             <>
               <span 
+                data-status-trigger={task.id}
                 onClick={(e) => {
                   e.stopPropagation();
                   handleOpenPicker('status', task.id);
@@ -1860,6 +1866,7 @@ const ExactTasksTable: React.FC = () => {
         </td>
         <td style={{ padding: '4px 6px', position: 'relative' }}>
           <span 
+            data-category-trigger={task.id}
             onClick={(e) => {
               e.stopPropagation();
               handleOpenPicker('category', task.id);
@@ -2142,12 +2149,29 @@ const ExactTasksTable: React.FC = () => {
             <React.Fragment key={groupKey}>
               <tr>
                 <td colSpan={9} style={{ padding: '4px 6px', backgroundColor: 'transparent' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '4px', cursor: 'pointer' }}
-                       onClick={() => toggleGroup(groupKey)}>
-                    {expandedGroups.includes(groupKey) ? 
-                      <ChevronDown style={{ width: '16px', height: '16px', color: '#6b7280' }} /> : 
-                      <ChevronRight style={{ width: '16px', height: '16px', color: '#6b7280' }} />
-                    }
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                    <button
+                      onClick={() => toggleGroup(groupKey)}
+                      style={{
+                        background: 'none',
+                        border: 'none',
+                        padding: '4px',
+                        cursor: 'pointer',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        borderRadius: '4px',
+                        transition: 'background-color 0.2s'
+                      }}
+                      onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#f3f4f6'}
+                      onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
+                      title={expandedGroups.includes(groupKey) ? 'Collapse group' : 'Expand group'}
+                    >
+                      {expandedGroups.includes(groupKey) ? 
+                        <ChevronDown style={{ width: '16px', height: '16px', color: '#6b7280' }} /> : 
+                        <ChevronRight style={{ width: '16px', height: '16px', color: '#6b7280' }} />
+                      }
+                    </button>
                     <span style={{ 
                       fontSize: '12px', 
                       fontWeight: '600',
