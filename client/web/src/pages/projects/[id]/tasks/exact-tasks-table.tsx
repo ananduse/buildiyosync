@@ -524,26 +524,19 @@ const CategoryPicker = ({ value, onChange, onClose, taskId }: any) => {
     <div data-category-picker={taskId} style={mergeStyles(pickerStyles.container, {
       width: '280px'
     })}>
-      <div style={{ marginBottom: '10px' }}>
-        <h4 style={{ fontSize: '11px', color: '#9ca3af', textTransform: 'uppercase', marginBottom: '6px', fontWeight: '600', letterSpacing: '0.5px' }}>
+      <div style={pickerStyles.header}>
+        <h4 style={pickerStyles.title}>
           SELECT AN OPTION
         </h4>
         <input
           type="text"
           placeholder="Type to search or add..."
-          style={{
-            width: '100%',
-            padding: '6px 10px',
-            border: '1px solid #e5e7eb',
-            borderRadius: '6px',
-            fontSize: '13px',
-            outline: 'none'
-          }}
+          style={pickerStyles.searchInput}
           onFocus={(e) => e.currentTarget.style.borderColor = '#9ca3af'}
           onBlur={(e) => e.currentTarget.style.borderColor = '#e5e7eb'}
         />
       </div>
-      <div style={{ maxHeight: '240px', overflowY: 'auto', paddingRight: '4px' }}>
+      <div style={pickerStyles.content}>
         {categories.map(cat => (
           <div
             key={`${taskId}-cat-${cat.id}`}
@@ -551,52 +544,44 @@ const CategoryPicker = ({ value, onChange, onClose, taskId }: any) => {
               onChange(cat);
               onClose();
             }}
-            style={{
-              padding: '10px',
-              backgroundColor: cat.color,
-              color: 'white',
-              borderRadius: '8px',
-              marginBottom: '4px',
-              cursor: 'pointer',
-              fontSize: '14px',
-              fontWeight: '700',
-              textAlign: 'center',
-              transition: 'all 0.15s ease'
-            }}
+            style={mergeStyles(
+              pickerStyles.option,
+              value?.id === cat.id ? pickerStyles.optionSelected : {}
+            )}
             onMouseEnter={(e) => {
-              e.currentTarget.style.transform = 'translateX(2px)';
-              e.currentTarget.style.opacity = '0.9';
+              Object.assign(e.currentTarget.style,
+                value?.id === cat.id ? pickerStyles.optionSelected : pickerStyles.optionHover
+              );
             }}
             onMouseLeave={(e) => {
-              e.currentTarget.style.transform = 'translateX(0)';
-              e.currentTarget.style.opacity = '1';
+              Object.assign(e.currentTarget.style,
+                value?.id === cat.id ? pickerStyles.optionSelected : pickerStyles.option
+              );
             }}
           >
-            {cat.label}
+            <div style={mergeStyles(pickerStyles.colorDot, {
+              backgroundColor: cat.color,
+              width: '16px',
+              height: '16px'
+            })} />
+            <span style={mergeStyles(pickerStyles.optionLabel, {
+              fontWeight: '600'
+            })}>{cat.label}</span>
+            {value?.id === cat.id && (
+              <Check style={pickerStyles.checkmark} />
+            )}
           </div>
         ))}
       </div>
-      <div style={{ 
-        borderTop: '1px solid #e5e7eb', 
-        marginTop: '8px', 
-        paddingTop: '8px' 
-      }}>
+      <div style={pickerStyles.footer}>
         <div
           onClick={() => setShowEdit(true)}
-          style={{
-            padding: '8px 12px',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '8px',
-            cursor: 'pointer',
-            borderRadius: '6px',
-            transition: 'background-color 0.15s'
-          }}
+          style={pickerStyles.footerAction}
           onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#f3f4f6'}
           onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
         >
-          <Settings style={{ width: '14px', height: '14px', color: '#6b7280' }} />
-          <span style={{ fontSize: '13px', color: '#6b7280' }}>Edit categories</span>
+          <Settings style={{ width: '14px', height: '14px' }} />
+          <span>Edit categories</span>
         </div>
       </div>
     </div>
@@ -907,26 +892,19 @@ const PriorityPicker = ({ value, onChange, onClose, taskId }: any) => {
     <div data-priority-picker={taskId} style={mergeStyles(pickerStyles.container, {
       width: '260px'
     })}>
-      <div style={{ marginBottom: '10px' }}>
-        <h4 style={{ fontSize: '11px', color: '#9ca3af', textTransform: 'uppercase', marginBottom: '6px', fontWeight: '600', letterSpacing: '0.5px' }}>
+      <div style={pickerStyles.header}>
+        <h4 style={pickerStyles.title}>
           SELECT PRIORITY
         </h4>
         <input
           type="text"
           placeholder="Search priority..."
-          style={{
-            width: '100%',
-            padding: '6px 10px',
-            border: '1px solid #e5e7eb',
-            borderRadius: '6px',
-            fontSize: '13px',
-            outline: 'none'
-          }}
+          style={pickerStyles.searchInput}
           onFocus={(e) => e.currentTarget.style.borderColor = '#9ca3af'}
           onBlur={(e) => e.currentTarget.style.borderColor = '#e5e7eb'}
         />
       </div>
-      <div style={{ maxHeight: '240px', overflowY: 'auto', paddingRight: '4px' }}>
+      <div style={pickerStyles.content}>
         {priorities.map(priority => (
           <div
             key={`${taskId}-priority-${priority.id}`}
@@ -938,59 +916,43 @@ const PriorityPicker = ({ value, onChange, onClose, taskId }: any) => {
               });
               onClose();
             }}
-            style={{
-              padding: '10px',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '10px',
-              borderRadius: '8px',
-              marginBottom: '4px',
-              cursor: 'pointer',
-              transition: 'all 0.15s ease',
-              backgroundColor: 'transparent'
-            }}
+            style={mergeStyles(
+              pickerStyles.option,
+              value?.priority === priority.label ? pickerStyles.optionSelected : {}
+            )}
             onMouseEnter={(e) => {
-              e.currentTarget.style.backgroundColor = '#f3f4f6';
+              Object.assign(e.currentTarget.style,
+                value?.priority === priority.label ? pickerStyles.optionSelected : pickerStyles.optionHover
+              );
             }}
             onMouseLeave={(e) => {
-              e.currentTarget.style.backgroundColor = 'transparent';
+              Object.assign(e.currentTarget.style,
+                value?.priority === priority.label ? pickerStyles.optionSelected : pickerStyles.option
+              );
             }}
           >
             <Flag style={{ width: '16px', height: '16px', color: priority.color }} />
-            <span style={{ flex: 1, fontSize: '14px', color: '#374151', fontWeight: '600' }}>{priority.label}</span>
-            <span style={{ 
-              fontSize: '11px', 
-              color: '#6b7280',
-              backgroundColor: '#f3f4f6',
-              padding: '2px 6px',
-              borderRadius: '4px'
-            }}>
-              {priority.level}
+            <span style={mergeStyles(pickerStyles.optionLabel, {
+              fontWeight: '600'
+            })}>{priority.label}</span>
+            <span style={pickerStyles.optionBadge}>
+              Level {priority.level}
             </span>
+            {value?.priority === priority.label && (
+              <Check style={pickerStyles.checkmark} />
+            )}
           </div>
         ))}
       </div>
-      <div style={{ 
-        borderTop: '1px solid #e5e7eb', 
-        marginTop: '8px', 
-        paddingTop: '8px' 
-      }}>
+      <div style={pickerStyles.footer}>
         <div
           onClick={() => setShowEdit(true)}
-          style={{
-            padding: '8px 12px',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '8px',
-            cursor: 'pointer',
-            borderRadius: '6px',
-            transition: 'background-color 0.15s'
-          }}
+          style={pickerStyles.footerAction}
           onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#f3f4f6'}
           onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
         >
-          <Settings style={{ width: '14px', height: '14px', color: '#6b7280' }} />
-          <span style={{ fontSize: '13px', color: '#6b7280' }}>Edit priorities</span>
+          <Settings style={{ width: '14px', height: '14px' }} />
+          <span>Edit priorities</span>
         </div>
       </div>
     </div>
@@ -1034,18 +996,11 @@ const AssigneePicker = ({ value, onChange, onClose, taskId }: any) => {
     <div data-assignee-picker={taskId} style={mergeStyles(pickerStyles.container, {
       minWidth: '240px'
     })}>
-      <div style={{ marginBottom: '8px', padding: '0 8px' }}>
+      <div style={pickerStyles.header}>
         <input
           type="text"
           placeholder="Search assignee..."
-          style={{
-            width: '100%',
-            padding: '8px 10px',
-            border: '1px solid #e5e7eb',
-            borderRadius: '6px',
-            fontSize: '13px',
-            outline: 'none'
-          }}
+          style={pickerStyles.searchInput}
           onFocus={(e) => e.currentTarget.style.borderColor = '#9ca3af'}
           onBlur={(e) => e.currentTarget.style.borderColor = '#e5e7eb'}
         />
@@ -1057,34 +1012,32 @@ const AssigneePicker = ({ value, onChange, onClose, taskId }: any) => {
             onChange(assignee);
             onClose();
           }}
-          style={{
-            padding: '10px 12px',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '10px',
-            cursor: 'pointer',
-            borderRadius: '6px',
-            transition: 'background-color 0.15s'
+          style={mergeStyles(
+            pickerStyles.option,
+            value?.id === assignee.id ? pickerStyles.optionSelected : {}
+          )}
+          onMouseEnter={(e) => {
+            Object.assign(e.currentTarget.style,
+              value?.id === assignee.id ? pickerStyles.optionSelected : pickerStyles.optionHover
+            );
           }}
-          onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#f3f4f6'}
-          onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
+          onMouseLeave={(e) => {
+            Object.assign(e.currentTarget.style,
+              value?.id === assignee.id ? pickerStyles.optionSelected : pickerStyles.option
+            );
+          }}
         >
-          <span style={{
-            fontSize: '11px',
-            backgroundColor: assignee.color,
-            color: 'white',
-            width: '28px',
-            height: '28px',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            borderRadius: '50%',
-            fontWeight: '600',
-            flexShrink: 0
-          }}>
+          <span style={mergeStyles(pickerStyles.avatar, {
+            backgroundColor: assignee.color
+          })}>
             {assignee.name}
           </span>
-          <span style={{ fontSize: '13px', color: '#374151', fontWeight: '600' }}>{assignee.fullName}</span>
+          <span style={mergeStyles(pickerStyles.optionLabel, {
+            fontWeight: '600'
+          })}>{assignee.fullName}</span>
+          {value?.id === assignee.id && (
+            <Check style={pickerStyles.checkmark} />
+          )}
         </div>
       ))}
     </div>
@@ -1898,10 +1851,11 @@ const ExactTasksTable: React.FC = () => {
           {task.assignee ? (
             <>
               <span 
+                data-assignee-trigger={task.id}
                 onClick={(e) => {
-                e.stopPropagation();
-                handleOpenPicker('assignee', task.id);
-              }}
+                  e.stopPropagation();
+                  handleOpenPicker('assignee', task.id);
+                }}
                 style={{
                   fontSize: '11px',
                   backgroundColor: task.assignee.color,
@@ -1920,6 +1874,7 @@ const ExactTasksTable: React.FC = () => {
             </>
           ) : (
             <div
+              data-assignee-trigger={task.id}
               onClick={(e) => {
                 e.stopPropagation();
                 handleOpenPicker('assignee', task.id);
