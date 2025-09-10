@@ -976,16 +976,16 @@ const PriorityPicker = ({ value, onChange, onClose, taskId }: any) => {
             }}
             style={mergeStyles(
               pickerStyles.option,
-              value?.priority === priority.label ? pickerStyles.optionSelected : {}
+              (value?.priority === priority.label || value?.priorityLabel === priority.label) ? pickerStyles.optionSelected : {}
             )}
             onMouseEnter={(e) => {
               Object.assign(e.currentTarget.style,
-                value?.priority === priority.label ? pickerStyles.optionSelected : pickerStyles.optionHover
+                (value?.priority === priority.label || value?.priorityLabel === priority.label) ? pickerStyles.optionSelected : pickerStyles.optionHover
               );
             }}
             onMouseLeave={(e) => {
               Object.assign(e.currentTarget.style,
-                value?.priority === priority.label ? pickerStyles.optionSelected : pickerStyles.option
+                (value?.priority === priority.label || value?.priorityLabel === priority.label) ? pickerStyles.optionSelected : pickerStyles.option
               );
             }}
           >
@@ -996,7 +996,7 @@ const PriorityPicker = ({ value, onChange, onClose, taskId }: any) => {
             <span style={pickerStyles.optionBadge}>
               Level {priority.level}
             </span>
-            {value?.priority === priority.label && (
+            {(value?.priority === priority.label || value?.priorityLabel === priority.label) && (
               <Check style={pickerStyles.checkmark} />
             )}
           </div>
