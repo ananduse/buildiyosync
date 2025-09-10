@@ -992,6 +992,7 @@ const PriorityPicker = ({ value, onChange, onClose, taskId }: any) => {
 
 // Assignee picker component
 const AssigneePicker = ({ value, onChange, onClose, taskId }: any) => {
+  const [position, setPosition] = useState({ top: 0, left: 0 });
   const assignees = [
     { id: 'as', name: 'AS', fullName: 'Alex Smith', color: '#5b5fc7' },
     { id: 'jb', name: 'JB', fullName: 'John Brown', color: '#ef4444' },
