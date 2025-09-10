@@ -618,6 +618,7 @@ const CategoryPicker = ({ value, onChange, onClose, taskId }: any) => {
 
 // Priority picker component
 const PriorityPicker = ({ value, onChange, onClose, taskId }: any) => {
+  const [position, setPosition] = useState({ top: 0, left: 0 });
   const [priorities, setPriorities] = useState([
     { id: 'critical', label: 'Critical', color: '#dc2626', icon: '🔴', level: 1 },
     { id: 'urgent', label: 'Urgent', color: '#ef4444', icon: '🟠', level: 2 },
