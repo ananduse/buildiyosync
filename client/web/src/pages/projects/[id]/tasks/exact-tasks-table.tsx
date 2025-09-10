@@ -633,6 +633,32 @@ const PriorityPicker = ({ value, onChange, onClose, taskId }: any) => {
   const [newPriorityLevel, setNewPriorityLevel] = useState('7');
 
   useEffect(() => {
+    // Calculate position based on trigger element
+    const triggerElement = document.querySelector(`[data-priority-trigger="${taskId}"]`);
+    if (triggerElement) {
+      const rect = triggerElement.getBoundingClientRect();
+      const pickerWidth = 260;
+      const windowWidth = window.innerWidth;
+      const windowHeight = window.innerHeight;
+      
+      let leftPos = rect.left + rect.width / 2;
+      if (leftPos - pickerWidth / 2 < 10) {
+        leftPos = pickerWidth / 2 + 10;
+      } else if (leftPos + pickerWidth / 2 > windowWidth - 10) {
+        leftPos = windowWidth - pickerWidth / 2 - 10;
+      }
+      
+      let topPos = rect.bottom + 8;
+      if (topPos + 300 > windowHeight) {
+        topPos = rect.top - 308;
+      }
+      
+      setPosition({
+        top: topPos,
+        left: leftPos
+      });
+    }
+
     const handleClickOutside = (e: MouseEvent) => {
       const target = e.target as HTMLElement;
       // Check if click is on the picker itself
@@ -1003,6 +1029,35 @@ const AssigneePicker = ({ value, onChange, onClose, taskId }: any) => {
   ];
 
   useEffect(() => {
+    // Calculate position based on trigger element
+    const triggerElement = document.querySelector(`[data-assignee-trigger="${taskId}"]`);
+    if (triggerElement) {
+      const rect = triggerElement.getBoundingClientRect();
+      const pickerWidth = 240; // minWidth of picker
+      const windowWidth = window.innerWidth;
+      const windowHeight = window.innerHeight;
+      
+      // Calculate left position to ensure picker stays within viewport
+      let leftPos = rect.left + rect.width / 2;
+      if (leftPos - pickerWidth / 2 < 10) {
+        leftPos = pickerWidth / 2 + 10;
+      } else if (leftPos + pickerWidth / 2 > windowWidth - 10) {
+        leftPos = windowWidth - pickerWidth / 2 - 10;
+      }
+      
+      // Calculate top position
+      let topPos = rect.bottom + 8;
+      // If picker would go below viewport, position it above the trigger
+      if (topPos + 300 > windowHeight) {
+        topPos = rect.top - 308; // 300px estimated height + 8px gap
+      }
+      
+      setPosition({
+        top: topPos,
+        left: leftPos
+      });
+    }
+
     const handleClickOutside = (e: MouseEvent) => {
       const target = e.target as HTMLElement;
       // Check if click is on the picker itself
