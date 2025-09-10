@@ -8,9 +8,9 @@ export const pickerStyles = {
     position: 'fixed' as const,
     backgroundColor: 'white',
     border: '1px solid #e5e7eb',
-    borderRadius: '12px',
-    padding: '8px',
-    minWidth: '240px',
+    borderRadius: '10px',
+    padding: '4px',
+    minWidth: '220px',
     maxWidth: '320px',
     boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)',
     zIndex: 9999,
@@ -19,7 +19,7 @@ export const pickerStyles = {
 
   // Header section with title and search
   header: {
-    padding: '8px 8px 12px',
+    padding: '6px 6px 8px',
     borderBottom: '1px solid #f3f4f6'
   },
 
@@ -36,10 +36,10 @@ export const pickerStyles = {
   // Search input
   searchInput: {
     width: '100%',
-    padding: '8px 12px',
+    padding: '6px 10px',
     border: '1px solid #e5e7eb',
-    borderRadius: '8px',
-    fontSize: '13px',
+    borderRadius: '6px',
+    fontSize: '12px',
     outline: 'none',
     backgroundColor: '#f9fafb',
     transition: 'all 0.2s'
@@ -55,12 +55,12 @@ export const pickerStyles = {
 
   // Individual option item
   option: {
-    padding: '10px 12px',
+    padding: '6px 8px',
     display: 'flex',
     alignItems: 'center',
-    gap: '10px',
-    borderRadius: '8px',
-    marginBottom: '2px',
+    gap: '6px',
+    borderRadius: '6px',
+    marginBottom: '1px',
     cursor: 'pointer',
     transition: 'all 0.15s ease',
     backgroundColor: 'transparent',
@@ -147,13 +147,13 @@ export const pickerStyles = {
 
   // Avatar style
   avatar: {
-    width: '28px',
-    height: '28px',
+    width: '24px',
+    height: '24px',
     borderRadius: '50%',
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
-    fontSize: '11px',
+    fontSize: '10px',
     fontWeight: '600',
     color: 'white',
     flexShrink: 0
