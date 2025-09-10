@@ -35,9 +35,10 @@ import { ConfirmationDialog, useNotification } from './confirmation-dialog';
 import { pickerStyles, mergeStyles, usePickerBehavior } from './unified-picker-styles';
 
 // Status picker component
-const StatusPicker = ({ value, onChange, onClose, taskId }: any) => {
+const StatusPicker = ({ value, onChange, onClose, taskId, context = 'list' }: any) => {
   const [showEdit, setShowEdit] = useState(false);
-  const [position, setPosition] = useState({ top: 0, left: 0 });
+  const [position, setPosition] = useState<{ top: number; left: number } | null>(null);
+  const [searchTerm, setSearchTerm] = useState('');
   const [customStatuses, setCustomStatuses] = useState([
     { id: 'todo', label: 'TO DO', color: '#6b7280', group: 'Not started' },
     { id: 'in-progress', label: 'IN PROGRESS', color: '#5b5fc7', group: 'Active' },
@@ -54,7 +55,7 @@ const StatusPicker = ({ value, onChange, onClose, taskId }: any) => {
 
   useEffect(() => {
     // Calculate position based on trigger element
-    const triggerElement = document.querySelector(`[data-status-trigger="${taskId}"]`);
+    const triggerElement = document.querySelector(`[data-status-trigger-${context}="${taskId}"]`);
     if (triggerElement) {
       const rect = triggerElement.getBoundingClientRect();
       setPosition({
@@ -66,7 +67,7 @@ const StatusPicker = ({ value, onChange, onClose, taskId }: any) => {
     const handleClickOutside = (e: MouseEvent) => {
       const target = e.target as HTMLElement;
       // Check if click is on the picker itself
-      if (target.closest(`[data-status-picker="${taskId}"]`)) {
+      if (target.closest(`[data-status-picker-${context}="${taskId}"]`)) {
         return;
       }
       // Close the picker for any outside click
@@ -82,11 +83,11 @@ const StatusPicker = ({ value, onChange, onClose, taskId }: any) => {
       clearTimeout(timer);
       document.removeEventListener('mousedown', handleClickOutside);
     };
-  }, [taskId, onClose]);
+  }, [taskId, onClose, context]);
 
   if (showEdit) {
     return (
-      <div data-status-picker={taskId} style={{
+      <div data-status-picker-edit={taskId} style={{
         position: 'fixed',
         top: '50%',
         left: '50%',
@@ -203,14 +204,34 @@ const StatusPicker = ({ value, onChange, onClose, taskId }: any) => {
     );
   }
 
+  // Filter statuses based on search
+  const filteredStatuses = customStatuses.filter(status =>
+    status.label.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
+  // Don't render if position is not set
+  if (!position) return null;
+
   return (
-    <div data-status-picker={taskId} style={mergeStyles(pickerStyles.container, {
+    <div data-status-picker-list={taskId} style={mergeStyles(pickerStyles.container, {
       minWidth: '240px',
       top: position.top,
       left: position.left,
       transform: 'translateX(-50%)'
     })}>
-      {customStatuses.map(status => (
+      <div style={pickerStyles.header}>
+        <div style={pickerStyles.title}>STATUS</div>
+        <input
+          type="text"
+          placeholder="Search status..."
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          style={pickerStyles.searchInput}
+          onFocus={(e) => e.currentTarget.style.backgroundColor = 'white'}
+          onBlur={(e) => e.currentTarget.style.backgroundColor = '#f9fafb'}
+        />
+      </div>
+      {filteredStatuses.map(status => (
         <div
           key={`${taskId}-status-${status.id}`}
           onClick={() => {
@@ -267,8 +288,9 @@ const StatusPicker = ({ value, onChange, onClose, taskId }: any) => {
 };
 
 // Category picker component
-const CategoryPicker = ({ value, onChange, onClose, taskId }: any) => {
-  const [position, setPosition] = useState({ top: 0, left: 0 });
+const CategoryPicker = ({ value, onChange, onClose, taskId, context = 'list' }: any) => {
+  const [position, setPosition] = useState<{ top: number; left: number } | null>(null);
+  const [searchTerm, setSearchTerm] = useState('');
   const [categories, setCategories] = useState([
     { id: 'planning', label: 'Planning', color: '#e91e63' },
     { id: 'development', label: 'Development', color: '#5b5fc7' },
@@ -288,9 +310,13 @@ const CategoryPicker = ({ value, onChange, onClose, taskId }: any) => {
   const [newCategoryName, setNewCategoryName] = useState('');
   const [newCategoryColor, setNewCategoryColor] = useState('#7c3aed');
 
+  const filteredCategories = categories.filter(cat =>
+    cat.label.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
   useEffect(() => {
     // Calculate position based on trigger element
-    const triggerElement = document.querySelector(`[data-category-trigger="${taskId}"]`);
+    const triggerElement = document.querySelector(`[data-category-trigger-${context}="${taskId}"]`);
     if (triggerElement) {
       const rect = triggerElement.getBoundingClientRect();
       setPosition({
@@ -302,7 +328,7 @@ const CategoryPicker = ({ value, onChange, onClose, taskId }: any) => {
     const handleClickOutside = (e: MouseEvent) => {
       const target = e.target as HTMLElement;
       // Check if click is on the picker itself
-      if (target.closest(`[data-category-picker="${taskId}"]`)) {
+      if (target.closest(`[data-category-picker-${context}="${taskId}"]`)) {
         return;
       }
       // Close the picker for any outside click
@@ -318,7 +344,7 @@ const CategoryPicker = ({ value, onChange, onClose, taskId }: any) => {
       clearTimeout(timer);
       document.removeEventListener('mousedown', handleClickOutside);
     };
-  }, [taskId, onClose]);
+  }, [taskId, onClose, context]);
 
   const handleAddCategory = () => {
     if (newCategoryName.trim()) {
@@ -345,7 +371,7 @@ const CategoryPicker = ({ value, onChange, onClose, taskId }: any) => {
 
   if (showEdit) {
     return (
-      <div data-category-picker={taskId} style={{
+      <div data-category-picker-edit={taskId} style={{
         position: 'fixed',
         top: '50%',
         left: '50%',
@@ -545,8 +571,11 @@ const CategoryPicker = ({ value, onChange, onClose, taskId }: any) => {
     );
   }
 
+  // Don't render if position is not set
+  if (!position) return null;
+
   return (
-    <div data-category-picker={taskId} style={mergeStyles(pickerStyles.container, {
+    <div data-category-picker-list={taskId} style={mergeStyles(pickerStyles.container, {
       width: '280px',
       top: position.top,
       left: position.left,
@@ -559,13 +588,15 @@ const CategoryPicker = ({ value, onChange, onClose, taskId }: any) => {
         <input
           type="text"
           placeholder="Type to search or add..."
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
           style={pickerStyles.searchInput}
           onFocus={(e) => e.currentTarget.style.borderColor = '#9ca3af'}
           onBlur={(e) => e.currentTarget.style.borderColor = '#e5e7eb'}
         />
       </div>
       <div style={pickerStyles.content}>
-        {categories.map(cat => (
+        {filteredCategories.map(cat => (
           <div
             key={`${taskId}-cat-${cat.id}`}
             onClick={() => {
@@ -617,8 +648,9 @@ const CategoryPicker = ({ value, onChange, onClose, taskId }: any) => {
 };
 
 // Priority picker component
-const PriorityPicker = ({ value, onChange, onClose, taskId }: any) => {
-  const [position, setPosition] = useState({ top: 0, left: 0 });
+const PriorityPicker = ({ value, onChange, onClose, taskId, context = 'list' }: any) => {
+  const [position, setPosition] = useState<{ top: number; left: number } | null>(null);
+  const [searchTerm, setSearchTerm] = useState('');
   const [priorities, setPriorities] = useState([
     { id: 'critical', label: 'Critical', color: '#dc2626', icon: '🔴', level: 1 },
     { id: 'urgent', label: 'Urgent', color: '#ef4444', icon: '🟠', level: 2 },
@@ -633,9 +665,13 @@ const PriorityPicker = ({ value, onChange, onClose, taskId }: any) => {
   const [newPriorityColor, setNewPriorityColor] = useState('#9333ea');
   const [newPriorityLevel, setNewPriorityLevel] = useState('7');
 
+  const filteredPriorities = priorities.filter(priority =>
+    priority.label.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
   useEffect(() => {
     // Calculate position based on trigger element
-    const triggerElement = document.querySelector(`[data-priority-trigger="${taskId}"]`);
+    const triggerElement = document.querySelector(`[data-priority-trigger-${context}="${taskId}"]`);
     if (triggerElement) {
       const rect = triggerElement.getBoundingClientRect();
       const pickerWidth = 260;
@@ -663,7 +699,7 @@ const PriorityPicker = ({ value, onChange, onClose, taskId }: any) => {
     const handleClickOutside = (e: MouseEvent) => {
       const target = e.target as HTMLElement;
       // Check if click is on the picker itself
-      if (target.closest(`[data-priority-picker="${taskId}"]`)) {
+      if (target.closest(`[data-priority-picker-${context}="${taskId}"]`)) {
         return;
       }
       // Close the picker for any outside click
@@ -679,7 +715,7 @@ const PriorityPicker = ({ value, onChange, onClose, taskId }: any) => {
       clearTimeout(timer);
       document.removeEventListener('mousedown', handleClickOutside);
     };
-  }, [taskId, onClose]);
+  }, [taskId, onClose, context]);
 
   const handleAddPriority = () => {
     if (newPriorityName.trim()) {
@@ -709,7 +745,7 @@ const PriorityPicker = ({ value, onChange, onClose, taskId }: any) => {
 
   if (showEdit) {
     return (
-      <div data-priority-picker={taskId} style={{
+      <div data-priority-picker-edit={taskId} style={{
         position: 'fixed',
         top: '50%',
         left: '50%',
@@ -943,8 +979,11 @@ const PriorityPicker = ({ value, onChange, onClose, taskId }: any) => {
     );
   }
 
+  // Don't render if position is not set
+  if (!position) return null;
+
   return (
-    <div data-priority-picker={taskId} style={mergeStyles(pickerStyles.container, {
+    <div data-priority-picker-list={taskId} style={mergeStyles(pickerStyles.container, {
       width: '260px',
       top: position.top,
       left: position.left,
@@ -957,13 +996,15 @@ const PriorityPicker = ({ value, onChange, onClose, taskId }: any) => {
         <input
           type="text"
           placeholder="Search priority..."
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
           style={pickerStyles.searchInput}
           onFocus={(e) => e.currentTarget.style.borderColor = '#9ca3af'}
           onBlur={(e) => e.currentTarget.style.borderColor = '#e5e7eb'}
         />
       </div>
       <div style={pickerStyles.content}>
-        {priorities.map(priority => (
+        {filteredPriorities.map(priority => (
           <div
             key={`${taskId}-priority-${priority.id}`}
             onClick={() => {
@@ -1018,8 +1059,9 @@ const PriorityPicker = ({ value, onChange, onClose, taskId }: any) => {
 };
 
 // Assignee picker component
-const AssigneePicker = ({ value, onChange, onClose, taskId }: any) => {
-  const [position, setPosition] = useState({ top: 0, left: 0 });
+const AssigneePicker = ({ value, onChange, onClose, taskId, context = 'list' }: any) => {
+  const [position, setPosition] = useState<{ top: number; left: number } | null>(null);
+  const [searchTerm, setSearchTerm] = useState('');
   const assignees = [
     { id: 'as', name: 'AS', fullName: 'Alex Smith', color: '#5b5fc7' },
     { id: 'jb', name: 'JB', fullName: 'John Brown', color: '#ef4444' },
@@ -1029,9 +1071,14 @@ const AssigneePicker = ({ value, onChange, onClose, taskId }: any) => {
     { id: 'jd', name: 'JD', fullName: 'James Davis', color: '#06b6d4' }
   ];
 
+  const filteredAssignees = assignees.filter(assignee =>
+    assignee.fullName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    assignee.name.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
   useEffect(() => {
     // Calculate position based on trigger element
-    const triggerElement = document.querySelector(`[data-assignee-trigger="${taskId}"]`);
+    const triggerElement = document.querySelector(`[data-assignee-trigger-${context}="${taskId}"]`);
     if (triggerElement) {
       const rect = triggerElement.getBoundingClientRect();
       const pickerWidth = 240; // minWidth of picker
@@ -1062,7 +1109,7 @@ const AssigneePicker = ({ value, onChange, onClose, taskId }: any) => {
     const handleClickOutside = (e: MouseEvent) => {
       const target = e.target as HTMLElement;
       // Check if click is on the picker itself
-      if (target.closest(`[data-assignee-picker="${taskId}"]`)) {
+      if (target.closest(`[data-assignee-picker-${context}="${taskId}"]`)) {
         return;
       }
       // Close the picker for any outside click
@@ -1078,10 +1125,13 @@ const AssigneePicker = ({ value, onChange, onClose, taskId }: any) => {
       clearTimeout(timer);
       document.removeEventListener('mousedown', handleClickOutside);
     };
-  }, [taskId, onClose]);
+  }, [taskId, onClose, context]);
+
+  // Don't render if position is not set
+  if (!position) return null;
 
   return (
-    <div data-assignee-picker={taskId} style={mergeStyles(pickerStyles.container, {
+    <div data-assignee-picker-list={taskId} style={mergeStyles(pickerStyles.container, {
       minWidth: '240px',
       top: position.top,
       left: position.left,
@@ -1091,12 +1141,14 @@ const AssigneePicker = ({ value, onChange, onClose, taskId }: any) => {
         <input
           type="text"
           placeholder="Search assignee..."
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
           style={pickerStyles.searchInput}
           onFocus={(e) => e.currentTarget.style.borderColor = '#9ca3af'}
           onBlur={(e) => e.currentTarget.style.borderColor = '#e5e7eb'}
         />
       </div>
-      {assignees.map(assignee => (
+      {filteredAssignees.map(assignee => (
         <div
           key={`${taskId}-assignee-${assignee.id}`}
           onClick={() => {
@@ -1613,9 +1665,10 @@ const ExactTasksTable: React.FC = () => {
         onDrop={(e) => !isSubtask && handleDrop(e, group, index)}
         style={{ 
           borderBottom: '1px solid #f0f0f0',
-          backgroundColor: 'transparent',
-          transition: 'background-color 0.2s',
-          cursor: !isSubtask ? 'move' : 'default'
+          backgroundColor: hoveredRow === uniqueRowId ? '#f9fafb' : 'transparent',
+          transition: 'background-color 0.15s ease',
+          cursor: !isSubtask ? 'move' : 'default',
+          position: 'relative'
         }}
         onMouseEnter={() => {
           // Use unique ID to prevent duplicate hover states
@@ -1634,8 +1687,8 @@ const ExactTasksTable: React.FC = () => {
                    style={{ width: '14px', height: '14px', cursor: 'pointer' }} />
           </div>
         </td>
-        <td style={{ padding: '4px 6px', paddingLeft: isSubtask ? '48px' : '8px' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+        <td style={{ padding: '4px 6px', paddingLeft: isSubtask ? '48px' : '8px', position: 'relative' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px', position: 'relative' }}>
             {task.hasSubtasks && !isSubtask && (
               <span onClick={() => toggleTask(task.id)} style={{ cursor: 'pointer', display: 'flex', alignItems: 'center' }}>
                 {expandedTasks.includes(task.id) ? 
@@ -1747,18 +1800,25 @@ const ExactTasksTable: React.FC = () => {
               <div 
                 key={`actions-${uniqueRowId}`}
                 style={{ 
+                  position: 'absolute',
+                  right: '8px',
+                  top: '50%',
+                  transform: 'translateY(-50%)',
                   display: 'flex', 
-                  gap: '4px', 
-                  marginLeft: 'auto'
+                  gap: '4px',
+                  backgroundColor: 'white',
+                  borderRadius: '6px',
+                  padding: '2px',
+                  boxShadow: '0 1px 3px rgba(0,0,0,0.1)'
                 }}
               >
                 <div 
                   title="Add Subtask"
                   style={{
-                    padding: '6px',
-                    borderRadius: '6px',
+                    padding: '4px',
+                    borderRadius: '4px',
                     cursor: 'pointer',
-                    transition: 'all 0.2s',
+                    transition: 'all 0.15s',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
@@ -1766,11 +1826,9 @@ const ExactTasksTable: React.FC = () => {
                   }}
                   onMouseEnter={(e) => {
                     e.currentTarget.style.backgroundColor = '#f3f4f6';
-                    e.currentTarget.style.transform = 'scale(1.1)';
                   }}
                   onMouseLeave={(e) => {
                     e.currentTarget.style.backgroundColor = 'transparent';
-                    e.currentTarget.style.transform = 'scale(1)';
                   }}
                   onClick={(e) => {
                     e.stopPropagation();
@@ -1810,10 +1868,10 @@ const ExactTasksTable: React.FC = () => {
                 <div 
                   title="Edit Task"
                   style={{
-                    padding: '6px',
-                    borderRadius: '6px',
+                    padding: '4px',
+                    borderRadius: '4px',
                     cursor: 'pointer',
-                    transition: 'all 0.2s',
+                    transition: 'all 0.15s',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
@@ -1821,11 +1879,9 @@ const ExactTasksTable: React.FC = () => {
                   }}
                   onMouseEnter={(e) => {
                     e.currentTarget.style.backgroundColor = '#f3f4f6';
-                    e.currentTarget.style.transform = 'scale(1.1)';
                   }}
                   onMouseLeave={(e) => {
                     e.currentTarget.style.backgroundColor = 'transparent';
-                    e.currentTarget.style.transform = 'scale(1)';
                   }}
                   onClick={(e) => {
                     e.stopPropagation();
@@ -1837,10 +1893,10 @@ const ExactTasksTable: React.FC = () => {
                 <div 
                   title="Delete Task"
                   style={{
-                    padding: '6px',
-                    borderRadius: '6px',
+                    padding: '4px',
+                    borderRadius: '4px',
                     cursor: 'pointer',
-                    transition: 'all 0.2s',
+                    transition: 'all 0.15s',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
@@ -1848,11 +1904,9 @@ const ExactTasksTable: React.FC = () => {
                   }}
                   onMouseEnter={(e) => {
                     e.currentTarget.style.backgroundColor = '#fee2e2';
-                    e.currentTarget.style.transform = 'scale(1.1)';
                   }}
                   onMouseLeave={(e) => {
                     e.currentTarget.style.backgroundColor = 'transparent';
-                    e.currentTarget.style.transform = 'scale(1)';
                   }}
                   onClick={(e) => {
                     e.stopPropagation();
@@ -1874,7 +1928,7 @@ const ExactTasksTable: React.FC = () => {
           {task.status && (
             <>
               <span 
-                data-status-trigger={task.id}
+                data-status-trigger-list={task.id}
                 onClick={(e) => {
                   e.stopPropagation();
                   handleOpenPicker('status', task.id);
@@ -1909,7 +1963,7 @@ const ExactTasksTable: React.FC = () => {
         </td>
         <td style={{ padding: '4px 6px', position: 'relative' }}>
           <span 
-            data-category-trigger={task.id}
+            data-category-trigger-list={task.id}
             onClick={(e) => {
               e.stopPropagation();
               handleOpenPicker('category', task.id);
@@ -1938,48 +1992,50 @@ const ExactTasksTable: React.FC = () => {
             />
           )}
         </td>
-        <td style={{ padding: '4px 6px', textAlign: 'center', position: 'relative' }}>
+        <td style={{ padding: '4px 6px', textAlign: 'left', position: 'relative' }}>
           {task.assignee ? (
             <>
               <span 
-                data-assignee-trigger={task.id}
+                data-assignee-trigger-list={task.id}
                 onClick={(e) => {
                   e.stopPropagation();
                   handleOpenPicker('assignee', task.id);
                 }}
                 style={{
-                  fontSize: '11px',
+                  fontSize: '10px',
                   backgroundColor: task.assignee.color,
                   color: 'white',
-                  width: '32px',
-                  height: '32px',
+                  width: '24px',
+                  height: '24px',
                   display: 'inline-flex',
                   alignItems: 'center',
                   justifyContent: 'center',
                   borderRadius: '50%',
                   fontWeight: '600',
-                  cursor: 'pointer'
+                  cursor: 'pointer',
+                  flexShrink: 0
                 }}>
                 {task.assignee.name}
               </span>
             </>
           ) : (
             <div
-              data-assignee-trigger={task.id}
+              data-assignee-trigger-list={task.id}
               onClick={(e) => {
                 e.stopPropagation();
                 handleOpenPicker('assignee', task.id);
               }}
               style={{
-                width: '32px',
-                height: '32px',
+                width: '24px',
+                height: '24px',
                 display: 'inline-flex',
                 alignItems: 'center',
                 justifyContent: 'center',
                 borderRadius: '50%',
                 backgroundColor: '#f3f4f6',
                 cursor: 'pointer',
-                transition: 'background-color 0.15s'
+                transition: 'background-color 0.15s',
+                flexShrink: 0
               }}
               onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#e5e7eb'}
               onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#f3f4f6'}
@@ -2001,7 +2057,7 @@ const ExactTasksTable: React.FC = () => {
         </td>
         <td style={{ padding: '4px 6px', position: 'relative' }}>
           <div 
-            data-priority-trigger={task.id}
+            data-priority-trigger-list={task.id}
             onClick={(e) => {
               e.stopPropagation();
               handleOpenPicker('priority', task.id);
@@ -2182,7 +2238,7 @@ const ExactTasksTable: React.FC = () => {
             <th style={{ padding: '6px 6px', textAlign: 'left', fontWeight: '600', color: '#374151' }}>Name</th>
             <th style={{ padding: '6px 8px', textAlign: 'left', fontWeight: '500', color: '#6b7280', width: '140px' }}>Status</th>
             <th style={{ padding: '6px 8px', textAlign: 'left', fontWeight: '500', color: '#6b7280', width: '150px' }}>Activity Category</th>
-            <th style={{ padding: '6px 6px', textAlign: 'center', fontWeight: '600', color: '#374151', width: '100px' }}>Assignee</th>
+            <th style={{ padding: '6px 6px', textAlign: 'left', fontWeight: '600', color: '#374151', width: '100px' }}>Assignee</th>
             <th style={{ padding: '6px 8px', textAlign: 'left', fontWeight: '500', color: '#6b7280', width: '130px' }}>Priority</th>
             <th style={{ padding: '6px 8px', textAlign: 'left', fontWeight: '500', color: '#6b7280', width: '160px' }}>Estimated Duration</th>
             <th style={{ padding: '6px 8px', textAlign: 'left', fontWeight: '500', color: '#6b7280', width: '140px' }}>Start date</th>

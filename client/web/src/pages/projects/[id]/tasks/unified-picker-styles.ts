@@ -13,7 +13,7 @@ export const pickerStyles = {
     minWidth: '220px',
     maxWidth: '320px',
     boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)',
-    zIndex: 9999,
+    zIndex: 10000,
     opacity: 1
   },
 
@@ -55,10 +55,10 @@ export const pickerStyles = {
 
   // Individual option item
   option: {
-    padding: '6px 8px',
+    padding: '4px 6px',
     display: 'flex',
     alignItems: 'center',
-    gap: '6px',
+    gap: '4px',
     borderRadius: '6px',
     marginBottom: '1px',
     cursor: 'pointer',
@@ -147,13 +147,13 @@ export const pickerStyles = {
 
   // Avatar style
   avatar: {
-    width: '24px',
-    height: '24px',
+    width: '22px',
+    height: '22px',
     borderRadius: '50%',
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
-    fontSize: '10px',
+    fontSize: '9px',
     fontWeight: '600',
     color: 'white',
     flexShrink: 0
