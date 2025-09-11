@@ -8,8 +8,8 @@ export const pickerStyles = {
     position: 'fixed' as const,
     backgroundColor: 'white',
     border: '1px solid #e5e7eb',
-    borderRadius: '10px',
-    padding: '4px',
+    borderRadius: '8px',
+    padding: '2px',
     minWidth: '220px',
     maxWidth: '320px',
     boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)',
@@ -49,8 +49,8 @@ export const pickerStyles = {
   content: {
     maxHeight: '280px',
     overflowY: 'auto' as const,
-    padding: '4px',
-    marginTop: '4px'
+    padding: '2px',
+    marginTop: '2px'
   },
 
   // Individual option item

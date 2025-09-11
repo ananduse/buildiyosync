@@ -20,6 +20,7 @@ import { TemplateManagementModal } from './template-management-modal';
 import { ChecklistItemDetailModal } from './checklist-item-detail-modal';
 import { CustomFieldsTab } from './custom-fields-tab';
 import { pickerStyles, mergeStyles, usePickerBehavior } from './unified-picker-styles';
+import { StatusPicker, PriorityPicker, CategoryPicker, AssigneePicker } from './shared-pickers';
 import {
   X,
   Calendar,
@@ -123,14 +124,57 @@ interface TaskModalProps {
 const SelectPicker = ({ value, onChange, options, placeholder, label }: any) => {
   const [isOpen, setIsOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
+  const [position, setPosition] = useState<{ top: number; left: number } | null>(null);
+  const containerRef = React.useRef<HTMLDivElement>(null);
   
   usePickerBehavior(() => setIsOpen(false));
   
   useEffect(() => {
+    if (isOpen && containerRef.current) {
+      // Small delay to ensure DOM is ready
+      const calculatePosition = () => {
+        if (!containerRef.current) return;
+        
+        const rect = containerRef.current.getBoundingClientRect();
+        const pickerHeight = 300; // Estimated max height
+        const pickerWidth = Math.max(rect.width, 240); // Minimum width of 240px
+        const windowHeight = window.innerHeight;
+        const windowWidth = window.innerWidth;
+        
+        // Position directly below the control with no gap
+        let top = rect.bottom + 2;
+        let left = rect.left;
+        
+        // If picker would go below viewport, position it above
+        if (top + pickerHeight > windowHeight - 20) {
+          top = rect.top - pickerHeight - 2;
+        }
+        
+        // If picker would go beyond right edge, adjust left position
+        if (left + pickerWidth > windowWidth - 20) {
+          left = rect.right - pickerWidth;
+        }
+        
+        // Ensure left doesn't go negative
+        if (left < 10) {
+          left = 10;
+        }
+        
+        setPosition({
+          top: top,
+          left: left
+        });
+      };
+      
+      // Use requestAnimationFrame to ensure DOM is ready
+      requestAnimationFrame(calculatePosition);
+    }
+    
     const handleClickOutside = (e: MouseEvent) => {
       const target = e.target as HTMLElement;
       if (!target.closest('.select-picker-container')) {
         setIsOpen(false);
+        setPosition(null);
       }
     };
     
@@ -146,14 +190,14 @@ const SelectPicker = ({ value, onChange, options, placeholder, label }: any) => 
     }
   }, [isOpen]);
   
-  const filteredOptions = options.filter((opt: any) => 
+  const filteredOptions = (options || []).filter((opt: any) => 
     opt.label.toLowerCase().includes(searchTerm.toLowerCase())
   );
   
-  const selectedOption = options.find((opt: any) => opt.value === value);
+  const selectedOption = (options || []).find((opt: any) => opt.value === value);
   
   return (
-    <div className="select-picker-container" style={{ position: 'relative' }}>
+    <div className="select-picker-container" ref={containerRef} style={{ position: 'relative' }}>
       {label && (
         <label style={{
           fontSize: '12px',
@@ -167,7 +211,14 @@ const SelectPicker = ({ value, onChange, options, placeholder, label }: any) => 
       )}
       
       <div
-        onClick={() => setIsOpen(!isOpen)}
+        onClick={() => {
+          if (!isOpen) {
+            setIsOpen(true);
+          } else {
+            setIsOpen(false);
+            setPosition(null);
+          }
+        }}
         style={{
           padding: '8px 12px',
           border: '1px solid #d1d5db',
@@ -183,12 +234,51 @@ const SelectPicker = ({ value, onChange, options, placeholder, label }: any) => 
         onMouseEnter={(e) => e.currentTarget.style.borderColor = '#9ca3af'}
         onMouseLeave={(e) => e.currentTarget.style.borderColor = '#d1d5db'}
       >
-        <span style={{ 
-          color: selectedOption ? '#111827' : '#9ca3af',
-          fontWeight: selectedOption ? '500' : '400'
-        }}>
-          {selectedOption?.label || placeholder || 'Select...'}
-        </span>
+        {selectedOption ? (
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flex: 1 }}>
+            {selectedOption.icon && (
+              <span>{selectedOption.icon}</span>
+            )}
+            {/* For assignee with avatar */}
+            {selectedOption.name && (
+              <span style={{
+                width: '20px',
+                height: '20px',
+                borderRadius: '50%',
+                backgroundColor: selectedOption.color,
+                display: 'inline-flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                fontSize: '9px',
+                fontWeight: '600',
+                color: 'white',
+                flexShrink: 0
+              }}>
+                {selectedOption.name}
+              </span>
+            )}
+            {/* For regular color dot */}
+            {selectedOption.color && !selectedOption.name && (
+              <div style={{
+                width: '12px',
+                height: '12px',
+                borderRadius: '50%',
+                backgroundColor: selectedOption.color,
+                flexShrink: 0
+              }} />
+            )}
+            <span style={{ 
+              color: '#111827',
+              fontWeight: '500'
+            }}>
+              {selectedOption.label}
+            </span>
+          </div>
+        ) : (
+          <span style={{ color: '#9ca3af' }}>
+            {placeholder || 'Select...'}
+          </span>
+        )}
         <ChevronDown style={{ 
           width: '16px', 
           height: '16px', 
@@ -198,13 +288,16 @@ const SelectPicker = ({ value, onChange, options, placeholder, label }: any) => 
         }} />
       </div>
       
-      {isOpen && (
+      {isOpen && position && (
         <div style={mergeStyles(pickerStyles.container, {
-          width: '100%',
-          left: 0,
-          transform: 'none'
+          width: containerRef.current ? `${containerRef.current.offsetWidth}px` : '240px',
+          minWidth: '240px',
+          top: `${position.top}px`,
+          left: `${position.left}px`,
+          transform: 'none',
+          zIndex: 10001 // Higher than modal
         })}>
-          {options.length > 5 && (
+          {options && options.length > 5 && (
             <div style={pickerStyles.header}>
               <input
                 type="text"
@@ -228,6 +321,7 @@ const SelectPicker = ({ value, onChange, options, placeholder, label }: any) => 
                     onChange(option.value);
                     setIsOpen(false);
                     setSearchTerm('');
+                    setPosition(null);
                   }}
                   style={mergeStyles(
                     pickerStyles.option,
@@ -247,7 +341,16 @@ const SelectPicker = ({ value, onChange, options, placeholder, label }: any) => 
                   {option.icon && (
                     <span style={pickerStyles.iconContainer}>{option.icon}</span>
                   )}
-                  {option.color && (
+                  {/* For assignee options with name property */}
+                  {option.name && (
+                    <span style={mergeStyles(pickerStyles.avatar, {
+                      backgroundColor: option.color
+                    })}>
+                      {option.name}
+                    </span>
+                  )}
+                  {/* For regular color dot */}
+                  {option.color && !option.name && (
                     <div style={mergeStyles(pickerStyles.colorDot, {
                       backgroundColor: option.color
                     })} />
@@ -272,6 +375,17 @@ const SelectPicker = ({ value, onChange, options, placeholder, label }: any) => 
 const ComprehensiveTaskModal: React.FC<TaskModalProps> = ({ isOpen, onClose, task, onSave, mode = 'edit' }) => {
   // State for all task fields
   const [activeTab, setActiveTab] = useState(task?.defaultTab || 'details');
+  
+  // Assignees data (you can fetch this from your API or pass as props)
+  const assignees = [
+    { value: 'john', label: 'John Doe', fullName: 'John Doe', name: 'JD', color: '#3b82f6' },
+    { value: 'jane', label: 'Jane Smith', fullName: 'Jane Smith', name: 'JS', color: '#8b5cf6' },
+    { value: 'alex', label: 'Alex Johnson', fullName: 'Alex Johnson', name: 'AJ', color: '#10b981' },
+    { value: 'sarah', label: 'Sarah Wilson', fullName: 'Sarah Wilson', name: 'SW', color: '#f59e0b' },
+    { value: 'mike', label: 'Mike Brown', fullName: 'Mike Brown', name: 'MB', color: '#ef4444' },
+    { value: 'emma', label: 'Emma Davis', fullName: 'Emma Davis', name: 'ED', color: '#ec4899' }
+  ];
+  
   const [taskData, setTaskData] = useState({
     // Basic Information
     title: '',
@@ -362,6 +476,7 @@ const ComprehensiveTaskModal: React.FC<TaskModalProps> = ({ isOpen, onClose, tas
   const [editingChecklistItem, setEditingChecklistItem] = useState<ChecklistItemDetail | null>(null);
   const [showItemDetailModal, setShowItemDetailModal] = useState(false);
   const [showAddCustomField, setShowAddCustomField] = useState(false);
+  const [openPicker, setOpenPicker] = useState<{ type: string; id: string } | null>(null);
   const [newCustomField, setNewCustomField] = useState({
     name: '',
     type: 'text' as const,
@@ -378,19 +493,32 @@ const ComprehensiveTaskModal: React.FC<TaskModalProps> = ({ isOpen, onClose, tas
   const [showDuplicateConfirm, setShowDuplicateConfirm] = useState(false);
   const [showArchiveConfirm, setShowArchiveConfirm] = useState(false);
 
-  // Initialize task data
+  // Initialize taskData from task prop
   useEffect(() => {
     if (task) {
-      // Ensure checklist is an array
-      const taskWithChecklist = {
-        ...task,
-        checklist: Array.isArray(task.checklist) ? task.checklist : []
-      };
-      setTaskData({ ...taskData, ...taskWithChecklist });
+      setTaskData(prevData => ({
+        ...prevData,
+        title: task.name || task.title || '',
+        description: task.description || '',
+        status: task.status?.id || task.status || 'todo',
+        priority: task.priority?.id || task.priority || 'medium',
+        category: task.category?.id || task.category || '',
+        assignee: task.assignee || null,
+        progress: task.progress || 0,
+        startDate: task.startDate || '',
+        dueDate: task.dueDate || '',
+        estimatedHours: task.estimatedHours || 0,
+        actualHours: task.actualHours || 0,
+        tags: task.tags || [],
+        checklist: Array.isArray(task.checklist) ? task.checklist : [],
+        comments: task.comments || [],
+        attachments: task.attachments || [],
+        taskCode: task.taskCode || `TSK-${Date.now().toString().slice(-6)}`
+      }));
     } else {
-      // Generate new task code
+      // Generate new task code for new tasks
       const newTaskCode = `TSK-${Date.now().toString().slice(-6)}`;
-      setTaskData({ ...taskData, taskCode: newTaskCode, checklist: [] });
+      setTaskData(prevData => ({ ...prevData, taskCode: newTaskCode, checklist: [] }));
     }
   }, [task]);
 
@@ -1052,34 +1180,110 @@ const ComprehensiveTaskModal: React.FC<TaskModalProps> = ({ isOpen, onClose, tas
 
                 {/* Status and Priority */}
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
-                  <div>
-                    <SelectPicker
-                      label="Status"
-                      value={taskData.status}
-                      onChange={(value: string) => setTaskData({ ...taskData, status: value })}
-                      options={[
-                        { value: 'todo', label: 'To Do', color: '#6b7280' },
-                        { value: 'in-progress', label: 'In Progress', color: '#3b82f6' },
-                        { value: 'in-review', label: 'In Review', color: '#8b5cf6' },
-                        { value: 'blocked', label: 'Blocked', color: '#ef4444' },
-                        { value: 'completed', label: 'Completed', color: '#10b981' }
-                      ]}
-                      placeholder="Select status"
-                    />
+                  <div style={{ position: 'relative' }}>
+                    <label style={{ fontSize: '14px', fontWeight: '500', color: '#374151', marginBottom: '6px', display: 'block' }}>
+                      Status
+                    </label>
+                    <div
+                      data-status-trigger-modal="modal-status"
+                      onClick={() => {
+                        if (openPicker?.type === 'status' && openPicker?.id === 'modal-status') {
+                          setOpenPicker(null);
+                        } else {
+                          setOpenPicker({ type: 'status', id: 'modal-status' });
+                        }
+                      }}
+                      style={{
+                        padding: '8px 12px',
+                        border: '1px solid #d1d5db',
+                        borderRadius: '6px',
+                        cursor: 'pointer',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '8px',
+                        backgroundColor: 'white'
+                      }}
+                    >
+                      {taskData.status ? (
+                        <>
+                          <div style={{
+                            width: '12px',
+                            height: '12px',
+                            borderRadius: '50%',
+                            backgroundColor: taskData.status === 'todo' ? '#6b7280' : 
+                                           taskData.status === 'in-progress' ? '#5b5fc7' :
+                                           taskData.status === 'complete' ? '#22c55e' : '#fb6340'
+                          }} />
+                          <span>{taskData.status.toUpperCase().replace('-', ' ')}</span>
+                        </>
+                      ) : (
+                        <span style={{ color: '#9ca3af' }}>Select status</span>
+                      )}
+                    </div>
+                    {openPicker?.type === 'status' && openPicker.id === 'modal-status' && (
+                      <StatusPicker
+                        taskId="modal-status"
+                        context="modal"
+                        value={{ id: taskData.status }}
+                        onChange={(status: any) => {
+                          setTaskData({ ...taskData, status: status.id });
+                          setOpenPicker(null);
+                        }}
+                        onClose={() => setOpenPicker(null)}
+                      />
+                    )}
                   </div>
-                  <div>
-                    <SelectPicker
-                      label="Priority"
-                      value={taskData.priority}
-                      onChange={(value: string) => setTaskData({ ...taskData, priority: value })}
-                      options={[
-                        { value: 'critical', label: 'Critical', color: '#dc2626', icon: '🔴' },
-                        { value: 'high', label: 'High', color: '#ef4444', icon: '🟠' },
-                        { value: 'medium', label: 'Medium', color: '#fbbf24', icon: '🟡' },
-                        { value: 'low', label: 'Low', color: '#3b82f6', icon: '🔵' }
-                      ]}
-                      placeholder="Select priority"
-                    />
+                  <div style={{ position: 'relative' }}>
+                    <label style={{ fontSize: '14px', fontWeight: '500', color: '#374151', marginBottom: '6px', display: 'block' }}>
+                      Priority
+                    </label>
+                    <div
+                      data-priority-trigger-modal="modal-priority"
+                      onClick={() => {
+                        if (openPicker?.type === 'priority' && openPicker?.id === 'modal-priority') {
+                          setOpenPicker(null);
+                        } else {
+                          setOpenPicker({ type: 'priority', id: 'modal-priority' });
+                        }
+                      }}
+                      style={{
+                        padding: '8px 12px',
+                        border: '1px solid #d1d5db',
+                        borderRadius: '6px',
+                        cursor: 'pointer',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '8px',
+                        backgroundColor: 'white'
+                      }}
+                    >
+                      {taskData.priority ? (
+                        <>
+                          <span style={{ fontSize: '16px' }}>
+                            {taskData.priority === 'critical' ? '🔴' :
+                             taskData.priority === 'urgent' ? '🟠' :
+                             taskData.priority === 'high' ? '🟡' :
+                             taskData.priority === 'medium' ? '🟢' :
+                             taskData.priority === 'normal' ? '🔵' : '⚪'}
+                          </span>
+                          <span style={{ textTransform: 'capitalize' }}>{taskData.priority}</span>
+                        </>
+                      ) : (
+                        <span style={{ color: '#9ca3af' }}>Select priority</span>
+                      )}
+                    </div>
+                    {openPicker?.type === 'priority' && openPicker.id === 'modal-priority' && (
+                      <PriorityPicker
+                        taskId="modal-priority"
+                        context="modal"
+                        value={{ id: taskData.priority }}
+                        onChange={(priority: any) => {
+                          setTaskData({ ...taskData, priority: priority.id });
+                          setOpenPicker(null);
+                        }}
+                        onClose={() => setOpenPicker(null)}
+                      />
+                    )}
                   </div>
                 </div>
 
@@ -1126,22 +1330,67 @@ const ComprehensiveTaskModal: React.FC<TaskModalProps> = ({ isOpen, onClose, tas
               {/* Right Column */}
               <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
                 {/* Assignee */}
-                <div>
+                <div style={{ position: 'relative' }}>
                   <label style={{ fontSize: '14px', fontWeight: '500', color: '#374151', marginBottom: '6px', display: 'block' }}>
                     Assignee
                   </label>
-                  <div style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '8px',
-                    padding: '8px 12px',
-                    border: '1px solid #d1d5db',
-                    borderRadius: '6px',
-                    cursor: 'pointer'
-                  }}>
-                    <Users style={{ width: '16px', height: '16px', color: '#6b7280' }} />
-                    <span style={{ fontSize: '14px', color: '#374151' }}>Select Assignee</span>
+                  <div
+                    data-assignee-trigger-modal="modal-assignee"
+                    onClick={() => {
+                      if (openPicker?.type === 'assignee' && openPicker?.id === 'modal-assignee') {
+                        setOpenPicker(null);
+                      } else {
+                        setOpenPicker({ type: 'assignee', id: 'modal-assignee' });
+                      }
+                    }}
+                    style={{
+                      padding: '8px 12px',
+                      border: '1px solid #d1d5db',
+                      borderRadius: '6px',
+                      cursor: 'pointer',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '8px',
+                      backgroundColor: 'white'
+                    }}
+                  >
+                    {taskData.assignee ? (
+                      <>
+                        <span style={{
+                          width: '24px',
+                          height: '24px',
+                          borderRadius: '50%',
+                          backgroundColor: taskData.assignee.color || '#3b82f6',
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          fontSize: '10px',
+                          fontWeight: '600',
+                          color: 'white'
+                        }}>
+                          {taskData.assignee.name || 'U'}
+                        </span>
+                        <span>{taskData.assignee.fullName || taskData.assignee.label}</span>
+                      </>
+                    ) : (
+                      <>
+                        <Users style={{ width: '16px', height: '16px', color: '#6b7280' }} />
+                        <span style={{ color: '#9ca3af' }}>Select Assignee</span>
+                      </>
+                    )}
                   </div>
+                  {openPicker?.type === 'assignee' && openPicker.id === 'modal-assignee' && (
+                    <AssigneePicker
+                      taskId="modal-assignee"
+                      context="modal"
+                      value={taskData.assignee}
+                      onChange={(assignee: any) => {
+                        setTaskData({ ...taskData, assignee });
+                        setOpenPicker(null);
+                      }}
+                      onClose={() => setOpenPicker(null)}
+                    />
+                  )}
                 </div>
 
                 {/* Tags */}

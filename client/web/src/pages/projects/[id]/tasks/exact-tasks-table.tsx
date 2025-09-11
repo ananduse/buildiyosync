@@ -70,6 +70,10 @@ const StatusPicker = ({ value, onChange, onClose, taskId, context = 'list' }: an
       if (target.closest(`[data-status-picker-${context}="${taskId}"]`)) {
         return;
       }
+      // Don't close if clicking on the trigger button
+      if (target.closest(`[data-status-trigger-${context}="${taskId}"]`)) {
+        return;
+      }
       // Close the picker for any outside click
       onClose();
     };
@@ -329,6 +333,10 @@ const CategoryPicker = ({ value, onChange, onClose, taskId, context = 'list' }: 
       const target = e.target as HTMLElement;
       // Check if click is on the picker itself
       if (target.closest(`[data-category-picker-${context}="${taskId}"]`)) {
+        return;
+      }
+      // Don't close if clicking on the trigger button
+      if (target.closest(`[data-category-trigger-${context}="${taskId}"]`)) {
         return;
       }
       // Close the picker for any outside click
@@ -700,6 +708,10 @@ const PriorityPicker = ({ value, onChange, onClose, taskId, context = 'list' }: 
       const target = e.target as HTMLElement;
       // Check if click is on the picker itself
       if (target.closest(`[data-priority-picker-${context}="${taskId}"]`)) {
+        return;
+      }
+      // Don't close if clicking on the trigger button
+      if (target.closest(`[data-priority-trigger-${context}="${taskId}"]`)) {
         return;
       }
       // Close the picker for any outside click
@@ -1110,6 +1122,10 @@ const AssigneePicker = ({ value, onChange, onClose, taskId, context = 'list' }: 
       const target = e.target as HTMLElement;
       // Check if click is on the picker itself
       if (target.closest(`[data-assignee-picker-${context}="${taskId}"]`)) {
+        return;
+      }
+      // Don't close if clicking on the trigger button
+      if (target.closest(`[data-assignee-trigger-${context}="${taskId}"]`)) {
         return;
       }
       // Close the picker for any outside click
