@@ -113,11 +113,11 @@ export const StatusPicker = ({ value, onChange, onClose, taskId, context = 'list
   );
 };
 
-// Priority Picker Component
+// Priority Picker Component - Using exact same implementation as task list
 export const PriorityPicker = ({ value, onChange, onClose, taskId, context = 'list' }: any) => {
   const [position, setPosition] = useState<{ top: number; left: number } | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
-  const [priorities] = useState([
+  const [priorities, setPriorities] = useState([
     { id: 'critical', label: 'Critical', color: '#dc2626', icon: '🔴', level: 1 },
     { id: 'urgent', label: 'Urgent', color: '#ef4444', icon: '🟠', level: 2 },
     { id: 'high', label: 'High', color: '#fb923c', icon: '🟡', level: 3 },
@@ -125,6 +125,11 @@ export const PriorityPicker = ({ value, onChange, onClose, taskId, context = 'li
     { id: 'normal', label: 'Normal', color: '#10b981', icon: '🔵', level: 5 },
     { id: 'low', label: 'Low', color: '#3b82f6', icon: '⚪', level: 6 }
   ]);
+  const [showEdit, setShowEdit] = useState(false);
+  const [editingPriority, setEditingPriority] = useState<any>(null);
+  const [newPriorityName, setNewPriorityName] = useState('');
+  const [newPriorityColor, setNewPriorityColor] = useState('#9333ea');
+  const [newPriorityLevel, setNewPriorityLevel] = useState('7');
 
   const filteredPriorities = priorities.filter(priority =>
     priority.label.toLowerCase().includes(searchTerm.toLowerCase())
@@ -191,21 +196,25 @@ export const PriorityPicker = ({ value, onChange, onClose, taskId, context = 'li
           <div
             key={`${taskId}-priority-${priority.id}`}
             onClick={() => {
-              onChange(priority);
+              onChange({
+                priority: priority.label,
+                priorityColor: priority.color,
+                priorityLevel: priority.level
+              });
               onClose();
             }}
             style={mergeStyles(
               pickerStyles.option,
-              (value?.id === priority.id || value?.priority === priority.id) ? pickerStyles.optionSelected : {}
+              (value?.priority === priority.label) ? pickerStyles.optionSelected : {}
             )}
             onMouseEnter={(e) => {
               Object.assign(e.currentTarget.style,
-                (value?.id === priority.id || value?.priority === priority.id) ? pickerStyles.optionSelected : pickerStyles.optionHover
+                (value?.priority === priority.label) ? pickerStyles.optionSelected : pickerStyles.optionHover
               );
             }}
             onMouseLeave={(e) => {
               Object.assign(e.currentTarget.style,
-                (value?.id === priority.id || value?.priority === priority.id) ? pickerStyles.optionSelected : pickerStyles.option
+                (value?.priority === priority.label) ? pickerStyles.optionSelected : pickerStyles.option
               );
             }}
           >
@@ -220,7 +229,7 @@ export const PriorityPicker = ({ value, onChange, onClose, taskId, context = 'li
               marginLeft: 'auto',
               fontWeight: '500'
             }}>Level {priority.level}</span>
-            {(value?.id === priority.id || value?.priority === priority.id) && (
+            {(value?.priority === priority.label) && (
               <Check style={pickerStyles.checkmark} />
             )}
           </div>

@@ -393,7 +393,9 @@ const ComprehensiveTaskModal: React.FC<TaskModalProps> = ({ isOpen, onClose, tas
     taskCode: '',
     type: 'task',
     status: 'todo',
-    priority: 'medium',
+    priority: 'Medium',
+    priorityColor: '#fbbf24',
+    priorityLevel: 4,
     category: '',
     tags: [] as string[],
     
@@ -1259,14 +1261,25 @@ const ComprehensiveTaskModal: React.FC<TaskModalProps> = ({ isOpen, onClose, tas
                     >
                       {taskData.priority ? (
                         <>
-                          <span style={{ fontSize: '16px' }}>
-                            {taskData.priority === 'critical' ? '🔴' :
-                             taskData.priority === 'urgent' ? '🟠' :
-                             taskData.priority === 'high' ? '🟡' :
-                             taskData.priority === 'medium' ? '🟢' :
-                             taskData.priority === 'normal' ? '🔵' : '⚪'}
+                          <Flag style={{ width: '14px', height: '14px', color: taskData.priorityColor || '#9ca3af' }} />
+                          <span style={{ 
+                            color: taskData.priorityColor || '#374151',
+                            fontWeight: '500'
+                          }}>
+                            {typeof taskData.priority === 'object' ? taskData.priority.label : taskData.priority}
                           </span>
-                          <span style={{ textTransform: 'capitalize' }}>{taskData.priority}</span>
+                          {taskData.priorityLevel && (
+                            <span style={{ 
+                              fontSize: '11px', 
+                              color: '#9ca3af',
+                              backgroundColor: '#f3f4f6',
+                              padding: '2px 6px',
+                              borderRadius: '4px',
+                              marginLeft: 'auto'
+                            }}>
+                              Level {taskData.priorityLevel}
+                            </span>
+                          )}
                         </>
                       ) : (
                         <span style={{ color: '#9ca3af' }}>Select priority</span>
@@ -1276,9 +1289,12 @@ const ComprehensiveTaskModal: React.FC<TaskModalProps> = ({ isOpen, onClose, tas
                       <PriorityPicker
                         taskId="modal-priority"
                         context="modal"
-                        value={{ id: taskData.priority }}
-                        onChange={(priority: any) => {
-                          setTaskData({ ...taskData, priority: priority.id });
+                        value={taskData}
+                        onChange={(priorityData: any) => {
+                          setTaskData({ 
+                            ...taskData, 
+                            ...priorityData
+                          });
                           setOpenPicker(null);
                         }}
                         onClose={() => setOpenPicker(null)}
