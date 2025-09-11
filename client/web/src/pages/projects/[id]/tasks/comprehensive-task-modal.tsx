@@ -20,7 +20,8 @@ import { TemplateManagementModal } from './template-management-modal';
 import { ChecklistItemDetailModal } from './checklist-item-detail-modal';
 import { CustomFieldsTab } from './custom-fields-tab';
 import { pickerStyles, mergeStyles, usePickerBehavior } from './unified-picker-styles';
-import { StatusPicker, PriorityPicker, CategoryPicker, AssigneePicker } from './shared-pickers';
+import { StatusPicker, CategoryPicker, AssigneePicker } from './shared-pickers';
+import { TaskPriorityPicker } from './task-priority-picker';
 import {
   X,
   Calendar,
@@ -1286,7 +1287,7 @@ const ComprehensiveTaskModal: React.FC<TaskModalProps> = ({ isOpen, onClose, tas
                       )}
                     </div>
                     {openPicker?.type === 'priority' && openPicker.id === 'modal-priority' && (
-                      <PriorityPicker
+                      <TaskPriorityPicker
                         taskId="modal-priority"
                         context="modal"
                         value={taskData}
@@ -1295,7 +1296,6 @@ const ComprehensiveTaskModal: React.FC<TaskModalProps> = ({ isOpen, onClose, tas
                             ...taskData, 
                             ...priorityData
                           });
-                          setOpenPicker(null);
                         }}
                         onClose={() => setOpenPicker(null)}
                       />

@@ -12,6 +12,12 @@ import {
   Eye,
   Copy,
   Flag,
+  AlertCircle,
+  AlertTriangle as AlertTriangleIcon,
+  ChevronUp as ChevronUpIcon,
+  TrendingUp,
+  Minus,
+  ChevronDown as ChevronDownIcon,
   GripVertical,
   X,
   Check,
@@ -33,6 +39,7 @@ import {
 import ComprehensiveTaskModal from './comprehensive-task-modal';
 import { ConfirmationDialog, useNotification } from './confirmation-dialog';
 import { pickerStyles, mergeStyles, usePickerBehavior } from './unified-picker-styles';
+import { TaskPriorityPicker } from './task-priority-picker';
 
 // Status picker component
 const StatusPicker = ({ value, onChange, onClose, taskId, context = 'list' }: any) => {
@@ -655,8 +662,8 @@ const CategoryPicker = ({ value, onChange, onClose, taskId, context = 'list' }: 
   );
 };
 
-// Priority picker component
-const PriorityPicker = ({ value, onChange, onClose, taskId, context = 'list' }: any) => {
+// Priority picker component - OLD (keeping for reference, using TaskPriorityPicker instead)
+const PriorityPickerOLD = ({ value, onChange, onClose, taskId, context = 'list' }: any) => {
   const [position, setPosition] = useState<{ top: number; left: number } | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [priorities, setPriorities] = useState([
@@ -1203,6 +1210,19 @@ const AssigneePicker = ({ value, onChange, onClose, taskId, context = 'list' }: 
   );
 };
 
+// Helper function to get priority icon
+const getPriorityIcon = (priority: string) => {
+  const priorityMap: { [key: string]: any } = {
+    'Critical': AlertCircle,
+    'Urgent': AlertTriangleIcon,
+    'High': ChevronUpIcon,
+    'Medium': TrendingUp,
+    'Normal': Minus,
+    'Low': ChevronDownIcon
+  };
+  return priorityMap[priority] || Flag;
+};
+
 const ExactTasksTable: React.FC = () => {
   const [expandedGroups, setExpandedGroups] = useState<string[]>(['planning', 'development', 'finalization', 'foundation', 'plumbing', 'electrical']);
   const [expandedTasks, setExpandedTasks] = useState<string[]>([]);
@@ -1258,6 +1278,7 @@ const ExactTasksTable: React.FC = () => {
           priority: 'Urgent',
           priorityColor: '#ef4444',
           priorityLevel: 2,
+          priorityIcon: AlertTriangleIcon,
           estimatedDuration: '8/31/24, 4am',
           startDate: '9/2/24, 4am',
           dueDate: '9/5/24, 4am',
@@ -1273,6 +1294,7 @@ const ExactTasksTable: React.FC = () => {
               priority: 'High',
               priorityColor: '#fb923c',
               priorityLevel: 3,
+              priorityIcon: ChevronUpIcon,
               estimatedDuration: '8/31/24, 4am',
               startDate: '9/2/24, 4am',
               dueDate: '9/3/24, 4am',
@@ -1287,6 +1309,7 @@ const ExactTasksTable: React.FC = () => {
               priority: 'Normal',
               priorityColor: '#10b981',
               priorityLevel: 5,
+              priorityIcon: Minus,
               estimatedDuration: '8/28/24, 4am',
               startDate: '8/29/24, 4am',
               dueDate: '9/1/24, 4am',
@@ -1303,6 +1326,7 @@ const ExactTasksTable: React.FC = () => {
           priority: 'High',
           priorityColor: '#fb923c',
           priorityLevel: 3,
+          priorityIcon: ChevronUpIcon,
           estimatedDuration: '8/25/24, 4am',
           startDate: '8/26/24, 4am',
           dueDate: '8/30/24, 4am',
@@ -1335,6 +1359,7 @@ const ExactTasksTable: React.FC = () => {
           priority: 'Normal',
           priorityColor: '#10b981',
           priorityLevel: 6,
+          priorityIcon: Minus,
           estimatedDuration: '9/10/24, 4am',
           startDate: '9/16/24, 4am',
           dueDate: '9/20/24, 4am',
@@ -1350,6 +1375,7 @@ const ExactTasksTable: React.FC = () => {
           priority: 'High',
           priorityColor: '#fb923c',
           priorityLevel: 3,
+          priorityIcon: ChevronUpIcon,
           estimatedDuration: '9/20/24, 4am',
           startDate: '9/22/24, 4am',
           dueDate: '9/25/24, 4am',
@@ -1365,6 +1391,7 @@ const ExactTasksTable: React.FC = () => {
               priority: 'Normal',
               priorityColor: '#10b981',
               priorityLevel: 5,
+              priorityIcon: Minus,
               estimatedDuration: '9/20/24, 4am',
               startDate: '9/22/24, 4am',
               dueDate: '9/23/24, 4am',
@@ -1397,6 +1424,7 @@ const ExactTasksTable: React.FC = () => {
           assignee: { id: 'as', name: 'AS', fullName: 'Alex Smith', color: '#5b5fc7' },
           priority: 'Low',
           priorityColor: '#3b82f6',
+          priorityIcon: ChevronDownIcon,
           priorityLevel: 8,
           estimatedDuration: '10/25/24, 4am',
           startDate: '10/28/24, 4am',
@@ -1461,6 +1489,7 @@ const ExactTasksTable: React.FC = () => {
           assignee: null,
           priority: 'Low',
           priorityColor: '#3b82f6',
+          priorityIcon: ChevronDownIcon,
           priorityLevel: 7,
           estimatedDuration: '10/5/24, 4am',
           startDate: '10/8/24, 4am',
@@ -1479,6 +1508,7 @@ const ExactTasksTable: React.FC = () => {
           priority: 'High',
           priorityColor: '#fb923c',
           priorityLevel: 3,
+          priorityIcon: ChevronUpIcon,
           estimatedDuration: '9/30/24, 4am',
           startDate: '10/3/24, 4am',
           dueDate: '10/7/24, 4am',
@@ -1969,7 +1999,27 @@ const ExactTasksTable: React.FC = () => {
                   value={task.status}
                   onChange={(status: any) => {
                     // Update task status
-                    console.log('Update status', status);
+                    setTasks((prev: any) => {
+                      const newTasks = { ...prev };
+                      Object.keys(newTasks).forEach(group => {
+                        newTasks[group] = newTasks[group].map((t: any) => {
+                          if (t.id === task.id) {
+                            return { ...t, status };
+                          }
+                          // Also check subtasks
+                          if (t.subtasks) {
+                            return {
+                              ...t,
+                              subtasks: t.subtasks.map((st: any) =>
+                                st.id === task.id ? { ...st, status } : st
+                              )
+                            };
+                          }
+                          return t;
+                        });
+                      });
+                      return newTasks;
+                    });
                   }}
                   onClose={() => setOpenPicker(null)}
                 />
@@ -2002,7 +2052,27 @@ const ExactTasksTable: React.FC = () => {
               value={task.category}
               onChange={(category: any) => {
                 // Update task category
-                console.log('Update category', category);
+                setTasks((prev: any) => {
+                  const newTasks = { ...prev };
+                  Object.keys(newTasks).forEach(group => {
+                    newTasks[group] = newTasks[group].map((t: any) => {
+                      if (t.id === task.id) {
+                        return { ...t, category };
+                      }
+                      // Also check subtasks
+                      if (t.subtasks) {
+                        return {
+                          ...t,
+                          subtasks: t.subtasks.map((st: any) =>
+                            st.id === task.id ? { ...st, category } : st
+                          )
+                        };
+                      }
+                      return t;
+                    });
+                  });
+                  return newTasks;
+                });
               }}
               onClose={() => setOpenPicker(null)}
             />
@@ -2065,7 +2135,27 @@ const ExactTasksTable: React.FC = () => {
               value={task.assignee}
               onChange={(assignee: any) => {
                 // Update task assignee
-                console.log('Update assignee', assignee);
+                setTasks((prev: any) => {
+                  const newTasks = { ...prev };
+                  Object.keys(newTasks).forEach(group => {
+                    newTasks[group] = newTasks[group].map((t: any) => {
+                      if (t.id === task.id) {
+                        return { ...t, assignee };
+                      }
+                      // Also check subtasks
+                      if (t.subtasks) {
+                        return {
+                          ...t,
+                          subtasks: t.subtasks.map((st: any) =>
+                            st.id === task.id ? { ...st, assignee } : st
+                          )
+                        };
+                      }
+                      return t;
+                    });
+                  });
+                  return newTasks;
+                });
               }}
               onClose={() => setOpenPicker(null)}
             />
@@ -2085,7 +2175,13 @@ const ExactTasksTable: React.FC = () => {
               cursor: 'pointer'
             }}
           >
-            <Flag style={{ width: '14px', height: '14px', color: task.priorityColor }} />
+            {task.priorityIcon ? (
+              React.createElement(task.priorityIcon, { 
+                style: { width: '14px', height: '14px', color: task.priorityColor } 
+              })
+            ) : (
+              <Flag style={{ width: '14px', height: '14px', color: task.priorityColor }} />
+            )}
             <span style={{
               fontSize: '13px',
               color: task.priorityColor,
@@ -2104,19 +2200,30 @@ const ExactTasksTable: React.FC = () => {
             </span>
           </div>
           {openPicker?.type === 'priority' && openPicker.taskId === task.id && (
-            <PriorityPicker
+            <TaskPriorityPicker
               taskId={task.id}
               value={task}
+              context="list"
               onChange={(priorityData: any) => {
                 // Update task priority
-                console.log('Update priority', priorityData);
-                // You would update the task here
                 setTasks((prev: any) => {
                   const newTasks = { ...prev };
                   Object.keys(newTasks).forEach(group => {
-                    newTasks[group] = newTasks[group].map((t: any) => 
-                      t.id === task.id ? { ...t, ...priorityData } : t
-                    );
+                    newTasks[group] = newTasks[group].map((t: any) => {
+                      if (t.id === task.id) {
+                        return { ...t, ...priorityData };
+                      }
+                      // Also check subtasks
+                      if (t.subtasks) {
+                        return {
+                          ...t,
+                          subtasks: t.subtasks.map((st: any) =>
+                            st.id === task.id ? { ...st, ...priorityData } : st
+                          )
+                        };
+                      }
+                      return t;
+                    });
                   });
                   return newTasks;
                 });
