@@ -22,8 +22,6 @@ import { CustomFieldsTab } from './custom-fields-tab';
 import { pickerStyles, mergeStyles, usePickerBehavior } from './unified-picker-styles';
 import { StatusPicker, CategoryPicker, AssigneePicker } from './shared-pickers';
 import { TaskPriorityPicker } from './task-priority-picker';
-import { RichTextEditor } from './rich-text-editor';
-import { DependencySelector } from './dependency-selector';
 import {
   X,
   Calendar,
@@ -1132,12 +1130,18 @@ const ComprehensiveTaskModal: React.FC<TaskModalProps> = ({ isOpen, onClose, tas
                         <Code style={{ width: '16px', height: '16px', color: '#6b7280' }} />
                       </button>
                     </div>
-                    <RichTextEditor
+                    <textarea
                       value={taskData.description}
-                      onChange={(value) => setTaskData({ ...taskData, description: value })}
+                      onChange={(e) => setTaskData({ ...taskData, description: e.target.value })}
                       placeholder="Enter task description..."
-                      minHeight="150px"
-                      maxHeight="300px"
+                      style={{
+                        width: '100%',
+                        minHeight: '120px',
+                        padding: '12px',
+                        border: 'none',
+                        fontSize: '14px',
+                        resize: 'vertical'
+                      }}
                     />
                   </div>
                 </div>
@@ -1662,58 +1666,8 @@ const ComprehensiveTaskModal: React.FC<TaskModalProps> = ({ isOpen, onClose, tas
           {activeTab === 'budget' && (
             <div>
               <h3 style={{ fontSize: '16px', fontWeight: '600', marginBottom: '16px', color: '#111827' }}>
-                Budget & Financial Details
+                Budget Information
               </h3>
-              
-              {/* Budget Summary Cards */}
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '16px', marginBottom: '24px' }}>
-                <div style={{
-                  padding: '16px',
-                  backgroundColor: '#f0f9ff',
-                  borderRadius: '8px',
-                  border: '1px solid #bae6fd'
-                }}>
-                  <div style={{ fontSize: '12px', color: '#0369a1', marginBottom: '4px' }}>Budget Allocated</div>
-                  <div style={{ fontSize: '20px', fontWeight: '600', color: '#0c4a6e' }}>
-                    ${taskData.estimatedCost || 0}
-                  </div>
-                </div>
-                <div style={{
-                  padding: '16px',
-                  backgroundColor: '#fef3c7',
-                  borderRadius: '8px',
-                  border: '1px solid #fde68a'
-                }}>
-                  <div style={{ fontSize: '12px', color: '#92400e', marginBottom: '4px' }}>Spent to Date</div>
-                  <div style={{ fontSize: '20px', fontWeight: '600', color: '#78350f' }}>
-                    ${taskData.actualCost || 0}
-                  </div>
-                </div>
-                <div style={{
-                  padding: '16px',
-                  backgroundColor: metrics.costVariance > 0 ? '#fee2e2' : '#ecfdf5',
-                  borderRadius: '8px',
-                  border: `1px solid ${metrics.costVariance > 0 ? '#fecaca' : '#86efac'}`
-                }}>
-                  <div style={{ fontSize: '12px', color: metrics.costVariance > 0 ? '#991b1b' : '#14532d', marginBottom: '4px' }}>
-                    Variance
-                  </div>
-                  <div style={{ fontSize: '20px', fontWeight: '600', color: metrics.costVariance > 0 ? '#7f1d1d' : '#052e16' }}>
-                    {metrics.costVariance > 0 ? '+' : ''}{((taskData.actualCost || 0) - (taskData.estimatedCost || 0)).toFixed(2)}
-                  </div>
-                </div>
-                <div style={{
-                  padding: '16px',
-                  backgroundColor: '#f3e8ff',
-                  borderRadius: '8px',
-                  border: '1px solid #e9d5ff'
-                }}>
-                  <div style={{ fontSize: '12px', color: '#6b21a8', marginBottom: '4px' }}>Remaining</div>
-                  <div style={{ fontSize: '20px', fontWeight: '600', color: '#581c87' }}>
-                    ${Math.max(0, (taskData.estimatedCost || 0) - (taskData.actualCost || 0)).toFixed(2)}
-                  </div>
-                </div>
-              </div>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px' }}>
                 <div>
                   <SelectPicker
@@ -1805,39 +1759,118 @@ const ComprehensiveTaskModal: React.FC<TaskModalProps> = ({ isOpen, onClose, tas
           {activeTab === 'dependencies' && (
             <div>
               <h3 style={{ fontSize: '16px', fontWeight: '600', marginBottom: '16px', color: '#111827' }}>
-                Task Dependencies & Relationships
+                Task Dependencies
               </h3>
               
-              <DependencySelector
-                existingDependencies={taskData.dependencies}
-                existingBlocks={taskData.blocks}
-                onAddDependency={(taskId) => {
-                  setTaskData({
-                    ...taskData,
-                    dependencies: [...taskData.dependencies, taskId]
-                  });
-                }}
-                onAddBlock={(taskId) => {
-                  setTaskData({
-                    ...taskData,
-                    blocks: [...taskData.blocks, taskId]
-                  });
-                }}
-                onRemoveDependency={(taskId) => {
-                  setTaskData({
-                    ...taskData,
-                    dependencies: taskData.dependencies.filter((d: string) => d !== taskId)
-                  });
-                }}
-                onRemoveBlock={(taskId) => {
-                  setTaskData({
-                    ...taskData,
-                    blocks: taskData.blocks.filter((b: string) => b !== taskId)
-                  });
-                }}
-              />
-            </div>
-          )}
+              {/* Depends On */}
+              <div style={{ marginBottom: '24px' }}>
+                <label style={{ fontSize: '14px', fontWeight: '500', color: '#374151', marginBottom: '8px', display: 'block' }}>
+                  Depends On
+                </label>
+                <div style={{
+                  border: '1px solid #d1d5db',
+                  borderRadius: '6px',
+                  padding: '12px',
+                  minHeight: '100px'
+                }}>
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', marginBottom: '12px' }}>
+                    {taskData.dependencies.map((dep: string, index: number) => (
+                      <div
+                        key={index}
+                        style={{
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: '6px',
+                          padding: '6px 10px',
+                          backgroundColor: '#fef3c7',
+                          borderRadius: '6px',
+                          fontSize: '13px'
+                        }}
+                      >
+                        <GitBranch style={{ width: '14px', height: '14px', color: '#d97706' }} />
+                        <span style={{ color: '#92400e' }}>{dep}</span>
+                        <X
+                          style={{ width: '14px', height: '14px', cursor: 'pointer', color: '#92400e' }}
+                          onClick={() => setTaskData({
+                            ...taskData,
+                            dependencies: taskData.dependencies.filter((_: string, i: number) => i !== index)
+                          })}
+                        />
+                      </div>
+                    ))}
+                  </div>
+                  <button style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '6px',
+                    padding: '6px 10px',
+                    backgroundColor: 'transparent',
+                    border: '1px dashed #d1d5db',
+                    borderRadius: '6px',
+                    fontSize: '13px',
+                    color: '#6b7280',
+                    cursor: 'pointer'
+                  }}>
+                    <Plus style={{ width: '14px', height: '14px' }} />
+                    Add Dependency
+                  </button>
+                </div>
+              </div>
+
+              {/* Blocks */}
+              <div style={{ marginBottom: '24px' }}>
+                <label style={{ fontSize: '14px', fontWeight: '500', color: '#374151', marginBottom: '8px', display: 'block' }}>
+                  Blocks
+                </label>
+                <div style={{
+                  border: '1px solid #d1d5db',
+                  borderRadius: '6px',
+                  padding: '12px',
+                  minHeight: '100px'
+                }}>
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', marginBottom: '12px' }}>
+                    {taskData.blocks.map((block: string, index: number) => (
+                      <div
+                        key={index}
+                        style={{
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: '6px',
+                          padding: '6px 10px',
+                          backgroundColor: '#fee2e2',
+                          borderRadius: '6px',
+                          fontSize: '13px'
+                        }}
+                      >
+                        <AlertCircle style={{ width: '14px', height: '14px', color: '#ef4444' }} />
+                        <span style={{ color: '#991b1b' }}>{block}</span>
+                        <X
+                          style={{ width: '14px', height: '14px', cursor: 'pointer', color: '#991b1b' }}
+                          onClick={() => setTaskData({
+                            ...taskData,
+                            blocks: taskData.blocks.filter((_: string, i: number) => i !== index)
+                          })}
+                        />
+                      </div>
+                    ))}
+                  </div>
+                  <button style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '6px',
+                    padding: '6px 10px',
+                    backgroundColor: 'transparent',
+                    border: '1px dashed #d1d5db',
+                    borderRadius: '6px',
+                    fontSize: '13px',
+                    color: '#6b7280',
+                    cursor: 'pointer'
+                  }}>
+                    <Plus style={{ width: '14px', height: '14px' }} />
+                    Add Blocking Task
+                  </button>
+                </div>
+              </div>
             </div>
           )}
 
@@ -2519,12 +2552,18 @@ const ComprehensiveTaskModal: React.FC<TaskModalProps> = ({ isOpen, onClose, tas
                     <Paperclip style={{ width: '16px', height: '16px', color: '#6b7280' }} />
                   </button>
                 </div>
-                <RichTextEditor
+                <textarea
                   value={newComment}
-                  onChange={(value) => setNewComment(value)}
+                  onChange={(e) => setNewComment(e.target.value)}
                   placeholder="Write a comment..."
-                  minHeight="120px"
-                  maxHeight="250px"
+                  style={{
+                    width: '100%',
+                    minHeight: '100px',
+                    padding: '12px',
+                    border: 'none',
+                    fontSize: '14px',
+                    resize: 'vertical'
+                  }}
                 />
                 <div style={{
                   display: 'flex',
@@ -2746,7 +2785,6 @@ const ComprehensiveTaskModal: React.FC<TaskModalProps> = ({ isOpen, onClose, tas
             </button>
           </div>
         </div>
-      </div>
 
       {/* Template Management Modal */}
       <TemplateManagementModal
@@ -2785,6 +2823,7 @@ const ComprehensiveTaskModal: React.FC<TaskModalProps> = ({ isOpen, onClose, tas
           }}
         />
       )}
+    </div>
     </div>
   );
 };
