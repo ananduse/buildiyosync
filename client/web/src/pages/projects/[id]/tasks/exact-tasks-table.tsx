@@ -1235,6 +1235,68 @@ const ExactTasksTable: React.FC = () => {
   const [deleteConfirmation, setDeleteConfirmation] = useState<{ isOpen: boolean; taskId: string | null; taskName: string; taskGroup: string }>({ isOpen: false, taskId: null, taskName: '', taskGroup: '' });
   const { showNotification, NotificationContainer } = useNotification();
   
+  // Column configuration state
+  const [showColumnConfig, setShowColumnConfig] = useState(false);
+  const [columns, setColumns] = useState([
+    { id: 'checkbox', label: '', visible: true, fixed: true, width: '60px' },
+    { id: 'name', label: 'Name', visible: true, fixed: false, width: 'auto' },
+    { id: 'status', label: 'Status', visible: true, fixed: false, width: '140px' },
+    { id: 'category', label: 'Activity Category', visible: true, fixed: false, width: '150px' },
+    { id: 'assignee', label: 'Assignee', visible: true, fixed: false, width: '100px' },
+    { id: 'priority', label: 'Priority', visible: true, fixed: false, width: '130px' },
+    { id: 'duration', label: 'Estimated Duration', visible: true, fixed: false, width: '160px' },
+    { id: 'startDate', label: 'Start date', visible: true, fixed: false, width: '140px' },
+    { id: 'dueDate', label: 'Due date', visible: true, fixed: false, width: '140px' }
+  ]);
+  const [draggedColumn, setDraggedColumn] = useState<number | null>(null);
+  const [dragOverColumn, setDragOverColumn] = useState<number | null>(null);
+
+  // Column drag handlers
+  const handleColumnDragStart = (e: React.DragEvent, index: number) => {
+    if (columns[index].fixed) return;
+    setDraggedColumn(index);
+    e.dataTransfer.effectAllowed = 'move';
+  };
+
+  const handleColumnDragOver = (e: React.DragEvent, index: number) => {
+    e.preventDefault();
+    if (columns[index].fixed) return;
+    if (draggedColumn === null) return;
+    if (draggedColumn === index) return;
+    setDragOverColumn(index);
+  };
+
+  const handleColumnDrop = (e: React.DragEvent, dropIndex: number) => {
+    e.preventDefault();
+    if (draggedColumn === null) return;
+    if (columns[dropIndex].fixed) return;
+    
+    const newColumns = [...columns];
+    const draggedCol = newColumns[draggedColumn];
+    
+    // Remove dragged column
+    newColumns.splice(draggedColumn, 1);
+    
+    // Insert at new position
+    const adjustedIndex = dropIndex > draggedColumn ? dropIndex - 1 : dropIndex;
+    newColumns.splice(adjustedIndex, 0, draggedCol);
+    
+    setColumns(newColumns);
+    setDraggedColumn(null);
+    setDragOverColumn(null);
+  };
+
+  const handleColumnDragEnd = () => {
+    setDraggedColumn(null);
+    setDragOverColumn(null);
+  };
+
+  const toggleColumnVisibility = (columnId: string) => {
+    setColumns(prev => prev.map(col => 
+      col.id === columnId ? { ...col, visible: !col.visible } : col
+    ));
+  };
+  
   // Close any open picker when clicking to open a new one
   const handleOpenPicker = (type: string, taskId: string) => {
     if (openPicker?.type === type && openPicker?.taskId === taskId) {
@@ -1698,6 +1760,551 @@ const ExactTasksTable: React.FC = () => {
     );
   };
 
+  const renderCell = (column: any, task: any, group: string, uniqueRowId: string, isSubtask: boolean = false) => {
+    switch (column.id) {
+      case 'checkbox':
+        return (
+          <td key={column.id} style={{ padding: '4px 6px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+              {!isSubtask && (
+                <GripVertical style={{ width: '14px', height: '14px', color: '#d1d5db', cursor: 'grab' }} />
+              )}
+              <input type="checkbox" 
+                     checked={selectedTasks.includes(task.id)}
+                     onChange={() => toggleTaskSelection(task.id)}
+                     style={{ width: '14px', height: '14px', cursor: 'pointer' }} />
+            </div>
+          </td>
+        );
+      
+      case 'name':
+        return (
+          <td key={column.id} style={{ padding: '4px 6px', paddingLeft: isSubtask ? '48px' : '8px', position: 'relative' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '10px', position: 'relative' }}>
+              {task.hasSubtasks && !isSubtask && (
+                <span onClick={() => toggleTask(task.id)} style={{ cursor: 'pointer', display: 'flex', alignItems: 'center' }}>
+                  {expandedTasks.includes(task.id) ? 
+                    <ChevronDown style={{ width: '16px', height: '16px', color: '#6b7280' }} /> : 
+                    <ChevronRight style={{ width: '16px', height: '16px', color: '#6b7280' }} />
+                  }
+                </span>
+              )}
+              <ProgressCircle progress={task.progress} size={isSubtask ? 24 : 28} />
+              <span 
+                onClick={() => {
+                  const taskToEdit = isSubtask ? { ...task, parentTaskId: group } : task;
+                  setSelectedTaskForEdit(taskToEdit);
+                }}
+                style={{ 
+                  fontSize: '14px', 
+                  color: hoveredRow === uniqueRowId ? '#3b82f6' : isSubtask ? '#6b7280' : '#111827',
+                  transition: 'color 0.2s',
+                  fontWeight: isSubtask ? '400' : '500',
+                  cursor: 'pointer'
+                }}>
+                {task.name}
+                {isSubtask && (
+                  <span style={{
+                    fontSize: '11px',
+                    color: '#9ca3af',
+                    marginLeft: '8px',
+                    fontStyle: 'italic'
+                  }}>
+                    (subtask)
+                  </span>
+                )}
+              </span>
+              
+              {/* Task Quick Stats */}
+              <div style={{ display: 'flex', gap: '12px', marginLeft: '12px' }}>
+                {task.hasSubtasks && (
+                  <div 
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setSelectedTaskForEdit({ ...task, defaultTab: 'checklist', isManagingSubtasks: true });
+                    }}
+                    style={{ 
+                      display: 'flex', 
+                      alignItems: 'center', 
+                      gap: '4px',
+                      cursor: 'pointer',
+                      padding: '2px 6px',
+                      borderRadius: '4px',
+                      backgroundColor: '#f3f4f6',
+                      transition: 'background-color 0.2s'
+                    }}
+                    onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#e5e7eb'}
+                    onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#f3f4f6'}
+                  >
+                    <ListTodo style={{ width: '14px', height: '14px', color: '#6b7280' }} />
+                    <span style={{ fontSize: '12px', color: '#6b7280', fontWeight: '500' }}>
+                      {task.subtasks?.length || 0}
+                    </span>
+                  </div>
+                )}
+                
+                {task.attachments && task.attachments.length > 0 && (
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                    <Paperclip style={{ width: '14px', height: '14px', color: '#6b7280' }} />
+                    <span style={{ fontSize: '12px', color: '#6b7280' }}>{task.attachments.length}</span>
+                  </div>
+                )}
+                
+                {task.comments && task.comments.length > 0 && (
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                    <MessageSquare style={{ width: '14px', height: '14px', color: '#6b7280' }} />
+                    <span style={{ fontSize: '12px', color: '#6b7280' }}>{task.comments.length}</span>
+                  </div>
+                )}
+                
+                {task.checklist && task.checklist.length > 0 && (
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                    <CheckCircle style={{ width: '14px', height: '14px', color: '#22c55e' }} />
+                    <span style={{ fontSize: '12px', color: '#6b7280' }}>
+                      {task.checklist.filter((c: any) => c.completed).length}/{task.checklist.length}
+                    </span>
+                  </div>
+                )}
+                
+                {task.timeTracked && task.timeTracked > 0 && (
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                    <Clock style={{ width: '14px', height: '14px', color: '#6b7280' }} />
+                    <span style={{ fontSize: '12px', color: '#6b7280' }}>{task.timeTracked}h</span>
+                  </div>
+                )}
+                
+                {task.isOverdue && (
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                    <AlertTriangle style={{ width: '14px', height: '14px', color: '#ef4444' }} />
+                    <span style={{ fontSize: '12px', color: '#ef4444', fontWeight: '500' }}>Overdue</span>
+                  </div>
+                )}
+              </div>
+              {hoveredRow === uniqueRowId && (
+                <div 
+                  key={`actions-${uniqueRowId}`}
+                  style={{ 
+                    position: 'absolute',
+                    right: '8px',
+                    top: '50%',
+                    transform: 'translateY(-50%)',
+                    display: 'flex', 
+                    gap: '4px',
+                    backgroundColor: 'white',
+                    borderRadius: '6px',
+                    padding: '2px',
+                    boxShadow: '0 1px 3px rgba(0,0,0,0.1)'
+                  }}
+                >
+                  <div 
+                    title="Add Subtask"
+                    style={{
+                      padding: '4px',
+                      borderRadius: '4px',
+                      cursor: 'pointer',
+                      transition: 'all 0.15s',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      backgroundColor: 'transparent'
+                    }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.backgroundColor = '#f3f4f6';
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.backgroundColor = 'transparent';
+                    }}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setSelectedTaskForEdit({ ...task, isManagingSubtasks: true });
+                    }}
+                  >
+                    <Plus style={{ width: '18px', height: '18px', color: '#6b7280' }} />
+                  </div>
+                  <div 
+                    title="Link Task"
+                    style={{
+                      padding: '6px',
+                      borderRadius: '6px',
+                      cursor: 'pointer',
+                      transition: 'all 0.2s',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      backgroundColor: 'transparent'
+                    }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.backgroundColor = '#f3f4f6';
+                      e.currentTarget.style.transform = 'scale(1.1)';
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.backgroundColor = 'transparent';
+                      e.currentTarget.style.transform = 'scale(1)';
+                    }}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      alert('Link task functionality');
+                    }}
+                  >
+                    <Link2 style={{ width: '18px', height: '18px', color: '#6b7280' }} />
+                  </div>
+                  <div 
+                    title="Edit Task"
+                    style={{
+                      padding: '4px',
+                      borderRadius: '4px',
+                      cursor: 'pointer',
+                      transition: 'all 0.15s',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      backgroundColor: 'transparent'
+                    }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.backgroundColor = '#f3f4f6';
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.backgroundColor = 'transparent';
+                    }}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setSelectedTaskForEdit(task);
+                    }}
+                  >
+                    <Edit2 style={{ width: '18px', height: '18px', color: '#6b7280' }} />
+                  </div>
+                  <div 
+                    title="Delete Task"
+                    style={{
+                      padding: '4px',
+                      borderRadius: '4px',
+                      cursor: 'pointer',
+                      transition: 'all 0.15s',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      backgroundColor: 'transparent'
+                    }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.backgroundColor = '#fee2e2';
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.backgroundColor = 'transparent';
+                    }}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setDeleteConfirmation({
+                        isOpen: true,
+                        taskId: task.id,
+                        taskName: task.name,
+                        taskGroup: group
+                      });
+                    }}
+                  >
+                    <Trash2 style={{ width: '18px', height: '18px', color: '#ef4444' }} />
+                  </div>
+                </div>
+              )}
+            </div>
+          </td>
+        );
+      
+      case 'status':
+        return (
+          <td key={column.id} style={{ padding: '4px 6px', position: 'relative' }}>
+            {task.status && (
+              <>
+                <span 
+                  data-status-trigger-list={task.id}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleOpenPicker('status', task.id);
+                  }}
+                  style={{
+                    fontSize: '11px',
+                    backgroundColor: task.status.color,
+                    color: 'white',
+                    padding: '5px 12px',
+                    borderRadius: '20px',
+                    fontWeight: '600',
+                    textTransform: 'uppercase',
+                    cursor: 'pointer',
+                    display: 'inline-block',
+                    letterSpacing: '0.5px'
+                  }}>
+                  {task.status.label}
+                </span>
+                {openPicker?.type === 'status' && openPicker.taskId === task.id && (
+                  <StatusPicker
+                    taskId={task.id}
+                    value={task.status}
+                    onChange={(status: any) => {
+                      setTasks((prev: any) => {
+                        const newTasks = { ...prev };
+                        Object.keys(newTasks).forEach(group => {
+                          newTasks[group] = newTasks[group].map((t: any) => {
+                            if (t.id === task.id) {
+                              return { ...t, status };
+                            }
+                            if (t.subtasks) {
+                              return {
+                                ...t,
+                                subtasks: t.subtasks.map((st: any) =>
+                                  st.id === task.id ? { ...st, status } : st
+                                )
+                              };
+                            }
+                            return t;
+                          });
+                        });
+                        return newTasks;
+                      });
+                    }}
+                    onClose={() => setOpenPicker(null)}
+                  />
+                )}
+              </>
+            )}
+          </td>
+        );
+      
+      case 'category':
+        return (
+          <td key={column.id} style={{ padding: '4px 6px', position: 'relative' }}>
+            <span 
+              data-category-trigger-list={task.id}
+              onClick={(e) => {
+                e.stopPropagation();
+                handleOpenPicker('category', task.id);
+              }}
+              style={{
+                fontSize: '12px',
+                backgroundColor: task.category.color,
+                color: 'white',
+                padding: '5px 12px',
+                borderRadius: '6px',
+                fontWeight: '500',
+                cursor: 'pointer',
+                display: 'inline-block'
+              }}>
+              {task.category.label}
+            </span>
+            {openPicker?.type === 'category' && openPicker.taskId === task.id && (
+              <CategoryPicker
+                taskId={task.id}
+                value={task.category}
+                onChange={(category: any) => {
+                  setTasks((prev: any) => {
+                    const newTasks = { ...prev };
+                    Object.keys(newTasks).forEach(group => {
+                      newTasks[group] = newTasks[group].map((t: any) => {
+                        if (t.id === task.id) {
+                          return { ...t, category };
+                        }
+                        if (t.subtasks) {
+                          return {
+                            ...t,
+                            subtasks: t.subtasks.map((st: any) =>
+                              st.id === task.id ? { ...st, category } : st
+                            )
+                          };
+                        }
+                        return t;
+                      });
+                    });
+                    return newTasks;
+                  });
+                }}
+                onClose={() => setOpenPicker(null)}
+              />
+            )}
+          </td>
+        );
+      
+      case 'assignee':
+        return (
+          <td key={column.id} style={{ padding: '4px 6px', textAlign: 'left', position: 'relative' }}>
+            {task.assignee ? (
+              <>
+                <span 
+                  data-assignee-trigger-list={task.id}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleOpenPicker('assignee', task.id);
+                  }}
+                  style={{
+                    fontSize: '10px',
+                    backgroundColor: task.assignee.color,
+                    color: 'white',
+                    width: '24px',
+                    height: '24px',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    borderRadius: '50%',
+                    fontWeight: '600',
+                    cursor: 'pointer',
+                    flexShrink: 0
+                  }}>
+                  {task.assignee.name}
+                </span>
+              </>
+            ) : (
+              <div
+                data-assignee-trigger-list={task.id}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleOpenPicker('assignee', task.id);
+                }}
+                style={{
+                  width: '24px',
+                  height: '24px',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  borderRadius: '50%',
+                  backgroundColor: '#f3f4f6',
+                  cursor: 'pointer',
+                  transition: 'background-color 0.15s',
+                  flexShrink: 0
+                }}
+                onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#e5e7eb'}
+                onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#f3f4f6'}
+              >
+                <Users style={{ width: '14px', height: '14px', color: '#9ca3af' }} />
+              </div>
+            )}
+            {openPicker?.type === 'assignee' && openPicker.taskId === task.id && (
+              <AssigneePicker
+                taskId={task.id}
+                value={task.assignee}
+                onChange={(assignee: any) => {
+                  setTasks((prev: any) => {
+                    const newTasks = { ...prev };
+                    Object.keys(newTasks).forEach(group => {
+                      newTasks[group] = newTasks[group].map((t: any) => {
+                        if (t.id === task.id) {
+                          return { ...t, assignee };
+                        }
+                        if (t.subtasks) {
+                          return {
+                            ...t,
+                            subtasks: t.subtasks.map((st: any) =>
+                              st.id === task.id ? { ...st, assignee } : st
+                            )
+                          };
+                        }
+                        return t;
+                      });
+                    });
+                    return newTasks;
+                  });
+                }}
+                onClose={() => setOpenPicker(null)}
+              />
+            )}
+          </td>
+        );
+      
+      case 'priority':
+        return (
+          <td key={column.id} style={{ padding: '4px 6px', position: 'relative' }}>
+            <div 
+              data-priority-trigger-list={task.id}
+              onClick={(e) => {
+                e.stopPropagation();
+                handleOpenPicker('priority', task.id);
+              }}
+              style={{ 
+                display: 'flex', 
+                alignItems: 'center', 
+                gap: '6px',
+                cursor: 'pointer'
+              }}
+            >
+              {task.priorityIcon ? (
+                React.createElement(task.priorityIcon, { 
+                  style: { width: '14px', height: '14px', color: task.priorityColor } 
+                })
+              ) : (
+                <Flag style={{ width: '14px', height: '14px', color: task.priorityColor }} />
+              )}
+              <span style={{
+                fontSize: '13px',
+                color: task.priorityColor,
+                fontWeight: '500'
+              }}>
+                {task.priority}
+              </span>
+              <span style={{ 
+                fontSize: '11px', 
+                color: '#9ca3af',
+                backgroundColor: '#f3f4f6',
+                padding: '2px 6px',
+                borderRadius: '4px'
+              }}>
+                {task.priorityLevel}
+              </span>
+            </div>
+            {openPicker?.type === 'priority' && openPicker.taskId === task.id && (
+              <TaskPriorityPicker
+                taskId={task.id}
+                value={task}
+                context="list"
+                onChange={(priorityData: any) => {
+                  setTasks((prev: any) => {
+                    const newTasks = { ...prev };
+                    Object.keys(newTasks).forEach(group => {
+                      newTasks[group] = newTasks[group].map((t: any) => {
+                        if (t.id === task.id) {
+                          return { ...t, ...priorityData };
+                        }
+                        if (t.subtasks) {
+                          return {
+                            ...t,
+                            subtasks: t.subtasks.map((st: any) =>
+                              st.id === task.id ? { ...st, ...priorityData } : st
+                            )
+                          };
+                        }
+                        return t;
+                      });
+                    });
+                    return newTasks;
+                  });
+                }}
+                onClose={() => setOpenPicker(null)}
+              />
+            )}
+          </td>
+        );
+      
+      case 'duration':
+        return (
+          <td key={column.id} style={{ padding: '4px 6px', fontSize: '13px', color: '#374151' }}>
+            {task.estimatedDuration}
+          </td>
+        );
+      
+      case 'startDate':
+        return (
+          <td key={column.id} style={{ padding: '4px 6px', fontSize: '13px', color: '#374151' }}>
+            {task.startDate}
+          </td>
+        );
+      
+      case 'dueDate':
+        return (
+          <td key={column.id} style={{ padding: '4px 6px', fontSize: '13px', color: '#374151' }}>
+            {task.dueDate}
+          </td>
+        );
+      
+      default:
+        return null;
+    }
+  };
+
   const renderTask = (task: any, group: string, index: number, isSubtask: boolean = false) => {
     // Generate truly unique row ID using index to prevent duplicates
     const uniqueRowId = `${group}-${task.id}-${index}`;
@@ -1722,519 +2329,7 @@ const ExactTasksTable: React.FC = () => {
         }}
         onMouseLeave={() => setHoveredRow(null)}
       >
-        <td style={{ padding: '4px 6px' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-            {!isSubtask && (
-              <GripVertical style={{ width: '14px', height: '14px', color: '#d1d5db', cursor: 'grab' }} />
-            )}
-            <input type="checkbox" 
-                   checked={selectedTasks.includes(task.id)}
-                   onChange={() => toggleTaskSelection(task.id)}
-                   style={{ width: '14px', height: '14px', cursor: 'pointer' }} />
-          </div>
-        </td>
-        <td style={{ padding: '4px 6px', paddingLeft: isSubtask ? '48px' : '8px', position: 'relative' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '10px', position: 'relative' }}>
-            {task.hasSubtasks && !isSubtask && (
-              <span onClick={() => toggleTask(task.id)} style={{ cursor: 'pointer', display: 'flex', alignItems: 'center' }}>
-                {expandedTasks.includes(task.id) ? 
-                  <ChevronDown style={{ width: '16px', height: '16px', color: '#6b7280' }} /> : 
-                  <ChevronRight style={{ width: '16px', height: '16px', color: '#6b7280' }} />
-                }
-              </span>
-            )}
-            <ProgressCircle progress={task.progress} size={isSubtask ? 24 : 28} />
-            <span 
-              onClick={() => {
-                // Mark subtasks with parentTaskId for proper handling
-                const taskToEdit = isSubtask ? { ...task, parentTaskId: group } : task;
-                setSelectedTaskForEdit(taskToEdit);
-              }}
-              style={{ 
-                fontSize: '14px', 
-                color: hoveredRow === uniqueRowId ? '#3b82f6' : isSubtask ? '#6b7280' : '#111827',
-                transition: 'color 0.2s',
-                fontWeight: isSubtask ? '400' : '500',
-                cursor: 'pointer'
-              }}>
-              {task.name}
-              {isSubtask && (
-                <span style={{
-                  fontSize: '11px',
-                  color: '#9ca3af',
-                  marginLeft: '8px',
-                  fontStyle: 'italic'
-                }}>
-                  (subtask)
-                </span>
-              )}
-            </span>
-            
-            {/* Task Quick Stats */}
-            <div style={{ display: 'flex', gap: '12px', marginLeft: '12px' }}>
-              {/* Subtasks */}
-              {task.hasSubtasks && (
-                <div 
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    // Open comprehensive modal with subtasks tab selected
-                    setSelectedTaskForEdit({ ...task, defaultTab: 'checklist', isManagingSubtasks: true });
-                  }}
-                  style={{ 
-                    display: 'flex', 
-                    alignItems: 'center', 
-                    gap: '4px',
-                    cursor: 'pointer',
-                    padding: '2px 6px',
-                    borderRadius: '4px',
-                    backgroundColor: '#f3f4f6',
-                    transition: 'background-color 0.2s'
-                  }}
-                  onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#e5e7eb'}
-                  onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#f3f4f6'}
-                >
-                  <ListTodo style={{ width: '14px', height: '14px', color: '#6b7280' }} />
-                  <span style={{ fontSize: '12px', color: '#6b7280', fontWeight: '500' }}>
-                    {task.subtasks?.length || 0}
-                  </span>
-                </div>
-              )}
-              
-              {/* Attachments */}
-              {task.attachments && task.attachments.length > 0 && (
-                <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                  <Paperclip style={{ width: '14px', height: '14px', color: '#6b7280' }} />
-                  <span style={{ fontSize: '12px', color: '#6b7280' }}>{task.attachments.length}</span>
-                </div>
-              )}
-              
-              {/* Comments */}
-              {task.comments && task.comments.length > 0 && (
-                <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                  <MessageSquare style={{ width: '14px', height: '14px', color: '#6b7280' }} />
-                  <span style={{ fontSize: '12px', color: '#6b7280' }}>{task.comments.length}</span>
-                </div>
-              )}
-              
-              {/* Checklist Progress */}
-              {task.checklist && task.checklist.length > 0 && (
-                <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                  <CheckCircle style={{ width: '14px', height: '14px', color: '#22c55e' }} />
-                  <span style={{ fontSize: '12px', color: '#6b7280' }}>
-                    {task.checklist.filter((c: any) => c.completed).length}/{task.checklist.length}
-                  </span>
-                </div>
-              )}
-              
-              {/* Time Tracked */}
-              {task.timeTracked && task.timeTracked > 0 && (
-                <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                  <Clock style={{ width: '14px', height: '14px', color: '#6b7280' }} />
-                  <span style={{ fontSize: '12px', color: '#6b7280' }}>{task.timeTracked}h</span>
-                </div>
-              )}
-              
-              {/* Overdue Indicator */}
-              {task.isOverdue && (
-                <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                  <AlertTriangle style={{ width: '14px', height: '14px', color: '#ef4444' }} />
-                  <span style={{ fontSize: '12px', color: '#ef4444', fontWeight: '500' }}>Overdue</span>
-                </div>
-              )}
-            </div>
-            {hoveredRow === uniqueRowId && (
-              <div 
-                key={`actions-${uniqueRowId}`}
-                style={{ 
-                  position: 'absolute',
-                  right: '8px',
-                  top: '50%',
-                  transform: 'translateY(-50%)',
-                  display: 'flex', 
-                  gap: '4px',
-                  backgroundColor: 'white',
-                  borderRadius: '6px',
-                  padding: '2px',
-                  boxShadow: '0 1px 3px rgba(0,0,0,0.1)'
-                }}
-              >
-                <div 
-                  title="Add Subtask"
-                  style={{
-                    padding: '4px',
-                    borderRadius: '4px',
-                    cursor: 'pointer',
-                    transition: 'all 0.15s',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    backgroundColor: 'transparent'
-                  }}
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.backgroundColor = '#f3f4f6';
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.backgroundColor = 'transparent';
-                  }}
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    // Open comprehensive modal for adding/managing subtasks
-                    setSelectedTaskForEdit({ ...task, isManagingSubtasks: true });
-                  }}
-                >
-                  <Plus style={{ width: '18px', height: '18px', color: '#6b7280' }} />
-                </div>
-                <div 
-                  title="Link Task"
-                  style={{
-                    padding: '6px',
-                    borderRadius: '6px',
-                    cursor: 'pointer',
-                    transition: 'all 0.2s',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    backgroundColor: 'transparent'
-                  }}
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.backgroundColor = '#f3f4f6';
-                    e.currentTarget.style.transform = 'scale(1.1)';
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.backgroundColor = 'transparent';
-                    e.currentTarget.style.transform = 'scale(1)';
-                  }}
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    alert('Link task functionality');
-                  }}
-                >
-                  <Link2 style={{ width: '18px', height: '18px', color: '#6b7280' }} />
-                </div>
-                <div 
-                  title="Edit Task"
-                  style={{
-                    padding: '4px',
-                    borderRadius: '4px',
-                    cursor: 'pointer',
-                    transition: 'all 0.15s',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    backgroundColor: 'transparent'
-                  }}
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.backgroundColor = '#f3f4f6';
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.backgroundColor = 'transparent';
-                  }}
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    setSelectedTaskForEdit(task);
-                  }}
-                >
-                  <Edit2 style={{ width: '18px', height: '18px', color: '#6b7280' }} />
-                </div>
-                <div 
-                  title="Delete Task"
-                  style={{
-                    padding: '4px',
-                    borderRadius: '4px',
-                    cursor: 'pointer',
-                    transition: 'all 0.15s',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    backgroundColor: 'transparent'
-                  }}
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.backgroundColor = '#fee2e2';
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.backgroundColor = 'transparent';
-                  }}
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    setDeleteConfirmation({
-                      isOpen: true,
-                      taskId: task.id,
-                      taskName: task.name,
-                      taskGroup: group
-                    });
-                  }}
-                >
-                  <Trash2 style={{ width: '18px', height: '18px', color: '#ef4444' }} />
-                </div>
-              </div>
-            )}
-          </div>
-        </td>
-        <td style={{ padding: '4px 6px', position: 'relative' }}>
-          {task.status && (
-            <>
-              <span 
-                data-status-trigger-list={task.id}
-                onClick={(e) => {
-                  e.stopPropagation();
-                  handleOpenPicker('status', task.id);
-                }}
-                style={{
-                  fontSize: '11px',
-                  backgroundColor: task.status.color,
-                  color: 'white',
-                  padding: '5px 12px',
-                  borderRadius: '20px',
-                  fontWeight: '600',
-                  textTransform: 'uppercase',
-                  cursor: 'pointer',
-                  display: 'inline-block',
-                  letterSpacing: '0.5px'
-                }}>
-                {task.status.label}
-              </span>
-              {openPicker?.type === 'status' && openPicker.taskId === task.id && (
-                <StatusPicker
-                  taskId={task.id}
-                  value={task.status}
-                  onChange={(status: any) => {
-                    // Update task status
-                    setTasks((prev: any) => {
-                      const newTasks = { ...prev };
-                      Object.keys(newTasks).forEach(group => {
-                        newTasks[group] = newTasks[group].map((t: any) => {
-                          if (t.id === task.id) {
-                            return { ...t, status };
-                          }
-                          // Also check subtasks
-                          if (t.subtasks) {
-                            return {
-                              ...t,
-                              subtasks: t.subtasks.map((st: any) =>
-                                st.id === task.id ? { ...st, status } : st
-                              )
-                            };
-                          }
-                          return t;
-                        });
-                      });
-                      return newTasks;
-                    });
-                  }}
-                  onClose={() => setOpenPicker(null)}
-                />
-              )}
-            </>
-          )}
-        </td>
-        <td style={{ padding: '4px 6px', position: 'relative' }}>
-          <span 
-            data-category-trigger-list={task.id}
-            onClick={(e) => {
-              e.stopPropagation();
-              handleOpenPicker('category', task.id);
-            }}
-            style={{
-              fontSize: '12px',
-              backgroundColor: task.category.color,
-              color: 'white',
-              padding: '5px 12px',
-              borderRadius: '6px',
-              fontWeight: '500',
-              cursor: 'pointer',
-              display: 'inline-block'
-            }}>
-            {task.category.label}
-          </span>
-          {openPicker?.type === 'category' && openPicker.taskId === task.id && (
-            <CategoryPicker
-              taskId={task.id}
-              value={task.category}
-              onChange={(category: any) => {
-                // Update task category
-                setTasks((prev: any) => {
-                  const newTasks = { ...prev };
-                  Object.keys(newTasks).forEach(group => {
-                    newTasks[group] = newTasks[group].map((t: any) => {
-                      if (t.id === task.id) {
-                        return { ...t, category };
-                      }
-                      // Also check subtasks
-                      if (t.subtasks) {
-                        return {
-                          ...t,
-                          subtasks: t.subtasks.map((st: any) =>
-                            st.id === task.id ? { ...st, category } : st
-                          )
-                        };
-                      }
-                      return t;
-                    });
-                  });
-                  return newTasks;
-                });
-              }}
-              onClose={() => setOpenPicker(null)}
-            />
-          )}
-        </td>
-        <td style={{ padding: '4px 6px', textAlign: 'left', position: 'relative' }}>
-          {task.assignee ? (
-            <>
-              <span 
-                data-assignee-trigger-list={task.id}
-                onClick={(e) => {
-                  e.stopPropagation();
-                  handleOpenPicker('assignee', task.id);
-                }}
-                style={{
-                  fontSize: '10px',
-                  backgroundColor: task.assignee.color,
-                  color: 'white',
-                  width: '24px',
-                  height: '24px',
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  borderRadius: '50%',
-                  fontWeight: '600',
-                  cursor: 'pointer',
-                  flexShrink: 0
-                }}>
-                {task.assignee.name}
-              </span>
-            </>
-          ) : (
-            <div
-              data-assignee-trigger-list={task.id}
-              onClick={(e) => {
-                e.stopPropagation();
-                handleOpenPicker('assignee', task.id);
-              }}
-              style={{
-                width: '24px',
-                height: '24px',
-                display: 'inline-flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                borderRadius: '50%',
-                backgroundColor: '#f3f4f6',
-                cursor: 'pointer',
-                transition: 'background-color 0.15s',
-                flexShrink: 0
-              }}
-              onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#e5e7eb'}
-              onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#f3f4f6'}
-            >
-              <Users style={{ width: '14px', height: '14px', color: '#9ca3af' }} />
-            </div>
-          )}
-          {openPicker?.type === 'assignee' && openPicker.taskId === task.id && (
-            <AssigneePicker
-              taskId={task.id}
-              value={task.assignee}
-              onChange={(assignee: any) => {
-                // Update task assignee
-                setTasks((prev: any) => {
-                  const newTasks = { ...prev };
-                  Object.keys(newTasks).forEach(group => {
-                    newTasks[group] = newTasks[group].map((t: any) => {
-                      if (t.id === task.id) {
-                        return { ...t, assignee };
-                      }
-                      // Also check subtasks
-                      if (t.subtasks) {
-                        return {
-                          ...t,
-                          subtasks: t.subtasks.map((st: any) =>
-                            st.id === task.id ? { ...st, assignee } : st
-                          )
-                        };
-                      }
-                      return t;
-                    });
-                  });
-                  return newTasks;
-                });
-              }}
-              onClose={() => setOpenPicker(null)}
-            />
-          )}
-        </td>
-        <td style={{ padding: '4px 6px', position: 'relative' }}>
-          <div 
-            data-priority-trigger-list={task.id}
-            onClick={(e) => {
-              e.stopPropagation();
-              handleOpenPicker('priority', task.id);
-            }}
-            style={{ 
-              display: 'flex', 
-              alignItems: 'center', 
-              gap: '6px',
-              cursor: 'pointer'
-            }}
-          >
-            {task.priorityIcon ? (
-              React.createElement(task.priorityIcon, { 
-                style: { width: '14px', height: '14px', color: task.priorityColor } 
-              })
-            ) : (
-              <Flag style={{ width: '14px', height: '14px', color: task.priorityColor }} />
-            )}
-            <span style={{
-              fontSize: '13px',
-              color: task.priorityColor,
-              fontWeight: '500'
-            }}>
-              {task.priority}
-            </span>
-            <span style={{ 
-              fontSize: '11px', 
-              color: '#9ca3af',
-              backgroundColor: '#f3f4f6',
-              padding: '2px 6px',
-              borderRadius: '4px'
-            }}>
-              {task.priorityLevel}
-            </span>
-          </div>
-          {openPicker?.type === 'priority' && openPicker.taskId === task.id && (
-            <TaskPriorityPicker
-              taskId={task.id}
-              value={task}
-              context="list"
-              onChange={(priorityData: any) => {
-                // Update task priority
-                setTasks((prev: any) => {
-                  const newTasks = { ...prev };
-                  Object.keys(newTasks).forEach(group => {
-                    newTasks[group] = newTasks[group].map((t: any) => {
-                      if (t.id === task.id) {
-                        return { ...t, ...priorityData };
-                      }
-                      // Also check subtasks
-                      if (t.subtasks) {
-                        return {
-                          ...t,
-                          subtasks: t.subtasks.map((st: any) =>
-                            st.id === task.id ? { ...st, ...priorityData } : st
-                          )
-                        };
-                      }
-                      return t;
-                    });
-                  });
-                  return newTasks;
-                });
-              }}
-              onClose={() => setOpenPicker(null)}
-            />
-          )}
-        </td>
-        <td style={{ padding: '4px 6px', fontSize: '13px', color: '#374151' }}>{task.estimatedDuration}</td>
-        <td style={{ padding: '4px 6px', fontSize: '13px', color: '#374151' }}>{task.startDate}</td>
-        <td style={{ padding: '4px 6px', fontSize: '13px', color: '#374151' }}>{task.dueDate}</td>
+        {columns.filter(col => col.visible).map(column => renderCell(column, task, group, uniqueRowId, isSubtask))}
       </tr>
     );
   };
@@ -2278,17 +2373,89 @@ const ExactTasksTable: React.FC = () => {
               </>
             )}
           </button>
-          <button style={{
-            padding: '6px 12px',
-            fontSize: '13px',
-            backgroundColor: 'transparent',
-            color: '#6b7280',
-            border: '1px solid #e5e7eb',
-            borderRadius: '6px',
-            cursor: 'pointer'
-          }}>
-            Columns
-          </button>
+          <div style={{ position: 'relative' }}>
+            <button 
+              onClick={() => setShowColumnConfig(!showColumnConfig)}
+              style={{
+                padding: '6px 12px',
+                fontSize: '13px',
+                backgroundColor: showColumnConfig ? '#f3f4f6' : 'transparent',
+                color: '#6b7280',
+                border: '1px solid #e5e7eb',
+                borderRadius: '6px',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '6px'
+              }}>
+              <Settings style={{ width: '14px', height: '14px', color: '#6b7280' }} />
+              Columns
+            </button>
+            
+            {/* Column Configuration Panel */}
+            {showColumnConfig && (
+              <div style={{
+                position: 'absolute',
+                right: 0,
+                top: '100%',
+                marginTop: '4px',
+                backgroundColor: 'white',
+                border: '1px solid #e5e7eb',
+                borderRadius: '8px',
+                boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
+                padding: '8px',
+                minWidth: '200px',
+                zIndex: 1000
+              }}>
+                <div style={{ marginBottom: '8px', padding: '4px 8px', borderBottom: '1px solid #e5e7eb' }}>
+                  <span style={{ fontSize: '12px', fontWeight: '600', color: '#374151' }}>Configure Columns</span>
+                </div>
+                <div style={{ maxHeight: '300px', overflowY: 'auto' }}>
+                  {columns.filter(col => !col.fixed).map((column) => (
+                    <div 
+                      key={column.id}
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        padding: '6px 8px',
+                        fontSize: '13px',
+                        cursor: column.fixed ? 'default' : 'pointer',
+                        borderRadius: '4px',
+                        transition: 'background-color 0.2s'
+                      }}
+                      onMouseEnter={(e) => !column.fixed && (e.currentTarget.style.backgroundColor = '#f9fafb')}
+                      onMouseLeave={(e) => !column.fixed && (e.currentTarget.style.backgroundColor = 'transparent')}
+                    >
+                      <input
+                        type="checkbox"
+                        checked={column.visible}
+                        onChange={() => toggleColumnVisibility(column.id)}
+                        disabled={column.fixed}
+                        style={{
+                          marginRight: '8px',
+                          width: '14px',
+                          height: '14px',
+                          cursor: column.fixed ? 'not-allowed' : 'pointer'
+                        }}
+                      />
+                      <span style={{ 
+                        color: column.fixed ? '#9ca3af' : '#374151',
+                        flex: 1
+                      }}>
+                        {column.label || 'Checkbox'}
+                      </span>
+                      <GripVertical style={{ 
+                        width: '14px', 
+                        height: '14px', 
+                        color: '#d1d5db',
+                        cursor: column.fixed ? 'not-allowed' : 'grab'
+                      }} />
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
           <button style={{
@@ -2355,17 +2522,33 @@ const ExactTasksTable: React.FC = () => {
       <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '14px' }}>
         <thead>
           <tr style={{ borderBottom: '1px solid #e5e7eb', backgroundColor: 'transparent' }}>
-            <th style={{ padding: '6px 6px', textAlign: 'left', fontWeight: '600', color: '#374151', width: '60px' }}>
-              <input type="checkbox" style={{ width: '14px', height: '14px' }} />
-            </th>
-            <th style={{ padding: '6px 6px', textAlign: 'left', fontWeight: '600', color: '#374151' }}>Name</th>
-            <th style={{ padding: '6px 8px', textAlign: 'left', fontWeight: '500', color: '#6b7280', width: '140px' }}>Status</th>
-            <th style={{ padding: '6px 8px', textAlign: 'left', fontWeight: '500', color: '#6b7280', width: '150px' }}>Activity Category</th>
-            <th style={{ padding: '6px 6px', textAlign: 'left', fontWeight: '600', color: '#374151', width: '100px' }}>Assignee</th>
-            <th style={{ padding: '6px 8px', textAlign: 'left', fontWeight: '500', color: '#6b7280', width: '130px' }}>Priority</th>
-            <th style={{ padding: '6px 8px', textAlign: 'left', fontWeight: '500', color: '#6b7280', width: '160px' }}>Estimated Duration</th>
-            <th style={{ padding: '6px 8px', textAlign: 'left', fontWeight: '500', color: '#6b7280', width: '140px' }}>Start date</th>
-            <th style={{ padding: '6px 8px', textAlign: 'left', fontWeight: '500', color: '#6b7280', width: '140px' }}>Due date</th>
+            {columns.filter(col => col.visible).map((column, index) => (
+              <th 
+                key={column.id}
+                draggable={!column.fixed}
+                onDragStart={(e) => handleColumnDragStart(e, columns.indexOf(column))}
+                onDragOver={(e) => handleColumnDragOver(e, columns.indexOf(column))}
+                onDrop={(e) => handleColumnDrop(e, columns.indexOf(column))}
+                onDragEnd={handleColumnDragEnd}
+                style={{ 
+                  padding: column.id === 'checkbox' ? '6px 6px' : '6px 8px', 
+                  textAlign: 'left', 
+                  fontWeight: column.id === 'name' || column.id === 'assignee' || column.id === 'checkbox' ? '600' : '500', 
+                  color: column.id === 'name' || column.id === 'assignee' || column.id === 'checkbox' ? '#374151' : '#6b7280',
+                  width: column.width,
+                  cursor: column.fixed ? 'default' : 'grab',
+                  position: 'relative',
+                  backgroundColor: dragOverColumn === columns.indexOf(column) ? '#f3f4f6' : 'transparent',
+                  transition: 'background-color 0.2s',
+                  opacity: draggedColumn === columns.indexOf(column) ? 0.5 : 1
+                }}>
+                {column.id === 'checkbox' ? (
+                  <input type="checkbox" style={{ width: '14px', height: '14px' }} />
+                ) : (
+                  column.label
+                )}
+              </th>
+            ))}
           </tr>
         </thead>
         <tbody>
@@ -2373,7 +2556,7 @@ const ExactTasksTable: React.FC = () => {
           {Object.entries(tasks).map(([groupKey, groupTasks]: [string, any]) => (
             <React.Fragment key={groupKey}>
               <tr>
-                <td colSpan={9} style={{ padding: '4px 6px', backgroundColor: 'transparent' }}>
+                <td colSpan={columns.filter(col => col.visible).length} style={{ padding: '4px 6px', backgroundColor: 'transparent' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
                     <button
                       onClick={() => toggleGroup(groupKey)}
