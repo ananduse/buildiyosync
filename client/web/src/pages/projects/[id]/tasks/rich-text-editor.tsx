@@ -40,6 +40,42 @@ export const RichTextEditor: React.FC<RichTextEditorProps> = ({
   const [showLinkDialog, setShowLinkDialog] = useState(false);
   const [linkUrl, setLinkUrl] = useState('');
   const [selectedText, setSelectedText] = useState('');
+  const [isInitialized, setIsInitialized] = useState(false);
+
+  // Initialize editor with value
+  React.useEffect(() => {
+    if (editorRef.current && !isInitialized) {
+      editorRef.current.innerHTML = value || '';
+      setIsInitialized(true);
+    }
+  }, [value, isInitialized]);
+
+  // Update content when value changes externally
+  React.useEffect(() => {
+    if (editorRef.current && isInitialized && editorRef.current.innerHTML !== value) {
+      const selection = window.getSelection();
+      const range = selection?.getRangeAt(0);
+      const cursorPosition = range?.startOffset;
+      
+      editorRef.current.innerHTML = value || '';
+      
+      // Restore cursor position
+      if (selection && range && cursorPosition !== undefined) {
+        try {
+          const newRange = document.createRange();
+          const textNode = editorRef.current.childNodes[0] || editorRef.current;
+          if (textNode) {
+            newRange.setStart(textNode, Math.min(cursorPosition, textNode.textContent?.length || 0));
+            newRange.collapse(true);
+            selection.removeAllRanges();
+            selection.addRange(newRange);
+          }
+        } catch (e) {
+          // Ignore range errors
+        }
+      }
+    }
+  }, [value, isInitialized]);
 
   const execCommand = (command: string, value?: string) => {
     document.execCommand(command, false, value);
@@ -122,6 +158,17 @@ export const RichTextEditor: React.FC<RichTextEditorProps> = ({
   ];
 
   return (
+    <>
+      <style>
+        {`
+          [contenteditable]:empty:before {
+            content: attr(data-placeholder);
+            color: #9ca3af;
+            pointer-events: none;
+            display: block;
+          }
+        `}
+      </style>
     <div style={{
       position: isFullscreen ? 'fixed' : 'relative',
       top: isFullscreen ? 0 : 'auto',
@@ -205,8 +252,31 @@ export const RichTextEditor: React.FC<RichTextEditorProps> = ({
         ref={editorRef}
         contentEditable
         suppressContentEditableWarning
-        onInput={(e) => onChange(e.currentTarget.innerHTML)}
-        dangerouslySetInnerHTML={{ __html: value }}
+        onInput={(e) => {
+          const selection = window.getSelection();
+          const range = selection?.getRangeAt(0);
+          const cursorPosition = range?.startOffset;
+          
+          onChange(e.currentTarget.innerHTML);
+          
+          // Restore cursor position after React re-render
+          setTimeout(() => {
+            if (editorRef.current && selection && range && cursorPosition !== undefined) {
+              try {
+                const newRange = document.createRange();
+                const textNode = editorRef.current.childNodes[0] || editorRef.current;
+                if (textNode) {
+                  newRange.setStart(textNode, Math.min(cursorPosition, textNode.textContent?.length || 0));
+                  newRange.collapse(true);
+                  selection.removeAllRanges();
+                  selection.addRange(newRange);
+                }
+              } catch (e) {
+                // Ignore range errors
+              }
+            }
+          }, 0);
+        }}
         style={{
           flex: 1,
           minHeight: isFullscreen ? 'auto' : minHeight,
@@ -218,7 +288,7 @@ export const RichTextEditor: React.FC<RichTextEditorProps> = ({
           overflowY: 'auto',
           outline: 'none'
         }}
-        placeholder={placeholder}
+        data-placeholder={placeholder}
       />
 
       {/* Link Dialog */}
@@ -309,5 +379,6 @@ export const RichTextEditor: React.FC<RichTextEditorProps> = ({
         </div>
       )}
     </div>
+    </>
   );
 };

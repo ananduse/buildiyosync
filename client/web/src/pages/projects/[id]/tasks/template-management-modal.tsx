@@ -92,6 +92,10 @@ export const TemplateManagementModal: React.FC<TemplateManagementModalProps> = (
   const [expandedTemplates, setExpandedTemplates] = useState<Set<string>>(new Set());
   const [editingTemplate, setEditingTemplate] = useState<ChecklistTemplate | null>(null);
   const [favoriteTemplates, setFavoriteTemplates] = useState<Set<string>>(new Set());
+  const [templates, setTemplates] = useState<ChecklistTemplate[]>(allChecklistTemplates);
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [editingItem, setEditingItem] = useState<ChecklistItemDetail | null>(null);
+  const [editingItemIndex, setEditingItemIndex] = useState<number>(-1);
   
   // New template creation state
   const [newTemplate, setNewTemplate] = useState<Partial<ChecklistTemplate>>({
@@ -118,7 +122,26 @@ export const TemplateManagementModal: React.FC<TemplateManagementModalProps> = (
   });
 
   const [showItemForm, setShowItemForm] = useState(false);
-  const [editingItemIndex, setEditingItemIndex] = useState<number | null>(null);
+
+  // Populate form when editing
+  useEffect(() => {
+    if (editingTemplate) {
+      setNewTemplate({
+        ...editingTemplate,
+        items: [...editingTemplate.items]
+      });
+    } else {
+      setNewTemplate({
+        name: '',
+        category: '',
+        type: 'custom',
+        description: '',
+        version: '1.0',
+        tags: [],
+        items: []
+      });
+    }
+  }, [editingTemplate]);
 
   // Filter templates based on search and filters
   const filteredTemplates = allChecklistTemplates.filter(template => {
@@ -155,7 +178,7 @@ export const TemplateManagementModal: React.FC<TemplateManagementModalProps> = (
         status: 'pending'
       };
 
-      if (editingItemIndex !== null) {
+      if (editingItemIndex !== -1) {
         const updatedItems = [...(newTemplate.items || [])];
         updatedItems[editingItemIndex] = item;
         setNewTemplate({ ...newTemplate, items: updatedItems });
@@ -187,7 +210,7 @@ export const TemplateManagementModal: React.FC<TemplateManagementModalProps> = (
   const handleSaveTemplate = () => {
     if (newTemplate.name && newTemplate.category && newTemplate.items && newTemplate.items.length > 0) {
       const template: ChecklistTemplate = {
-        id: `custom-${Date.now()}`,
+        id: editingTemplate ? editingTemplate.id : `custom-${Date.now()}`,
         name: newTemplate.name,
         category: newTemplate.category,
         type: newTemplate.type as ChecklistTemplate['type'],
@@ -203,7 +226,19 @@ export const TemplateManagementModal: React.FC<TemplateManagementModalProps> = (
         metadata: newTemplate.metadata
       };
       
-      onCreateTemplate(template);
+      if (editingTemplate) {
+        // Update existing template
+        const updatedTemplates = templates.map(t => 
+          t.id === editingTemplate.id ? template : t
+        );
+        setTemplates(updatedTemplates);
+        setEditingTemplate(null);
+        setActiveTab('manage');
+      } else {
+        // Create new template
+        onCreateTemplate(template);
+        setTemplates([...templates, template]);
+      }
       
       // Reset form
       setNewTemplate({
@@ -748,7 +783,7 @@ export const TemplateManagementModal: React.FC<TemplateManagementModalProps> = (
             <div style={{ flex: 1, padding: '24px', overflowY: 'auto' }}>
               <div style={{ maxWidth: '1000px', margin: '0 auto' }}>
                 <h3 style={{ fontSize: '18px', fontWeight: '600', color: '#111827', marginBottom: '20px' }}>
-                  Create New Template
+                  {editingTemplate ? `Edit Template: ${editingTemplate.name}` : 'Create New Template'}
                 </h3>
 
                 {/* Template Basic Info */}
@@ -947,7 +982,7 @@ export const TemplateManagementModal: React.FC<TemplateManagementModalProps> = (
                       marginBottom: '16px'
                     }}>
                       <h5 style={{ fontSize: '14px', fontWeight: '600', color: '#374151', marginBottom: '12px' }}>
-                        {editingItemIndex !== null ? 'Edit Item' : 'New Item'}
+                        {editingItemIndex !== -1 ? 'Edit Item' : 'New Item'}
                       </h5>
                       
                       <div style={{ display: 'grid', gap: '12px' }}>
@@ -1097,7 +1132,7 @@ export const TemplateManagementModal: React.FC<TemplateManagementModalProps> = (
                               cursor: 'pointer'
                             }}
                           >
-                            {editingItemIndex !== null ? 'Update Item' : 'Add Item'}
+                            {editingItemIndex !== -1 ? 'Update Item' : 'Add Item'}
                           </button>
                         </div>
                       </div>
@@ -1254,7 +1289,7 @@ export const TemplateManagementModal: React.FC<TemplateManagementModalProps> = (
               </h3>
               
               <div style={{ display: 'grid', gap: '12px' }}>
-                {allChecklistTemplates.map(template => (
+                {templates.map(template => (
                   <div
                     key={template.id}
                     style={{
@@ -1307,7 +1342,12 @@ export const TemplateManagementModal: React.FC<TemplateManagementModalProps> = (
                       </div>
                       <div style={{ display: 'flex', gap: '8px' }}>
                         <button
-                          onClick={() => setEditingTemplate(template)}
+                          onClick={() => {
+                            setEditingTemplate(template);
+                            setShowEditModal(true);
+                            setActiveTab('create');
+                          }}
+                          title="Edit template"
                           style={{
                             padding: '6px',
                             backgroundColor: '#f3f4f6',
@@ -1319,6 +1359,16 @@ export const TemplateManagementModal: React.FC<TemplateManagementModalProps> = (
                           <Edit2 style={{ width: '14px', height: '14px', color: '#6b7280' }} />
                         </button>
                         <button
+                          onClick={() => {
+                            const duplicatedTemplate = {
+                              ...template,
+                              id: `template-${Date.now()}`,
+                              name: `${template.name} (Copy)`,
+                              items: [...template.items]
+                            };
+                            setTemplates([...templates, duplicatedTemplate]);
+                          }}
+                          title="Duplicate template"
                           style={{
                             padding: '6px',
                             backgroundColor: '#f3f4f6',
@@ -1330,6 +1380,12 @@ export const TemplateManagementModal: React.FC<TemplateManagementModalProps> = (
                           <Copy style={{ width: '14px', height: '14px', color: '#6b7280' }} />
                         </button>
                         <button
+                          onClick={() => {
+                            if (confirm(`Are you sure you want to delete "${template.name}"?`)) {
+                              setTemplates(templates.filter(t => t.id !== template.id));
+                            }
+                          }}
+                          title="Delete template"
                           style={{
                             padding: '6px',
                             backgroundColor: '#fee2e2',

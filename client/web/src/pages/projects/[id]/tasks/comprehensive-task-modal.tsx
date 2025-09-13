@@ -22,6 +22,7 @@ import { CustomFieldsTab } from './custom-fields-tab';
 import { pickerStyles, mergeStyles, usePickerBehavior } from './unified-picker-styles';
 import { StatusPicker, CategoryPicker, AssigneePicker } from './shared-pickers';
 import { TaskPriorityPicker } from './task-priority-picker';
+import { RichTextEditor } from './rich-text-editor';
 import {
   X,
   Calendar,
@@ -467,6 +468,10 @@ const ComprehensiveTaskModal: React.FC<TaskModalProps> = ({ isOpen, onClose, tas
   });
 
   const [newComment, setNewComment] = useState('');
+  const [editingCommentId, setEditingCommentId] = useState<number | null>(null);
+  const [editingCommentText, setEditingCommentText] = useState('');
+  const [editingChecklistId, setEditingChecklistId] = useState<number | string | null>(null);
+  const [editingChecklistText, setEditingChecklistText] = useState('');
   const [newChecklistItem, setNewChecklistItem] = useState('');
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const [timerSeconds, setTimerSeconds] = useState(0);
@@ -474,6 +479,10 @@ const ComprehensiveTaskModal: React.FC<TaskModalProps> = ({ isOpen, onClose, tas
   const [dependencySearch, setDependencySearch] = useState('');
   const [attachmentDragActive, setAttachmentDragActive] = useState(false);
   const [showTemplateManagement, setShowTemplateManagement] = useState(false);
+  const [showDependencyModal, setShowDependencyModal] = useState(false);
+  const [dependencyType, setDependencyType] = useState<'depends' | 'blocks'>('depends');
+  const [replyTo, setReplyTo] = useState<string | null>(null);
+  const [commentText, setCommentText] = useState('');
   const [selectedTemplates, setSelectedTemplates] = useState<ChecklistTemplate[]>([]);
   const [expandedChecklistItems, setExpandedChecklistItems] = useState<Set<string>>(new Set());
   const [editingChecklistItem, setEditingChecklistItem] = useState<ChecklistItemDetail | null>(null);
@@ -615,14 +624,63 @@ const ComprehensiveTaskModal: React.FC<TaskModalProps> = ({ isOpen, onClose, tas
       avatar: '',
       timestamp: new Date().toISOString(),
       edited: false,
-      reactions: []
+      reactions: [],
+      replies: [],
+      replyTo: replyTo
     };
     
+    if (replyTo) {
+      // Add as reply to existing comment
+      setTaskData({
+        ...taskData,
+        comments: taskData.comments.map((c: any) => 
+          c.id === replyTo 
+            ? { ...c, replies: [...(c.replies || []), comment] }
+            : c
+        )
+      });
+    } else {
+      // Add as new comment
+      setTaskData({
+        ...taskData,
+        comments: [...taskData.comments, comment]
+      });
+    }
+    setNewComment('');
+    setReplyTo(null);
+  };
+
+  // Edit comment
+  const editComment = (commentId: number) => {
+    const comment = taskData.comments.find((c: any) => c.id === commentId);
+    if (comment) {
+      setEditingCommentId(commentId);
+      setEditingCommentText(comment.text);
+    }
+  };
+
+  // Save edited comment
+  const saveEditedComment = (commentId: number) => {
     setTaskData({
       ...taskData,
-      comments: [...taskData.comments, comment]
+      comments: taskData.comments.map((c: any) => 
+        c.id === commentId 
+          ? { ...c, text: editingCommentText, edited: true, editedAt: new Date().toISOString() }
+          : c
+      )
     });
-    setNewComment('');
+    setEditingCommentId(null);
+    setEditingCommentText('');
+  };
+
+  // Delete comment
+  const deleteComment = (commentId: number) => {
+    if (confirm('Are you sure you want to delete this comment?')) {
+      setTaskData({
+        ...taskData,
+        comments: taskData.comments.filter((c: any) => c.id !== commentId)
+      });
+    }
   };
 
   // Add checklist item
@@ -655,6 +713,52 @@ const ComprehensiveTaskModal: React.FC<TaskModalProps> = ({ isOpen, onClose, tas
           completedBy: !item.completed ? 'Current User' : null
         } : item
       )
+    });
+  };
+
+  // Edit checklist item inline
+  const startEditingChecklistItem = (item: any) => {
+    setEditingChecklistId(item.id);
+    setEditingChecklistText(item.text);
+  };
+
+  // Save edited checklist item
+  const saveEditedChecklistItem = () => {
+    if (editingChecklistId && editingChecklistText.trim()) {
+      setTaskData({
+        ...taskData,
+        checklist: taskData.checklist.map((item: any) =>
+          item.id === editingChecklistId ? { ...item, text: editingChecklistText } : item
+        )
+      });
+      setEditingChecklistId(null);
+      setEditingChecklistText('');
+    }
+  };
+
+  // Delete checklist item
+  const deleteChecklistItem = (id: number | string) => {
+    if (confirm('Are you sure you want to delete this checklist item?')) {
+      setTaskData({
+        ...taskData,
+        checklist: taskData.checklist.filter((item: any) => item.id !== id)
+      });
+    }
+  };
+
+  // Duplicate checklist item
+  const duplicateChecklistItem = (item: any) => {
+    const newItem = {
+      ...item,
+      id: Date.now(),
+      text: `${item.text} (copy)`,
+      completed: false,
+      completedDate: null,
+      completedBy: null
+    };
+    setTaskData({
+      ...taskData,
+      checklist: [...taskData.checklist, newItem]
     });
   };
 
@@ -1101,47 +1205,13 @@ const ComprehensiveTaskModal: React.FC<TaskModalProps> = ({ isOpen, onClose, tas
                   <label style={{ fontSize: '14px', fontWeight: '500', color: '#374151', marginBottom: '6px', display: 'block' }}>
                     Description
                   </label>
-                  <div style={{
-                    border: '1px solid #d1d5db',
-                    borderRadius: '6px',
-                    overflow: 'hidden'
-                  }}>
-                    <div style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '8px',
-                      padding: '8px',
-                      borderBottom: '1px solid #e5e7eb',
-                      backgroundColor: '#f9fafb'
-                    }}>
-                      <button style={{ padding: '4px', backgroundColor: 'transparent', border: 'none', cursor: 'pointer' }}>
-                        <Bold style={{ width: '16px', height: '16px', color: '#6b7280' }} />
-                      </button>
-                      <button style={{ padding: '4px', backgroundColor: 'transparent', border: 'none', cursor: 'pointer' }}>
-                        <Italic style={{ width: '16px', height: '16px', color: '#6b7280' }} />
-                      </button>
-                      <button style={{ padding: '4px', backgroundColor: 'transparent', border: 'none', cursor: 'pointer' }}>
-                        <List style={{ width: '16px', height: '16px', color: '#6b7280' }} />
-                      </button>
-                      <button style={{ padding: '4px', backgroundColor: 'transparent', border: 'none', cursor: 'pointer' }}>
-                        <Link style={{ width: '16px', height: '16px', color: '#6b7280' }} />
-                      </button>
-                      <button style={{ padding: '4px', backgroundColor: 'transparent', border: 'none', cursor: 'pointer' }}>
-                        <Code style={{ width: '16px', height: '16px', color: '#6b7280' }} />
-                      </button>
-                    </div>
-                    <textarea
+                  <div style={{ border: '1px solid #e5e7eb', borderRadius: '8px', overflow: 'hidden' }}>
+                    <RichTextEditor
                       value={taskData.description}
-                      onChange={(e) => setTaskData({ ...taskData, description: e.target.value })}
+                      onChange={(value) => setTaskData({ ...taskData, description: value })}
                       placeholder="Enter task description..."
-                      style={{
-                        width: '100%',
-                        minHeight: '120px',
-                        padding: '12px',
-                        border: 'none',
-                        fontSize: '14px',
-                        resize: 'vertical'
-                      }}
+                    minHeight="120px"
+                      maxHeight="300px"
                     />
                   </div>
                 </div>
@@ -1799,18 +1869,24 @@ const ComprehensiveTaskModal: React.FC<TaskModalProps> = ({ isOpen, onClose, tas
                       </div>
                     ))}
                   </div>
-                  <button style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '6px',
-                    padding: '6px 10px',
-                    backgroundColor: 'transparent',
-                    border: '1px dashed #d1d5db',
-                    borderRadius: '6px',
-                    fontSize: '13px',
-                    color: '#6b7280',
-                    cursor: 'pointer'
-                  }}>
+                  <button 
+                    onClick={() => {
+                      setDependencyType('depends');
+                      setShowDependencyModal(true);
+                    }}
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '6px',
+                      padding: '6px 10px',
+                      backgroundColor: 'transparent',
+                      border: '1px dashed #d1d5db',
+                      borderRadius: '6px',
+                      fontSize: '13px',
+                      color: '#6b7280',
+                      cursor: 'pointer'
+                    }}
+                  >
                     <Plus style={{ width: '14px', height: '14px' }} />
                     Add Dependency
                   </button>
@@ -1854,18 +1930,24 @@ const ComprehensiveTaskModal: React.FC<TaskModalProps> = ({ isOpen, onClose, tas
                       </div>
                     ))}
                   </div>
-                  <button style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '6px',
-                    padding: '6px 10px',
-                    backgroundColor: 'transparent',
-                    border: '1px dashed #d1d5db',
-                    borderRadius: '6px',
-                    fontSize: '13px',
-                    color: '#6b7280',
-                    cursor: 'pointer'
-                  }}>
+                  <button 
+                    onClick={() => {
+                      setDependencyType('blocks');
+                      setShowDependencyModal(true);
+                    }}
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '6px',
+                      padding: '6px 10px',
+                      backgroundColor: 'transparent',
+                      border: '1px dashed #d1d5db',
+                      borderRadius: '6px',
+                      fontSize: '13px',
+                      color: '#6b7280',
+                      cursor: 'pointer'
+                    }}
+                  >
                     <Plus style={{ width: '14px', height: '14px' }} />
                     Add Blocking Task
                   </button>
@@ -2136,14 +2218,36 @@ const ComprehensiveTaskModal: React.FC<TaskModalProps> = ({ isOpen, onClose, tas
                           
                           <div style={{ flex: 1 }}>
                             <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
-                              <span style={{
-                                fontSize: '13px',
-                                fontWeight: item.mandatory ? '600' : '400',
-                                color: item.completed ? '#6b7280' : '#111827',
-                                textDecoration: item.completed ? 'line-through' : 'none'
-                              }}>
-                                {item.text}
-                              </span>
+                              {editingChecklistId === item.id ? (
+                                <input
+                                  type="text"
+                                  value={editingChecklistText}
+                                  onChange={(e) => setEditingChecklistText(e.target.value)}
+                                  onBlur={saveEditedChecklistItem}
+                                  onKeyPress={(e) => e.key === 'Enter' && saveEditedChecklistItem()}
+                                  autoFocus
+                                  style={{
+                                    flex: 1,
+                                    padding: '4px 8px',
+                                    fontSize: '13px',
+                                    border: '1px solid #7c3aed',
+                                    borderRadius: '4px',
+                                    outline: 'none'
+                                  }}
+                                />
+                              ) : (
+                                <span style={{
+                                  fontSize: '13px',
+                                  fontWeight: item.mandatory ? '600' : '400',
+                                  color: item.completed ? '#6b7280' : '#111827',
+                                  textDecoration: item.completed ? 'line-through' : 'none',
+                                  cursor: 'text'
+                                }}
+                                onDoubleClick={() => startEditingChecklistItem(item)}
+                                >
+                                  {item.text}
+                                </span>
+                              )}
                               {item.mandatory && (
                                 <span style={{
                                   fontSize: '10px',
@@ -2220,29 +2324,60 @@ const ComprehensiveTaskModal: React.FC<TaskModalProps> = ({ isOpen, onClose, tas
                           
                           <div style={{ display: 'flex', gap: '4px' }}>
                             <button
-                              onClick={() => {
-                                setEditingChecklistItem(item);
-                                setShowItemDetailModal(true);
-                              }}
+                              onClick={() => startEditingChecklistItem(item)}
+                              title="Edit item"
                               style={{
                                 padding: '4px',
                                 backgroundColor: 'transparent',
                                 border: 'none',
-                                cursor: 'pointer'
+                                cursor: 'pointer',
+                                display: 'flex',
+                                alignItems: 'center'
                               }}
                             >
                               <Edit style={{ width: '14px', height: '14px', color: '#6b7280' }} />
                             </button>
                             <button
-                              onClick={() => setTaskData({
-                                ...taskData,
-                                checklist: taskData.checklist.filter((i: any) => i.id !== item.id)
-                              })}
+                              onClick={() => duplicateChecklistItem(item)}
+                              title="Duplicate item"
                               style={{
                                 padding: '4px',
                                 backgroundColor: 'transparent',
                                 border: 'none',
-                                cursor: 'pointer'
+                                cursor: 'pointer',
+                                display: 'flex',
+                                alignItems: 'center'
+                              }}
+                            >
+                              <Copy style={{ width: '14px', height: '14px', color: '#3b82f6' }} />
+                            </button>
+                            <button
+                              onClick={() => {
+                                setEditingChecklistItem(item);
+                                setShowItemDetailModal(true);
+                              }}
+                              title="View details"
+                              style={{
+                                padding: '4px',
+                                backgroundColor: 'transparent',
+                                border: 'none',
+                                cursor: 'pointer',
+                                display: 'flex',
+                                alignItems: 'center'
+                              }}
+                            >
+                              <Info style={{ width: '14px', height: '14px', color: '#8b5cf6' }} />
+                            </button>
+                            <button
+                              onClick={() => deleteChecklistItem(item.id)}
+                              title="Delete item"
+                              style={{
+                                padding: '4px',
+                                backgroundColor: 'transparent',
+                                border: 'none',
+                                cursor: 'pointer',
+                                display: 'flex',
+                                alignItems: 'center'
                               }}
                             >
                               <Trash2 style={{ width: '14px', height: '14px', color: '#ef4444' }} />
@@ -2515,9 +2650,159 @@ const ComprehensiveTaskModal: React.FC<TaskModalProps> = ({ isOpen, onClose, tas
                           <span style={{ fontSize: '11px', color: '#9ca3af' }}>(edited)</span>
                         )}
                       </div>
-                      <p style={{ fontSize: '14px', color: '#374151', lineHeight: '1.5' }}>
-                        {comment.text}
-                      </p>
+                      {editingCommentId === comment.id ? (
+                        <div style={{ marginTop: '8px' }}>
+                          <textarea
+                            value={editingCommentText}
+                            onChange={(e) => setEditingCommentText(e.target.value)}
+                            style={{
+                              width: '100%',
+                              minHeight: '60px',
+                              padding: '8px',
+                              border: '1px solid #7c3aed',
+                              borderRadius: '4px',
+                              fontSize: '14px',
+                              resize: 'vertical'
+                            }}
+                            autoFocus
+                          />
+                          <div style={{ display: 'flex', gap: '8px', marginTop: '8px' }}>
+                            <button
+                              onClick={() => saveEditedComment(comment.id)}
+                              style={{
+                                padding: '4px 12px',
+                                backgroundColor: '#7c3aed',
+                                color: 'white',
+                                border: 'none',
+                                borderRadius: '4px',
+                                fontSize: '12px',
+                                cursor: 'pointer'
+                              }}
+                            >
+                              Save
+                            </button>
+                            <button
+                              onClick={() => {
+                                setEditingCommentId(null);
+                                setEditingCommentText('');
+                              }}
+                              style={{
+                                padding: '4px 12px',
+                                backgroundColor: '#f3f4f6',
+                                color: '#374151',
+                                border: 'none',
+                                borderRadius: '4px',
+                                fontSize: '12px',
+                                cursor: 'pointer'
+                              }}
+                            >
+                              Cancel
+                            </button>
+                          </div>
+                        </div>
+                      ) : (
+                        <>
+                          <div style={{ fontSize: '14px', color: '#374151', lineHeight: '1.5' }} 
+                               dangerouslySetInnerHTML={{ __html: comment.text }} />
+                          {comment.edited && (
+                            <span style={{ fontSize: '11px', color: '#9ca3af', fontStyle: 'italic', marginLeft: '8px' }}>
+                              (edited)
+                            </span>
+                          )}
+                        </>
+                      )}
+                      <div style={{ display: 'flex', gap: '12px', marginTop: '8px' }}>
+                        <button
+                          onClick={() => setReplyTo(comment.id)}
+                          style={{
+                            fontSize: '12px',
+                            color: '#6b7280',
+                            backgroundColor: 'transparent',
+                            border: 'none',
+                            cursor: 'pointer',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '4px'
+                          }}
+                        >
+                          <MessageSquare style={{ width: '14px', height: '14px' }} />
+                          Reply
+                        </button>
+                        <button
+                          onClick={() => editComment(comment.id)}
+                          style={{
+                            fontSize: '12px',
+                            color: '#6b7280',
+                            backgroundColor: 'transparent',
+                            border: 'none',
+                            cursor: 'pointer'
+                          }}
+                        >
+                          Edit
+                        </button>
+                        <button
+                          onClick={() => deleteComment(comment.id)}
+                          style={{
+                            fontSize: '12px',
+                            color: '#ef4444',
+                            backgroundColor: 'transparent',
+                            border: 'none',
+                            cursor: 'pointer'
+                          }}
+                        >
+                          Delete
+                        </button>
+                      </div>
+                      {comment.replies && comment.replies.length > 0 && (
+                        <div style={{ 
+                          marginTop: '16px', 
+                          marginLeft: '48px',
+                          paddingLeft: '16px',
+                          borderLeft: '3px solid #e0e7ff'
+                        }}>
+                          <div style={{ fontSize: '12px', color: '#6b7280', marginBottom: '8px', fontWeight: '500' }}>
+                            {comment.replies.length} {comment.replies.length === 1 ? 'Reply' : 'Replies'}
+                          </div>
+                          {comment.replies.map((reply: any) => (
+                            <div key={reply.id} style={{ 
+                              marginBottom: '12px',
+                              padding: '12px',
+                              backgroundColor: '#f9fafb',
+                              borderRadius: '6px',
+                              border: '1px solid #e5e7eb'
+                            }}>
+                              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
+                                <div style={{
+                                  width: '28px',
+                                  height: '28px',
+                                  borderRadius: '50%',
+                                  backgroundColor: '#8b5cf6',
+                                  color: 'white',
+                                  display: 'flex',
+                                  alignItems: 'center',
+                                  justifyContent: 'center',
+                                  fontSize: '12px',
+                                  fontWeight: '600'
+                                }}>
+                                  {reply.author.charAt(0).toUpperCase()}
+                                </div>
+                                <div style={{ flex: 1 }}>
+                                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                    <span style={{ fontSize: '13px', fontWeight: '500', color: '#111827' }}>
+                                      {reply.author}
+                                    </span>
+                                    <span style={{ fontSize: '11px', color: '#6b7280' }}>
+                                      {new Date(reply.timestamp).toLocaleString()}
+                                    </span>
+                                  </div>
+                                </div>
+                              </div>
+                              <div style={{ fontSize: '13px', color: '#374151', paddingLeft: '36px' }} 
+                                   dangerouslySetInnerHTML={{ __html: reply.text }} />
+                            </div>
+                          ))}
+                        </div>
+                      )}
                     </div>
                   </div>
                 ))}
@@ -2528,43 +2813,39 @@ const ComprehensiveTaskModal: React.FC<TaskModalProps> = ({ isOpen, onClose, tas
                 borderRadius: '8px',
                 overflow: 'hidden'
               }}>
-                <div style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '8px',
-                  padding: '8px 12px',
-                  borderBottom: '1px solid #e5e7eb',
-                  backgroundColor: '#f9fafb'
-                }}>
-                  <button style={{ padding: '4px', backgroundColor: 'transparent', border: 'none', cursor: 'pointer' }}>
-                    <Bold style={{ width: '16px', height: '16px', color: '#6b7280' }} />
-                  </button>
-                  <button style={{ padding: '4px', backgroundColor: 'transparent', border: 'none', cursor: 'pointer' }}>
-                    <Italic style={{ width: '16px', height: '16px', color: '#6b7280' }} />
-                  </button>
-                  <button style={{ padding: '4px', backgroundColor: 'transparent', border: 'none', cursor: 'pointer' }}>
-                    <Link style={{ width: '16px', height: '16px', color: '#6b7280' }} />
-                  </button>
-                  <button style={{ padding: '4px', backgroundColor: 'transparent', border: 'none', cursor: 'pointer' }}>
-                    <AtSign style={{ width: '16px', height: '16px', color: '#6b7280' }} />
-                  </button>
-                  <button style={{ padding: '4px', backgroundColor: 'transparent', border: 'none', cursor: 'pointer' }}>
-                    <Paperclip style={{ width: '16px', height: '16px', color: '#6b7280' }} />
-                  </button>
+                {replyTo && (
+                  <div style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    padding: '8px 12px',
+                    backgroundColor: '#eff6ff',
+                    borderBottom: '1px solid #bfdbfe'
+                  }}>
+                    <span style={{ fontSize: '13px', color: '#1e40af' }}>
+                      Replying to comment...
+                    </span>
+                    <button
+                      onClick={() => setReplyTo(null)}
+                      style={{
+                        backgroundColor: 'transparent',
+                        border: 'none',
+                        cursor: 'pointer'
+                      }}
+                    >
+                      <X style={{ width: '14px', height: '14px', color: '#1e40af' }} />
+                    </button>
+                  </div>
+                )}
+                <div style={{ minHeight: '100px', backgroundColor: 'white' }}>
+                  <RichTextEditor
+                    value={newComment}
+                    onChange={(value) => setNewComment(value)}
+                    placeholder="Write a comment..."
+                    minHeight="100px"
+                    maxHeight="200px"
+                  />
                 </div>
-                <textarea
-                  value={newComment}
-                  onChange={(e) => setNewComment(e.target.value)}
-                  placeholder="Write a comment..."
-                  style={{
-                    width: '100%',
-                    minHeight: '100px',
-                    padding: '12px',
-                    border: 'none',
-                    fontSize: '14px',
-                    resize: 'vertical'
-                  }}
-                />
                 <div style={{
                   display: 'flex',
                   justifyContent: 'flex-end',
@@ -2751,6 +3032,38 @@ const ComprehensiveTaskModal: React.FC<TaskModalProps> = ({ isOpen, onClose, tas
           
           <div style={{ display: 'flex', gap: '8px' }}>
             <button
+              onClick={() => {
+                // Convert to template
+                const template = {
+                  id: `template-${Date.now()}`,
+                  name: taskData.title,
+                  description: taskData.description,
+                  checklist: taskData.checklist,
+                  category: taskData.category,
+                  type: 'custom'
+                };
+                console.log('Converting to template:', template);
+                // Here you would save the template
+                alert('Task converted to template successfully!');
+              }}
+              style={{
+                padding: '8px 16px',
+                backgroundColor: 'transparent',
+                border: '1px solid #7c3aed',
+                borderRadius: '6px',
+                fontSize: '14px',
+                color: '#7c3aed',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '6px',
+                marginRight: 'auto'
+              }}
+            >
+              <FileText style={{ width: '16px', height: '16px' }} />
+              Convert to Template
+            </button>
+            <button
               onClick={onClose}
               style={{
                 padding: '8px 16px',
@@ -2822,6 +3135,151 @@ const ComprehensiveTaskModal: React.FC<TaskModalProps> = ({ isOpen, onClose, tas
             setEditingChecklistItem(updatedItem);
           }}
         />
+      )}
+      {/* Dependency Selector Modal */}
+      {showDependencyModal && (
+        <div style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          backgroundColor: 'rgba(0, 0, 0, 0.5)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          zIndex: 1001
+        }}>
+          <div style={{
+            backgroundColor: 'white',
+            borderRadius: '12px',
+            width: '90%',
+            maxWidth: '600px',
+            maxHeight: '80vh',
+            overflow: 'hidden',
+            display: 'flex',
+            flexDirection: 'column'
+          }}>
+            <div style={{
+              padding: '20px',
+              borderBottom: '1px solid #e5e7eb',
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center'
+            }}>
+              <h3 style={{ fontSize: '18px', fontWeight: '600', color: '#111827' }}>
+                Select {dependencyType === 'depends' ? 'Dependencies' : 'Blocking Tasks'}
+              </h3>
+              <button
+                onClick={() => setShowDependencyModal(false)}
+                style={{
+                  backgroundColor: 'transparent',
+                  border: 'none',
+                  cursor: 'pointer'
+                }}
+              >
+                <X style={{ width: '20px', height: '20px', color: '#6b7280' }} />
+              </button>
+            </div>
+            
+            <div style={{ padding: '20px', flex: 1, overflowY: 'auto' }}>
+              <div style={{ marginBottom: '16px' }}>
+                <input
+                  type="text"
+                  placeholder="Search tasks..."
+                  style={{
+                    width: '100%',
+                    padding: '10px',
+                    border: '1px solid #d1d5db',
+                    borderRadius: '6px',
+                    fontSize: '14px'
+                  }}
+                />
+              </div>
+              
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                {[
+                  { id: '1', title: 'Design Homepage', status: 'In Progress' },
+                  { id: '2', title: 'Setup Database', status: 'Complete' },
+                  { id: '3', title: 'API Integration', status: 'To Do' },
+                  { id: '4', title: 'User Authentication', status: 'In Progress' },
+                  { id: '5', title: 'Payment Gateway', status: 'To Do' }
+                ].map(task => (
+                  <div
+                    key={task.id}
+                    style={{
+                      padding: '12px',
+                      border: '1px solid #e5e7eb',
+                      borderRadius: '6px',
+                      cursor: 'pointer',
+                      transition: 'all 0.2s'
+                    }}
+                    onClick={() => {
+                      if (dependencyType === 'depends') {
+                        setTaskData({
+                          ...taskData,
+                          dependencies: [...taskData.dependencies, task.title]
+                        });
+                      } else {
+                        setTaskData({
+                          ...taskData,
+                          blocks: [...taskData.blocks, task.title]
+                        });
+                      }
+                      setShowDependencyModal(false);
+                    }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.backgroundColor = '#f9fafb';
+                      e.currentTarget.style.borderColor = '#9ca3af';
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.backgroundColor = 'white';
+                      e.currentTarget.style.borderColor = '#e5e7eb';
+                    }}
+                  >
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <span style={{ fontSize: '14px', fontWeight: '500', color: '#111827' }}>
+                        {task.title}
+                      </span>
+                      <span style={{
+                        fontSize: '12px',
+                        padding: '2px 8px',
+                        borderRadius: '4px',
+                        backgroundColor: task.status === 'Complete' ? '#d1fae5' : task.status === 'In Progress' ? '#dbeafe' : '#f3f4f6',
+                        color: task.status === 'Complete' ? '#065f46' : task.status === 'In Progress' ? '#1e40af' : '#374151'
+                      }}>
+                        {task.status}
+                      </span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+            
+            <div style={{
+              padding: '20px',
+              borderTop: '1px solid #e5e7eb',
+              display: 'flex',
+              justifyContent: 'flex-end',
+              gap: '8px'
+            }}>
+              <button
+                onClick={() => setShowDependencyModal(false)}
+                style={{
+                  padding: '8px 16px',
+                  backgroundColor: 'white',
+                  border: '1px solid #d1d5db',
+                  borderRadius: '6px',
+                  fontSize: '14px',
+                  color: '#374151',
+                  cursor: 'pointer'
+                }}
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
     </div>
