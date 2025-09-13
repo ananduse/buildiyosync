@@ -1587,6 +1587,11 @@ const ExactTasksTable: React.FC = () => {
   const [showConvertToSubtaskPicker, setShowConvertToSubtaskPicker] = useState(false);
   const [bulkDateType, setBulkDateType] = useState<'start' | 'due' | null>(null);
   
+  // Inline editing states
+  const [inlineAddingTask, setInlineAddingTask] = useState<{ group: string; parentId?: string } | null>(null);
+  const [inlineEditingTask, setInlineEditingTask] = useState<string | null>(null);
+  const [inlineTaskName, setInlineTaskName] = useState('');
+  
   // Column configuration state
   const [showColumnConfig, setShowColumnConfig] = useState(false);
   const [columns, setColumns] = useState([
@@ -2079,11 +2084,114 @@ const ExactTasksTable: React.FC = () => {
     setShowConvertToSubtaskPicker(false);
   };
 
-  // Function to get all visible tasks (filtered by search)
-  const getAllVisibleTasks = () => {
+  // Inline task functions
+  const handleInlineAddTask = (group: string, parentId?: string) => {
+    setInlineAddingTask({ group, parentId });
+    setInlineTaskName('');
+  };
+
+  const saveInlineTask = () => {
+    if (!inlineTaskName.trim() || !inlineAddingTask) return;
+
+    const newTask = {
+      id: `task-${Date.now()}`,
+      name: inlineTaskName.trim(),
+      status: { id: 'todo', label: 'TO DO', color: '#6b7280' },
+      category: { 
+        id: inlineAddingTask.group, 
+        label: inlineAddingTask.group.charAt(0).toUpperCase() + inlineAddingTask.group.slice(1),
+        color: getCategoryColor(inlineAddingTask.group)
+      },
+      assignee: null,
+      priority: 'Normal',
+      priorityColor: '#10b981',
+      priorityLevel: 5,
+      priorityIcon: Minus,
+      estimatedDuration: '',
+      startDate: '',
+      dueDate: '',
+      progress: 0,
+      hasSubtasks: false
+    };
+
+    if (inlineAddingTask.parentId) {
+      // Adding as subtask
+      setTasks((prev: any) => {
+        const newTasks = { ...prev };
+        newTasks[inlineAddingTask.group] = newTasks[inlineAddingTask.group].map((task: any) => {
+          if (task.id === inlineAddingTask.parentId) {
+            const subtasks = task.subtasks || [];
+            return {
+              ...task,
+              hasSubtasks: true,
+              subtasks: [...subtasks, newTask]
+            };
+          }
+          return task;
+        });
+        return newTasks;
+      });
+    } else {
+      // Adding as main task
+      setTasks((prev: any) => ({
+        ...prev,
+        [inlineAddingTask.group]: [...(prev[inlineAddingTask.group] || []), newTask]
+      }));
+    }
+
+    showNotification(`Task "${inlineTaskName}" added successfully`, 'success');
+    setInlineAddingTask(null);
+    setInlineTaskName('');
+  };
+
+  const cancelInlineAdd = () => {
+    setInlineAddingTask(null);
+    setInlineTaskName('');
+  };
+
+  const handleInlineEditTask = (taskId: string, currentName: string) => {
+    setInlineEditingTask(taskId);
+    setInlineTaskName(currentName);
+  };
+
+  const saveInlineEdit = () => {
+    if (!inlineTaskName.trim() || !inlineEditingTask) return;
+
+    setTasks((prev: any) => {
+      const newTasks = { ...prev };
+      Object.keys(newTasks).forEach(group => {
+        newTasks[group] = newTasks[group].map((task: any) => {
+          if (task.id === inlineEditingTask) {
+            return { ...task, name: inlineTaskName.trim() };
+          }
+          if (task.subtasks) {
+            task.subtasks = task.subtasks.map((subtask: any) =>
+              subtask.id === inlineEditingTask ? { ...subtask, name: inlineTaskName.trim() } : subtask
+            );
+          }
+          return task;
+        });
+      });
+      return newTasks;
+    });
+
+    showNotification('Task name updated successfully', 'success');
+    setInlineEditingTask(null);
+    setInlineTaskName('');
+  };
+
+  const cancelInlineEdit = () => {
+    setInlineEditingTask(null);
+    setInlineTaskName('');
+  };
+
+  // Function to get visible tasks by category (filtered by search)
+  const getVisibleTasksByCategory = (category?: string) => {
     const allTasks: any[] = [];
     
-    Object.keys(tasks).forEach(groupKey => {
+    const groupsToProcess = category ? [category] : Object.keys(tasks);
+    
+    groupsToProcess.forEach(groupKey => {
       const groupTasks = tasks[groupKey] || [];
       groupTasks.forEach((task: any) => {
         // Filter by search query
@@ -2112,6 +2220,9 @@ const ExactTasksTable: React.FC = () => {
     
     return allTasks;
   };
+  
+  // Wrapper for backward compatibility
+  const getAllVisibleTasks = () => getVisibleTasksByCategory();
   const [tasks, setTasks] = useState<any>({
     planning: [],
     development: [],
@@ -2135,9 +2246,9 @@ const ExactTasksTable: React.FC = () => {
           priorityColor: '#ef4444',
           priorityLevel: 2,
           priorityIcon: AlertTriangleIcon,
-          estimatedDuration: '8/31/24, 4am',
-          startDate: '9/2/24, 4am',
-          dueDate: '9/5/24, 4am',
+          estimatedDuration: '3 days',
+          startDate: '2024-09-02, 09:00',
+          dueDate: '2024-09-05, 17:00',
           progress: 65,
           hasSubtasks: true,
           subtasks: [
@@ -2151,9 +2262,9 @@ const ExactTasksTable: React.FC = () => {
               priorityColor: '#fb923c',
               priorityLevel: 3,
               priorityIcon: ChevronUpIcon,
-              estimatedDuration: '8/31/24, 4am',
-              startDate: '9/2/24, 4am',
-              dueDate: '9/3/24, 4am',
+              estimatedDuration: '1 day',
+              startDate: '2024-09-02, 09:00',
+              dueDate: '2024-09-03, 17:00',
               progress: 80
             },
             {
@@ -2166,9 +2277,9 @@ const ExactTasksTable: React.FC = () => {
               priorityColor: '#10b981',
               priorityLevel: 5,
               priorityIcon: Minus,
-              estimatedDuration: '8/28/24, 4am',
-              startDate: '8/29/24, 4am',
-              dueDate: '9/1/24, 4am',
+              estimatedDuration: '2 days',
+              startDate: '2024-08-29, 10:00',
+              dueDate: '2024-09-01, 16:00',
               progress: 100
             }
           ]
@@ -2183,9 +2294,9 @@ const ExactTasksTable: React.FC = () => {
           priorityColor: '#fb923c',
           priorityLevel: 3,
           priorityIcon: ChevronUpIcon,
-          estimatedDuration: '8/25/24, 4am',
-          startDate: '8/26/24, 4am',
-          dueDate: '8/30/24, 4am',
+          estimatedDuration: '4 days',
+          startDate: '2024-08-26, 08:00',
+          dueDate: '2024-08-30, 18:00',
           progress: 100,
           hasSubtasks: false
         },
@@ -2198,9 +2309,9 @@ const ExactTasksTable: React.FC = () => {
           priority: 'Urgent',
           priorityColor: '#ef4444',
           priorityLevel: 1,
-          estimatedDuration: '9/1/24, 4am',
-          startDate: '9/3/24, 4am',
-          dueDate: '9/7/24, 4am',
+          estimatedDuration: '4 days',
+          startDate: '2024-09-03, 09:00',
+          dueDate: '2024-09-07, 17:00',
           progress: 35,
           hasSubtasks: false
         }
@@ -2216,9 +2327,9 @@ const ExactTasksTable: React.FC = () => {
           priorityColor: '#10b981',
           priorityLevel: 6,
           priorityIcon: Minus,
-          estimatedDuration: '9/10/24, 4am',
-          startDate: '9/16/24, 4am',
-          dueDate: '9/20/24, 4am',
+          estimatedDuration: '5 days',
+          startDate: '2024-09-16, 08:00',
+          dueDate: '2024-09-20, 17:00',
           progress: 45,
           hasSubtasks: false
         },
@@ -2232,9 +2343,9 @@ const ExactTasksTable: React.FC = () => {
           priorityColor: '#fb923c',
           priorityLevel: 3,
           priorityIcon: ChevronUpIcon,
-          estimatedDuration: '9/20/24, 4am',
-          startDate: '9/22/24, 4am',
-          dueDate: '9/25/24, 4am',
+          estimatedDuration: '3 days',
+          startDate: '2024-09-22, 09:00',
+          dueDate: '2024-09-25, 17:00',
           progress: 0,
           hasSubtasks: true,
           subtasks: [
@@ -2590,30 +2701,58 @@ const ExactTasksTable: React.FC = () => {
                 </span>
               )}
               <ProgressCircle progress={task.progress} size={isSubtask ? 24 : 28} />
-              <span 
-                onClick={() => {
-                  const taskToEdit = isSubtask ? { ...task, parentTaskId: group } : task;
-                  setSelectedTaskForEdit(taskToEdit);
-                }}
-                style={{ 
-                  fontSize: '14px', 
-                  color: hoveredRow === uniqueRowId ? '#3b82f6' : isSubtask ? '#6b7280' : '#111827',
-                  transition: 'color 0.2s',
-                  fontWeight: isSubtask ? '400' : '500',
-                  cursor: 'pointer'
-                }}>
-                {task.name}
-                {isSubtask && (
-                  <span style={{
-                    fontSize: '11px',
-                    color: '#9ca3af',
-                    marginLeft: '8px',
+              {inlineEditingTask === task.id ? (
+                <div style={{ display: 'flex', alignItems: 'center', gap: '4px', flex: 1 }}>
+                  <input
+                    type="text"
+                    value={inlineTaskName}
+                    onChange={(e) => setInlineTaskName(e.target.value)}
+                    onKeyPress={(e) => {
+                      if (e.key === 'Enter') saveInlineEdit();
+                      if (e.key === 'Escape') cancelInlineEdit();
+                    }}
+                    onBlur={saveInlineEdit}
+                    autoFocus
+                    style={{
+                      padding: '2px 6px',
+                      border: '1px solid #5b5fc7',
+                      borderRadius: '3px',
+                      fontSize: '14px',
+                      fontWeight: isSubtask ? '400' : '500',
+                      outline: 'none',
+                      backgroundColor: 'white'
+                    }}
+                  />
+                </div>
+              ) : (
+                <span 
+                  onDoubleClick={() => handleInlineEditTask(task.id, task.name)}
+                  onClick={() => {
+                    const taskToEdit = isSubtask ? { ...task, parentTaskId: group } : task;
+                    setSelectedTaskForEdit(taskToEdit);
+                  }}
+                  style={{ 
+                    fontSize: '14px', 
+                    color: hoveredRow === uniqueRowId ? '#3b82f6' : isSubtask ? '#6b7280' : '#111827',
+                    transition: 'color 0.2s',
+                    fontWeight: isSubtask ? '400' : '500',
+                    cursor: 'pointer'
+                  }}
+                  title="Double-click to edit inline"
+                >
+                  {task.name}
+                </span>
+              )}
+              {isSubtask && !inlineEditingTask && (
+                <span style={{
+                  fontSize: '11px',
+                  color: '#9ca3af',
+                  marginLeft: '8px',
                     fontStyle: 'italic'
                   }}>
                     (subtask)
                   </span>
-                )}
-              </span>
+              )}
               
               {/* Task Quick Stats */}
               <div style={{ display: 'flex', gap: '12px', marginLeft: '12px' }}>
@@ -3089,13 +3228,19 @@ const ExactTasksTable: React.FC = () => {
       case 'startDate':
         const formatDate = (dateStr: string) => {
           if (!dateStr) return '';
-          if (dateStr.includes(' ')) {
-            const [date, time] = dateStr.split(' ');
+          if (dateStr.includes(',')) {
+            const [date, time] = dateStr.split(',').map(s => s.trim());
             const d = new Date(date);
-            return `${(d.getMonth() + 1).toString().padStart(2, '0')}/${d.getDate().toString().padStart(2, '0')}/${d.getFullYear()} ${time}`;
+            const month = (d.getMonth() + 1).toString().padStart(2, '0');
+            const day = d.getDate().toString().padStart(2, '0');
+            const year = d.getFullYear().toString().slice(-2);
+            return `${month}/${day}/${year}, ${time || '12:00'}`;
           }
           const d = new Date(dateStr);
-          return `${(d.getMonth() + 1).toString().padStart(2, '0')}/${d.getDate().toString().padStart(2, '0')}/${d.getFullYear()}`;
+          const month = (d.getMonth() + 1).toString().padStart(2, '0');
+          const day = d.getDate().toString().padStart(2, '0');
+          const year = d.getFullYear().toString().slice(-2);
+          return `${month}/${day}/${year}, 12:00`;
         };
         
         return (
@@ -3179,19 +3324,26 @@ const ExactTasksTable: React.FC = () => {
       case 'dueDate':
         const formatDueDate = (dateStr: string) => {
           if (!dateStr) return '';
-          if (dateStr.includes(' ')) {
-            const [date, time] = dateStr.split(' ');
+          if (dateStr.includes(',')) {
+            const [date, time] = dateStr.split(',').map(s => s.trim());
             const d = new Date(date);
-            return `${(d.getMonth() + 1).toString().padStart(2, '0')}/${d.getDate().toString().padStart(2, '0')}/${d.getFullYear()} ${time}`;
+            const month = (d.getMonth() + 1).toString().padStart(2, '0');
+            const day = d.getDate().toString().padStart(2, '0');
+            const year = d.getFullYear().toString().slice(-2);
+            return `${month}/${day}/${year}, ${time || '12:00'}`;
           }
           const d = new Date(dateStr);
-          return `${(d.getMonth() + 1).toString().padStart(2, '0')}/${d.getDate().toString().padStart(2, '0')}/${d.getFullYear()}`;
+          const month = (d.getMonth() + 1).toString().padStart(2, '0');
+          const day = d.getDate().toString().padStart(2, '0');
+          const year = d.getFullYear().toString().slice(-2);
+          return `${month}/${day}/${year}, 12:00`;
         };
         
         // Check if due date is past
         const isPastDue = () => {
           if (!task.dueDate) return false;
-          const dueDate = new Date(task.dueDate.split(' ')[0]);
+          const dueDateStr = task.dueDate.includes(',') ? task.dueDate.split(',')[0] : task.dueDate;
+          const dueDate = new Date(dueDateStr);
           const today = new Date();
           today.setHours(0, 0, 0, 0);
           return dueDate < today;
@@ -3288,9 +3440,27 @@ const ExactTasksTable: React.FC = () => {
     }
   };
 
-  const renderTask = (task: any, group: string, index: number, isSubtask: boolean = false) => {
+  const renderTask = (task: any, group: string, index: number, isSubtask: boolean = false, allGroupTasks?: any[]) => {
     // Generate truly unique row ID using index to prevent duplicates
     const uniqueRowId = `${group}-${task.id}-${index}`;
+    
+    // Check if current task is selected
+    const isSelected = selectedTasks.includes(task.id);
+    
+    // Calculate border styles - always show top and bottom borders for selected rows
+    let borderStyle: React.CSSProperties = {
+      borderBottom: '1px solid #f0f0f0',
+      backgroundColor: isSelected ? '#f3f4f6' : hoveredRow === uniqueRowId ? '#fafafa' : 'transparent',
+      transition: 'all 0.15s ease',
+      cursor: !isSubtask ? 'move' : 'default',
+      position: 'relative'
+    };
+    
+    // Add borders for selected tasks
+    if (isSelected) {
+      borderStyle.borderTop = '1px solid #5b5fc7';
+      borderStyle.borderBottom = '1px solid #5b5fc7';
+    }
     
     return (
       <tr 
@@ -3299,13 +3469,7 @@ const ExactTasksTable: React.FC = () => {
         onDragStart={(e) => !isSubtask && handleDragStart(e, task, group)}
         onDragOver={handleDragOver}
         onDrop={(e) => !isSubtask && handleDrop(e, group, index)}
-        style={{ 
-          borderBottom: '1px solid #f0f0f0',
-          backgroundColor: selectedTasks.includes(task.id) ? '#f3f4f6' : hoveredRow === uniqueRowId ? '#fafafa' : 'transparent',
-          transition: 'background-color 0.15s ease',
-          cursor: !isSubtask ? 'move' : 'default',
-          position: 'relative'
-        }}
+        style={borderStyle}
         onMouseEnter={() => {
           // Use unique ID to prevent duplicate hover states
           setHoveredRow(uniqueRowId);
@@ -3578,6 +3742,37 @@ const ExactTasksTable: React.FC = () => {
                 <tr>
                   <td colSpan={columns.filter(col => col.visible).length} style={{ padding: '4px 6px', backgroundColor: 'transparent' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                      {/* Category Select All Checkbox */}
+                      <input
+                        type="checkbox"
+                        checked={(() => {
+                          const categoryTasks = getVisibleTasksByCategory(groupKey);
+                          return categoryTasks.length > 0 && 
+                                 categoryTasks.every(t => selectedTasks.includes(t.id));
+                        })()}
+                        onChange={(e) => {
+                          const categoryTasks = getVisibleTasksByCategory(groupKey);
+                          if (e.target.checked) {
+                            // Add all category tasks to selection
+                            const newSelection = new Set(selectedTasks);
+                            categoryTasks.forEach(t => newSelection.add(t.id));
+                            setSelectedTasks(Array.from(newSelection));
+                          } else {
+                            // Remove all category tasks from selection
+                            const categoryTaskIds = new Set(categoryTasks.map(t => t.id));
+                            setSelectedTasks(selectedTasks.filter(id => !categoryTaskIds.has(id)));
+                          }
+                        }}
+                        style={{
+                          width: '16px',
+                          height: '16px',
+                          cursor: 'pointer',
+                          accentColor: '#5b5fc7',
+                          borderRadius: '4px',
+                          marginRight: '4px'
+                        }}
+                        title={`Select all ${groupKey} tasks`}
+                      />
                       <button
                         onClick={() => toggleGroup(groupKey)}
                         style={{
@@ -3625,7 +3820,21 @@ const ExactTasksTable: React.FC = () => {
                       }}>
                         {processedTasks.length}
                       </span>
-                      <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: '3px', cursor: 'pointer' }}>
+                      <div 
+                        onClick={() => handleInlineAddTask(groupKey)}
+                        style={{ 
+                          marginLeft: 'auto', 
+                          display: 'flex', 
+                          alignItems: 'center', 
+                          gap: '3px', 
+                          cursor: 'pointer',
+                          padding: '2px 6px',
+                          borderRadius: '4px',
+                          transition: 'background-color 0.2s'
+                        }}
+                        onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#f3f4f6'}
+                        onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
+                      >
                         <Plus style={{ width: '14px', height: '14px', color: '#6b7280' }} />
                         <span style={{ fontSize: '12px', color: '#6b7280' }}>Add Task</span>
                       </div>
@@ -3633,26 +3842,88 @@ const ExactTasksTable: React.FC = () => {
                   </td>
                 </tr>
                 
-                {expandedGroups.includes(groupKey) && processedTasks.map((task: any, index: number) => (
-                <React.Fragment key={`${groupKey}-task-${task.id}`}>
-                  {renderTask(task, groupKey, index)}
-                  {task.hasSubtasks && expandedTasks.includes(task.id) && task.subtasks
-                    ?.filter((subtask: any) => {
-                      if (!searchQuery) return true;
-                      const searchLower = searchQuery.toLowerCase();
-                      return (
-                        subtask.name.toLowerCase().includes(searchLower) ||
-                        subtask.assignee?.fullName?.toLowerCase().includes(searchLower) ||
-                        subtask.status?.label?.toLowerCase().includes(searchLower) ||
-                        subtask.priority?.toLowerCase().includes(searchLower) ||
-                        subtask.category?.label?.toLowerCase().includes(searchLower)
-                      );
-                    })
-                    .map((subtask: any, subIndex: number) => 
-                      renderTask(subtask, groupKey, subIndex, true)
+                {expandedGroups.includes(groupKey) && (
+                  <>
+                    {/* Inline Add Task Row */}
+                    {inlineAddingTask?.group === groupKey && !inlineAddingTask.parentId && (
+                      <tr style={{ backgroundColor: '#f9fafb' }}>
+                        <td colSpan={columns.filter(col => col.visible).length} style={{ padding: '8px 12px' }}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                            <input
+                              type="text"
+                              value={inlineTaskName}
+                              onChange={(e) => setInlineTaskName(e.target.value)}
+                              onKeyPress={(e) => {
+                                if (e.key === 'Enter') saveInlineTask();
+                                if (e.key === 'Escape') cancelInlineAdd();
+                              }}
+                              placeholder="Enter task name..."
+                              autoFocus
+                              style={{
+                                flex: 1,
+                                padding: '6px 10px',
+                                border: '1px solid #5b5fc7',
+                                borderRadius: '4px',
+                                fontSize: '13px',
+                                outline: 'none'
+                              }}
+                            />
+                            <button
+                              onClick={saveInlineTask}
+                              style={{
+                                padding: '6px 12px',
+                                backgroundColor: '#5b5fc7',
+                                color: 'white',
+                                border: 'none',
+                                borderRadius: '4px',
+                                fontSize: '12px',
+                                cursor: 'pointer'
+                              }}
+                            >
+                              <Check style={{ width: '14px', height: '14px' }} />
+                            </button>
+                            <button
+                              onClick={cancelInlineAdd}
+                              style={{
+                                padding: '6px 12px',
+                                backgroundColor: '#e5e7eb',
+                                color: '#6b7280',
+                                border: 'none',
+                                borderRadius: '4px',
+                                fontSize: '12px',
+                                cursor: 'pointer'
+                              }}
+                            >
+                              <X style={{ width: '14px', height: '14px' }} />
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
                     )}
-                </React.Fragment>
-              ))}
+                    
+                    {/* Regular Tasks */}
+                    {processedTasks.map((task: any, index: number) => (
+                      <React.Fragment key={`${groupKey}-task-${task.id}`}>
+                        {renderTask(task, groupKey, index, false, processedTasks)}
+                        {task.hasSubtasks && expandedTasks.includes(task.id) && task.subtasks
+                          ?.filter((subtask: any) => {
+                            if (!searchQuery) return true;
+                            const searchLower = searchQuery.toLowerCase();
+                            return (
+                              subtask.name.toLowerCase().includes(searchLower) ||
+                              subtask.assignee?.fullName?.toLowerCase().includes(searchLower) ||
+                              subtask.status?.label?.toLowerCase().includes(searchLower) ||
+                              subtask.priority?.toLowerCase().includes(searchLower) ||
+                              subtask.category?.label?.toLowerCase().includes(searchLower)
+                            );
+                          })
+                          .map((subtask: any, subIndex: number) => 
+                            renderTask(subtask, groupKey, subIndex, true, task.subtasks)
+                          )}
+                      </React.Fragment>
+                    ))}
+                  </>
+                )}
             </React.Fragment>
           );
         })}
@@ -4160,19 +4431,64 @@ const ExactTasksTable: React.FC = () => {
                   </div>
                   {bulkDateType && (
                     <div style={{ marginTop: '8px', padding: '8px', backgroundColor: '#f9fafb', borderRadius: '4px' }}>
-                      <input
-                        type="date"
-                        onChange={(e) => {
-                          updateSelectedTasksDates(bulkDateType, e.target.value);
+                      <div style={{ marginBottom: '8px' }}>
+                        <label style={{ fontSize: '11px', color: '#6b7280', display: 'block', marginBottom: '4px' }}>Select Date</label>
+                        <input
+                          type="date"
+                          id="bulk-date-input"
+                          style={{
+                            width: '100%',
+                            padding: '4px 8px',
+                            border: '1px solid #e5e7eb',
+                            borderRadius: '4px',
+                            fontSize: '12px',
+                            marginBottom: '8px'
+                          }}
+                        />
+                      </div>
+                      <div style={{ marginBottom: '8px' }}>
+                        <label style={{ fontSize: '11px', color: '#6b7280', display: 'block', marginBottom: '4px' }}>Select Time</label>
+                        <input
+                          type="time"
+                          id="bulk-time-input"
+                          defaultValue="12:00"
+                          style={{
+                            width: '100%',
+                            padding: '4px 8px',
+                            border: '1px solid #e5e7eb',
+                            borderRadius: '4px',
+                            fontSize: '12px'
+                          }}
+                        />
+                      </div>
+                      <button
+                        onClick={() => {
+                          const dateInput = document.getElementById('bulk-date-input') as HTMLInputElement;
+                          const timeInput = document.getElementById('bulk-time-input') as HTMLInputElement;
+                          if (dateInput?.value) {
+                            const dateTime = timeInput?.value 
+                              ? `${dateInput.value}, ${timeInput.value}`
+                              : `${dateInput.value}, 12:00`;
+                            updateSelectedTasksDates(bulkDateType, dateTime);
+                          }
                         }}
                         style={{
                           width: '100%',
-                          padding: '4px 8px',
-                          border: '1px solid #e5e7eb',
+                          padding: '6px 12px',
+                          backgroundColor: '#5b5fc7',
+                          color: 'white',
+                          border: 'none',
                           borderRadius: '4px',
-                          fontSize: '12px'
+                          fontSize: '12px',
+                          fontWeight: '500',
+                          cursor: 'pointer',
+                          transition: 'background-color 0.2s'
                         }}
-                      />
+                        onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#4a4fb8'}
+                        onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#5b5fc7'}
+                      >
+                        Apply Date & Time
+                      </button>
                     </div>
                   )}
                 </div>
