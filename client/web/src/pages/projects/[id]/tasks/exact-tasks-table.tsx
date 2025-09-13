@@ -4,7 +4,7 @@ import {
   ChevronRight, 
   MoreHorizontal, 
   Search, 
-  Filter, 
+ 
   Plus,
   Link2,
   Edit2,
@@ -34,12 +34,351 @@ import {
   GitBranch,
   Clock,
   AlertTriangle,
-  FileText
+  FileText,
+  ArrowUpDown,
+  ArrowUp,
+  ArrowDown
 } from 'lucide-react';
 import ComprehensiveTaskModal from './comprehensive-task-modal';
 import { ConfirmationDialog, useNotification } from './confirmation-dialog';
 import { pickerStyles, mergeStyles, usePickerBehavior } from './unified-picker-styles';
 import { TaskPriorityPicker } from './task-priority-picker';
+
+// Date Time Picker Component
+const DateTimePicker = ({ value, onChange, onClose, anchorEl }: any) => {
+  const [selectedDate, setSelectedDate] = useState(value || '');
+  const [selectedTime, setSelectedTime] = useState('12:00');
+  const [showTimePicker, setShowTimePicker] = useState(false);
+  const [position, setPosition] = useState<{ top: number; left: number } | null>(null);
+  const pickerRef = useRef<HTMLDivElement>(null);
+
+  // Initialize time from value if it exists
+  useEffect(() => {
+    if (value && value.includes(' ')) {
+      const [date, time] = value.split(' ');
+      setSelectedDate(date);
+      setSelectedTime(time || '12:00');
+      setShowTimePicker(true);
+    } else if (value) {
+      setSelectedDate(value);
+    }
+  }, [value]);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      const target = event.target as HTMLElement;
+      // Don't close if clicking on the picker itself
+      if (pickerRef.current && pickerRef.current.contains(target)) {
+        return;
+      }
+      // Don't close if clicking on the trigger element (the date button)
+      if (anchorEl && anchorEl.contains(target)) {
+        return;
+      }
+      onClose();
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [onClose, anchorEl]);
+
+  const handleDateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setSelectedDate(e.target.value);
+  };
+
+  const handleTimeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setSelectedTime(e.target.value);
+  };
+
+  const handleApply = () => {
+    const dateTime = showTimePicker && selectedTime 
+      ? `${selectedDate} ${selectedTime}` 
+      : selectedDate;
+    onChange(dateTime);
+    onClose();
+  };
+
+  const handleClear = () => {
+    onChange('');
+    onClose();
+  };
+
+  // Calculate position based on anchor element
+  useEffect(() => {
+    if (anchorEl) {
+      const rect = anchorEl.getBoundingClientRect();
+      const viewportHeight = window.innerHeight;
+      const pickerHeight = 400; // Approximate height
+      
+      let top = rect.bottom + 8;
+      let left = rect.left;
+      
+      // Check if picker would go off bottom of screen
+      if (top + pickerHeight > viewportHeight) {
+        top = rect.top - pickerHeight - 8;
+      }
+      
+      // Check if picker would go off right side of screen
+      const viewportWidth = window.innerWidth;
+      if (left + 300 > viewportWidth) {
+        left = viewportWidth - 320;
+      }
+      
+      setPosition({ top, left });
+    }
+  }, [anchorEl]);
+
+  // Format date for display
+  const formatDateDisplay = (dateStr: string) => {
+    if (!dateStr) return '';
+    const date = new Date(dateStr);
+    const options: Intl.DateTimeFormatOptions = { 
+      weekday: 'short', 
+      year: 'numeric', 
+      month: 'short', 
+      day: 'numeric' 
+    };
+    return date.toLocaleDateString('en-US', options);
+  };
+
+  // Get today's date in YYYY-MM-DD format
+  const today = new Date().toISOString().split('T')[0];
+
+  if (!position) return null;
+
+  return (
+    <div
+      ref={pickerRef}
+      style={{
+        position: 'fixed',
+        top: `${position.top}px`,
+        left: `${position.left}px`,
+        backgroundColor: 'white',
+        border: '1px solid #d1d5db',
+        borderRadius: '12px',
+        boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)',
+        padding: '16px',
+        width: '300px',
+        zIndex: 9999,
+        fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif'
+      }}
+      onClick={(e) => e.stopPropagation()}
+    >
+      {/* Header with current selection */}
+      {selectedDate && (
+        <div style={{
+          marginBottom: '12px',
+          padding: '10px',
+          backgroundColor: '#f0f9ff',
+          borderRadius: '8px',
+          border: '1px solid #bfdbfe'
+        }}>
+          <div style={{ fontSize: '11px', color: '#64748b', marginBottom: '2px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+            Selected Date
+          </div>
+          <div style={{ fontSize: '14px', color: '#1e40af', fontWeight: '600' }}>
+            {formatDateDisplay(selectedDate)}
+            {showTimePicker && selectedTime && (
+              <span style={{ marginLeft: '8px', color: '#3b82f6' }}>
+                at {selectedTime}
+              </span>
+            )}
+          </div>
+        </div>
+      )}
+
+      <div style={{ marginBottom: '14px' }}>
+        <label style={{ 
+          display: 'block', 
+          fontSize: '12px', 
+          fontWeight: '600', 
+          color: '#1f2937', 
+          marginBottom: '6px',
+          textTransform: 'uppercase',
+          letterSpacing: '0.5px'
+        }}>
+          Date
+        </label>
+        <input
+          type="date"
+          value={selectedDate}
+          onChange={handleDateChange}
+          min={today}
+          style={{
+            width: '100%',
+            padding: '10px 12px',
+            fontSize: '14px',
+            border: '1px solid #d1d5db',
+            borderRadius: '8px',
+            outline: 'none',
+            transition: 'all 0.2s',
+            backgroundColor: '#ffffff',
+            color: '#1f2937',
+            cursor: 'pointer'
+          }}
+          onFocus={(e) => {
+            e.currentTarget.style.borderColor = '#3b82f6';
+            e.currentTarget.style.boxShadow = '0 0 0 3px rgba(59, 130, 246, 0.1)';
+          }}
+          onBlur={(e) => {
+            e.currentTarget.style.borderColor = '#d1d5db';
+            e.currentTarget.style.boxShadow = 'none';
+          }}
+        />
+      </div>
+
+      <div style={{ marginBottom: '14px' }}>
+        <label style={{ 
+          display: 'flex', 
+          alignItems: 'center', 
+          gap: '10px', 
+          cursor: 'pointer', 
+          fontSize: '14px', 
+          color: '#4b5563',
+          padding: '8px',
+          borderRadius: '6px',
+          transition: 'background-color 0.2s',
+          userSelect: 'none'
+        }}
+        onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#f9fafb'}
+        onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
+        >
+          <input
+            type="checkbox"
+            checked={showTimePicker}
+            onChange={(e) => setShowTimePicker(e.target.checked)}
+            style={{ 
+              cursor: 'pointer',
+              width: '16px',
+              height: '16px',
+              accentColor: '#3b82f6'
+            }}
+          />
+          <Clock style={{ width: '16px', height: '16px', color: '#6b7280' }} />
+          <span>Include time</span>
+        </label>
+      </div>
+
+      {showTimePicker && (
+        <div style={{ 
+          marginBottom: '14px',
+          padding: '12px',
+          backgroundColor: '#f9fafb',
+          borderRadius: '8px',
+          border: '1px solid #e5e7eb'
+        }}>
+          <label style={{ 
+            display: 'block', 
+            fontSize: '12px', 
+            fontWeight: '600', 
+            color: '#1f2937', 
+            marginBottom: '6px',
+            textTransform: 'uppercase',
+            letterSpacing: '0.5px'
+          }}>
+            Time
+          </label>
+          <input
+            type="time"
+            value={selectedTime}
+            onChange={handleTimeChange}
+            style={{
+              width: '100%',
+              padding: '10px 12px',
+              fontSize: '14px',
+              border: '1px solid #d1d5db',
+              borderRadius: '8px',
+              outline: 'none',
+              transition: 'all 0.2s',
+              backgroundColor: '#ffffff',
+              color: '#1f2937',
+              cursor: 'pointer'
+            }}
+            onFocus={(e) => {
+              e.currentTarget.style.borderColor = '#3b82f6';
+              e.currentTarget.style.boxShadow = '0 0 0 3px rgba(59, 130, 246, 0.1)';
+            }}
+            onBlur={(e) => {
+              e.currentTarget.style.borderColor = '#d1d5db';
+              e.currentTarget.style.boxShadow = 'none';
+            }}
+          />
+        </div>
+      )}
+
+      <div style={{ 
+        display: 'flex', 
+        gap: '10px',
+        paddingTop: '12px',
+        borderTop: '1px solid #e5e7eb'
+      }}>
+        <button
+          onClick={handleApply}
+          disabled={!selectedDate}
+          style={{
+            flex: 1,
+            padding: '10px 16px',
+            fontSize: '14px',
+            fontWeight: '600',
+            color: selectedDate ? 'white' : '#9ca3af',
+            backgroundColor: selectedDate ? '#3b82f6' : '#f3f4f6',
+            border: 'none',
+            borderRadius: '8px',
+            cursor: selectedDate ? 'pointer' : 'not-allowed',
+            transition: 'all 0.2s',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: '6px'
+          }}
+          onMouseEnter={(e) => {
+            if (selectedDate) {
+              e.currentTarget.style.backgroundColor = '#2563eb';
+              e.currentTarget.style.transform = 'translateY(-1px)';
+              e.currentTarget.style.boxShadow = '0 4px 6px -1px rgba(0, 0, 0, 0.1)';
+            }
+          }}
+          onMouseLeave={(e) => {
+            if (selectedDate) {
+              e.currentTarget.style.backgroundColor = '#3b82f6';
+              e.currentTarget.style.transform = 'translateY(0)';
+              e.currentTarget.style.boxShadow = 'none';
+            }
+          }}
+        >
+          <Check style={{ width: '16px', height: '16px' }} />
+          Apply
+        </button>
+        <button
+          onClick={handleClear}
+          style={{
+            padding: '10px 20px',
+            fontSize: '14px',
+            fontWeight: '600',
+            color: '#6b7280',
+            backgroundColor: 'white',
+            border: '1px solid #d1d5db',
+            borderRadius: '8px',
+            cursor: 'pointer',
+            transition: 'all 0.2s'
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.backgroundColor = '#f9fafb';
+            e.currentTarget.style.borderColor = '#9ca3af';
+            e.currentTarget.style.transform = 'translateY(-1px)';
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.backgroundColor = 'white';
+            e.currentTarget.style.borderColor = '#d1d5db';
+            e.currentTarget.style.transform = 'translateY(0)';
+          }}
+        >
+          Clear
+        </button>
+      </div>
+    </div>
+  );
+};
 
 // Status picker component
 const StatusPicker = ({ value, onChange, onClose, taskId, context = 'list' }: any) => {
@@ -1238,18 +1577,26 @@ const ExactTasksTable: React.FC = () => {
   // Column configuration state
   const [showColumnConfig, setShowColumnConfig] = useState(false);
   const [columns, setColumns] = useState([
-    { id: 'checkbox', label: '', visible: true, fixed: true, width: '60px' },
-    { id: 'name', label: 'Name', visible: true, fixed: false, width: 'auto' },
-    { id: 'status', label: 'Status', visible: true, fixed: false, width: '140px' },
-    { id: 'category', label: 'Activity Category', visible: true, fixed: false, width: '150px' },
-    { id: 'assignee', label: 'Assignee', visible: true, fixed: false, width: '100px' },
-    { id: 'priority', label: 'Priority', visible: true, fixed: false, width: '130px' },
-    { id: 'duration', label: 'Estimated Duration', visible: true, fixed: false, width: '160px' },
-    { id: 'startDate', label: 'Start date', visible: true, fixed: false, width: '140px' },
-    { id: 'dueDate', label: 'Due date', visible: true, fixed: false, width: '140px' }
+    { id: 'checkbox', label: '', visible: true, fixed: true, width: '60px', filterable: false },
+    { id: 'name', label: 'Name', visible: true, fixed: false, width: 'auto', filterable: true },
+    { id: 'status', label: 'Status', visible: true, fixed: false, width: '140px', filterable: true },
+    { id: 'category', label: 'Activity Category', visible: true, fixed: false, width: '150px', filterable: true },
+    { id: 'assignee', label: 'Assignee', visible: true, fixed: false, width: '100px', filterable: true },
+    { id: 'priority', label: 'Priority', visible: true, fixed: false, width: '130px', filterable: true },
+    { id: 'duration', label: 'Estimated Duration', visible: true, fixed: false, width: '160px', filterable: true },
+    { id: 'startDate', label: 'Start date', visible: true, fixed: false, width: '140px', filterable: true },
+    { id: 'dueDate', label: 'Due date', visible: true, fixed: false, width: '140px', filterable: true }
   ]);
   const [draggedColumn, setDraggedColumn] = useState<number | null>(null);
   const [dragOverColumn, setDragOverColumn] = useState<number | null>(null);
+  
+  // Filter state
+  
+  // Sorting state
+  const [sortConfig, setSortConfig] = useState<{ key: string | null; direction: 'asc' | 'desc' | null }>({
+    key: null,
+    direction: null
+  });
 
   // Column drag handlers
   const handleColumnDragStart = (e: React.DragEvent, index: number) => {
@@ -1295,6 +1642,84 @@ const ExactTasksTable: React.FC = () => {
     setColumns(prev => prev.map(col => 
       col.id === columnId ? { ...col, visible: !col.visible } : col
     ));
+  };
+  
+  // Handle sorting
+  const handleSort = (columnId: string) => {
+    if (columnId === 'checkbox') return; // Don't sort checkbox column
+    
+    let direction: 'asc' | 'desc' | null = 'asc';
+    if (sortConfig.key === columnId) {
+      if (sortConfig.direction === 'asc') {
+        direction = 'desc';
+      } else if (sortConfig.direction === 'desc') {
+        direction = null;
+      }
+    }
+    
+    setSortConfig({ key: columnId, direction });
+  };
+  
+  // Sort tasks
+  const sortTasks = (tasks: any[]) => {
+    if (!sortConfig.key || !sortConfig.direction) return tasks;
+    
+    return [...tasks].sort((a, b) => {
+      let aValue: any;
+      let bValue: any;
+      
+      switch (sortConfig.key) {
+        case 'name':
+          aValue = a.name?.toLowerCase() || '';
+          bValue = b.name?.toLowerCase() || '';
+          break;
+        case 'status':
+          aValue = a.status?.label || '';
+          bValue = b.status?.label || '';
+          break;
+        case 'category':
+          aValue = a.category?.label || '';
+          bValue = b.category?.label || '';
+          break;
+        case 'assignee':
+          aValue = a.assignee?.fullName || a.assignee?.name || '';
+          bValue = b.assignee?.fullName || b.assignee?.name || '';
+          break;
+        case 'priority':
+          // Sort by priority level (numeric)
+          aValue = a.priorityLevel || 0;
+          bValue = b.priorityLevel || 0;
+          break;
+        case 'duration':
+          aValue = a.estimatedDuration || '';
+          bValue = b.estimatedDuration || '';
+          break;
+        case 'startDate':
+          aValue = a.startDate || '';
+          bValue = b.startDate || '';
+          break;
+        case 'dueDate':
+          aValue = a.dueDate || '';
+          bValue = b.dueDate || '';
+          break;
+        default:
+          return 0;
+      }
+      
+      if (aValue < bValue) {
+        return sortConfig.direction === 'asc' ? -1 : 1;
+      }
+      if (aValue > bValue) {
+        return sortConfig.direction === 'asc' ? 1 : -1;
+      }
+      return 0;
+    });
+  };
+  
+  
+  // Apply sorting to tasks
+  const processTaskList = (tasks: any[]) => {
+    return sortTasks(tasks);
   };
   
   // Close any open picker when clicking to open a new one
@@ -2287,16 +2712,199 @@ const ExactTasksTable: React.FC = () => {
         );
       
       case 'startDate':
+        const formatDate = (dateStr: string) => {
+          if (!dateStr) return '';
+          if (dateStr.includes(' ')) {
+            const [date, time] = dateStr.split(' ');
+            const d = new Date(date);
+            return `${(d.getMonth() + 1).toString().padStart(2, '0')}/${d.getDate().toString().padStart(2, '0')}/${d.getFullYear()} ${time}`;
+          }
+          const d = new Date(dateStr);
+          return `${(d.getMonth() + 1).toString().padStart(2, '0')}/${d.getDate().toString().padStart(2, '0')}/${d.getFullYear()}`;
+        };
+        
         return (
-          <td key={column.id} style={{ padding: '4px 6px', fontSize: '13px', color: '#374151' }}>
-            {task.startDate}
+          <td key={column.id} style={{ padding: '4px 6px', fontSize: '13px', color: '#374151', position: 'relative' }}>
+            <div
+              ref={(el) => {
+                if (el && openPicker?.type === 'startDate' && openPicker.taskId === task.id) {
+                  el.setAttribute('data-anchor-ref', 'true');
+                }
+              }}
+              data-date-trigger={`startDate-${task.id}`}
+              onClick={(e) => {
+                e.stopPropagation();
+                handleOpenPicker('startDate', task.id);
+              }}
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '6px',
+                padding: '4px 8px',
+                borderRadius: '6px',
+                cursor: 'pointer',
+                transition: 'all 0.2s',
+                backgroundColor: task.startDate ? '#f0f9ff' : '#f9fafb',
+                border: task.startDate ? '1px solid #bfdbfe' : '1px solid #e5e7eb',
+                minWidth: '120px'
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.backgroundColor = task.startDate ? '#dbeafe' : '#f3f4f6';
+                e.currentTarget.style.borderColor = task.startDate ? '#93c5fd' : '#d1d5db';
+                e.currentTarget.style.transform = 'translateY(-1px)';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.backgroundColor = task.startDate ? '#f0f9ff' : '#f9fafb';
+                e.currentTarget.style.borderColor = task.startDate ? '#bfdbfe' : '#e5e7eb';
+                e.currentTarget.style.transform = 'translateY(0)';
+              }}
+            >
+              <Calendar style={{ width: '14px', height: '14px', color: task.startDate ? '#3b82f6' : '#9ca3af', flexShrink: 0 }} />
+              <span style={{ 
+                fontSize: '12px', 
+                color: task.startDate ? '#1e40af' : '#9ca3af',
+                fontWeight: task.startDate ? '500' : '400',
+                whiteSpace: 'nowrap'
+              }}>
+                {task.startDate ? formatDate(task.startDate) : 'Set date'}
+              </span>
+            </div>
+            {openPicker?.type === 'startDate' && openPicker.taskId === task.id && (
+              <DateTimePicker
+                anchorEl={document.querySelector(`[data-date-trigger="startDate-${task.id}"]`)}
+                value={task.startDate}
+                onChange={(date: string) => {
+                  setTasks((prev: any) => {
+                    const newTasks = { ...prev };
+                    Object.keys(newTasks).forEach(group => {
+                      newTasks[group] = newTasks[group].map((t: any) => {
+                        if (t.id === task.id) {
+                          return { ...t, startDate: date };
+                        }
+                        if (t.subtasks) {
+                          return {
+                            ...t,
+                            subtasks: t.subtasks.map((st: any) =>
+                              st.id === task.id ? { ...st, startDate: date } : st
+                            )
+                          };
+                        }
+                        return t;
+                      });
+                    });
+                    return newTasks;
+                  });
+                }}
+                onClose={() => setOpenPicker(null)}
+              />
+            )}
           </td>
         );
       
       case 'dueDate':
+        const formatDueDate = (dateStr: string) => {
+          if (!dateStr) return '';
+          if (dateStr.includes(' ')) {
+            const [date, time] = dateStr.split(' ');
+            const d = new Date(date);
+            return `${(d.getMonth() + 1).toString().padStart(2, '0')}/${d.getDate().toString().padStart(2, '0')}/${d.getFullYear()} ${time}`;
+          }
+          const d = new Date(dateStr);
+          return `${(d.getMonth() + 1).toString().padStart(2, '0')}/${d.getDate().toString().padStart(2, '0')}/${d.getFullYear()}`;
+        };
+        
+        // Check if due date is past
+        const isPastDue = () => {
+          if (!task.dueDate) return false;
+          const dueDate = new Date(task.dueDate.split(' ')[0]);
+          const today = new Date();
+          today.setHours(0, 0, 0, 0);
+          return dueDate < today;
+        };
+        
         return (
-          <td key={column.id} style={{ padding: '4px 6px', fontSize: '13px', color: '#374151' }}>
-            {task.dueDate}
+          <td key={column.id} style={{ padding: '4px 6px', fontSize: '13px', color: '#374151', position: 'relative' }}>
+            <div
+              ref={(el) => {
+                if (el && openPicker?.type === 'dueDate' && openPicker.taskId === task.id) {
+                  el.setAttribute('data-anchor-ref', 'true');
+                }
+              }}
+              data-date-trigger={`dueDate-${task.id}`}
+              onClick={(e) => {
+                e.stopPropagation();
+                handleOpenPicker('dueDate', task.id);
+              }}
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '6px',
+                padding: '4px 8px',
+                borderRadius: '6px',
+                cursor: 'pointer',
+                transition: 'all 0.2s',
+                backgroundColor: isPastDue() ? '#fef2f2' : task.dueDate ? '#f0fdf4' : '#f9fafb',
+                border: isPastDue() ? '1px solid #fecaca' : task.dueDate ? '1px solid #bbf7d0' : '1px solid #e5e7eb',
+                minWidth: '120px'
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.backgroundColor = isPastDue() ? '#fee2e2' : task.dueDate ? '#dcfce7' : '#f3f4f6';
+                e.currentTarget.style.borderColor = isPastDue() ? '#fca5a5' : task.dueDate ? '#86efac' : '#d1d5db';
+                e.currentTarget.style.transform = 'translateY(-1px)';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.backgroundColor = isPastDue() ? '#fef2f2' : task.dueDate ? '#f0fdf4' : '#f9fafb';
+                e.currentTarget.style.borderColor = isPastDue() ? '#fecaca' : task.dueDate ? '#bbf7d0' : '#e5e7eb';
+                e.currentTarget.style.transform = 'translateY(0)';
+              }}
+            >
+              <Calendar style={{ 
+                width: '14px', 
+                height: '14px', 
+                color: isPastDue() ? '#ef4444' : task.dueDate ? '#22c55e' : '#9ca3af',
+                flexShrink: 0 
+              }} />
+              <span style={{ 
+                fontSize: '12px', 
+                color: isPastDue() ? '#dc2626' : task.dueDate ? '#16a34a' : '#9ca3af',
+                fontWeight: task.dueDate ? '500' : '400',
+                whiteSpace: 'nowrap'
+              }}>
+                {task.dueDate ? formatDueDate(task.dueDate) : 'Set date'}
+              </span>
+              {isPastDue() && (
+                <AlertCircle style={{ width: '14px', height: '14px', color: '#ef4444', flexShrink: 0 }} />
+              )}
+            </div>
+            {openPicker?.type === 'dueDate' && openPicker.taskId === task.id && (
+              <DateTimePicker
+                anchorEl={document.querySelector(`[data-date-trigger="dueDate-${task.id}"]`)}
+                value={task.dueDate}
+                onChange={(date: string) => {
+                  setTasks((prev: any) => {
+                    const newTasks = { ...prev };
+                    Object.keys(newTasks).forEach(group => {
+                      newTasks[group] = newTasks[group].map((t: any) => {
+                        if (t.id === task.id) {
+                          return { ...t, dueDate: date };
+                        }
+                        if (t.subtasks) {
+                          return {
+                            ...t,
+                            subtasks: t.subtasks.map((st: any) =>
+                              st.id === task.id ? { ...st, dueDate: date } : st
+                            )
+                          };
+                        }
+                        return t;
+                      });
+                    });
+                    return newTasks;
+                  });
+                }}
+                onClose={() => setOpenPicker(null)}
+              />
+            )}
           </td>
         );
       
@@ -2459,20 +3067,6 @@ const ExactTasksTable: React.FC = () => {
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
           <button style={{
-            padding: '6px 12px',
-            fontSize: '13px',
-            backgroundColor: 'transparent',
-            border: '1px solid #e5e7eb',
-            borderRadius: '6px',
-            cursor: 'pointer',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '6px'
-          }}>
-            <Filter style={{ width: '14px', height: '14px' }} />
-            Filter
-          </button>
-          <button style={{
             padding: '6px',
             backgroundColor: 'transparent',
             border: '1px solid #e5e7eb',
@@ -2545,7 +3139,34 @@ const ExactTasksTable: React.FC = () => {
                 {column.id === 'checkbox' ? (
                   <input type="checkbox" style={{ width: '14px', height: '14px' }} />
                 ) : (
-                  column.label
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '4px', position: 'relative' }}>
+                    <button
+                      onClick={() => handleSort(column.id)}
+                      style={{
+                        background: 'none',
+                        border: 'none',
+                        padding: 0,
+                        cursor: 'pointer',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '4px',
+                        color: 'inherit',
+                        fontSize: 'inherit',
+                        fontWeight: 'inherit'
+                      }}
+                    >
+                      <span>{column.label}</span>
+                      {sortConfig.key === column.id ? (
+                        sortConfig.direction === 'asc' ? (
+                          <ArrowUp style={{ width: '14px', height: '14px', color: '#3b82f6' }} />
+                        ) : (
+                          <ArrowDown style={{ width: '14px', height: '14px', color: '#3b82f6' }} />
+                        )
+                      ) : (
+                        <ArrowUpDown style={{ width: '14px', height: '14px', color: '#d1d5db' }} />
+                      )}
+                    </button>
+                  </div>
                 )}
               </th>
             ))}
@@ -2553,67 +3174,72 @@ const ExactTasksTable: React.FC = () => {
         </thead>
         <tbody>
           {/* Render groups */}
-          {Object.entries(tasks).map(([groupKey, groupTasks]: [string, any]) => (
-            <React.Fragment key={groupKey}>
-              <tr>
-                <td colSpan={columns.filter(col => col.visible).length} style={{ padding: '4px 6px', backgroundColor: 'transparent' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                    <button
-                      onClick={() => toggleGroup(groupKey)}
-                      style={{
-                        background: 'none',
-                        border: 'none',
-                        padding: '4px',
-                        cursor: 'pointer',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        borderRadius: '4px',
-                        transition: 'background-color 0.2s'
-                      }}
-                      onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#f3f4f6'}
-                      onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
-                      title={expandedGroups.includes(groupKey) ? 'Collapse group' : 'Expand group'}
-                    >
-                      {expandedGroups.includes(groupKey) ? 
-                        <ChevronDown style={{ width: '16px', height: '16px', color: '#6b7280' }} /> : 
-                        <ChevronRight style={{ width: '16px', height: '16px', color: '#6b7280' }} />
-                      }
-                    </button>
-                    <span style={{ 
-                      fontSize: '12px', 
-                      fontWeight: '600',
-                      backgroundColor: groupKey === 'planning' ? '#e91e63' : 
-                                      groupKey === 'development' ? '#5b5fc7' : 
-                                      groupKey === 'finalization' ? '#fbbf24' :
-                                      groupKey === 'foundation' ? '#f97316' :
-                                      groupKey === 'plumbing' ? '#14b8a6' :
-                                      groupKey === 'electrical' ? '#c084fc' : '#6b7280',
-                      color: 'white',
-                      padding: '2px 6px',
-                      borderRadius: '4px'
-                    }}>
-                      {groupKey.charAt(0).toUpperCase() + groupKey.slice(1)}
-                    </span>
-                    <span style={{ 
-                      fontSize: '11px', 
-                      color: '#6b7280',
-                      backgroundColor: 'transparent',
-                      padding: '0px 4px',
-                      borderRadius: '3px',
-                      border: '1px solid #e5e7eb'
-                    }}>
-                      {groupTasks.length}
-                    </span>
-                    <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: '3px', cursor: 'pointer' }}>
-                      <Plus style={{ width: '14px', height: '14px', color: '#6b7280' }} />
-                      <span style={{ fontSize: '12px', color: '#6b7280' }}>Add Task</span>
+          {Object.entries(tasks).map(([groupKey, groupTasks]: [string, any]) => {
+            // Apply filters and sorting to tasks
+            const processedTasks = processTaskList(groupTasks);
+            
+            
+            return (
+              <React.Fragment key={groupKey}>
+                <tr>
+                  <td colSpan={columns.filter(col => col.visible).length} style={{ padding: '4px 6px', backgroundColor: 'transparent' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                      <button
+                        onClick={() => toggleGroup(groupKey)}
+                        style={{
+                          background: 'none',
+                          border: 'none',
+                          padding: '4px',
+                          cursor: 'pointer',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          borderRadius: '4px',
+                          transition: 'background-color 0.2s'
+                        }}
+                        onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#f3f4f6'}
+                        onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
+                        title={expandedGroups.includes(groupKey) ? 'Collapse group' : 'Expand group'}
+                      >
+                        {expandedGroups.includes(groupKey) ? 
+                          <ChevronDown style={{ width: '16px', height: '16px', color: '#6b7280' }} /> : 
+                          <ChevronRight style={{ width: '16px', height: '16px', color: '#6b7280' }} />
+                        }
+                      </button>
+                      <span style={{ 
+                        fontSize: '12px', 
+                        fontWeight: '600',
+                        backgroundColor: groupKey === 'planning' ? '#e91e63' : 
+                                        groupKey === 'development' ? '#5b5fc7' : 
+                                        groupKey === 'finalization' ? '#fbbf24' :
+                                        groupKey === 'foundation' ? '#f97316' :
+                                        groupKey === 'plumbing' ? '#14b8a6' :
+                                        groupKey === 'electrical' ? '#c084fc' : '#6b7280',
+                        color: 'white',
+                        padding: '2px 6px',
+                        borderRadius: '4px'
+                      }}>
+                        {groupKey.charAt(0).toUpperCase() + groupKey.slice(1)}
+                      </span>
+                      <span style={{ 
+                        fontSize: '11px', 
+                        color: '#6b7280',
+                        backgroundColor: 'transparent',
+                        padding: '0px 4px',
+                        borderRadius: '3px',
+                        border: '1px solid #e5e7eb'
+                      }}>
+                        {processedTasks.length}
+                      </span>
+                      <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: '3px', cursor: 'pointer' }}>
+                        <Plus style={{ width: '14px', height: '14px', color: '#6b7280' }} />
+                        <span style={{ fontSize: '12px', color: '#6b7280' }}>Add Task</span>
+                      </div>
                     </div>
-                  </div>
-                </td>
-              </tr>
-              
-              {expandedGroups.includes(groupKey) && groupTasks.map((task: any, index: number) => (
+                  </td>
+                </tr>
+                
+                {expandedGroups.includes(groupKey) && processedTasks.map((task: any, index: number) => (
                 <React.Fragment key={`${groupKey}-task-${task.id}`}>
                   {renderTask(task, groupKey, index)}
                   {task.hasSubtasks && expandedTasks.includes(task.id) && task.subtasks?.map((subtask: any, subIndex: number) => 
@@ -2622,7 +3248,8 @@ const ExactTasksTable: React.FC = () => {
                 </React.Fragment>
               ))}
             </React.Fragment>
-          ))}
+          );
+        })}
         </tbody>
       </table>
       
