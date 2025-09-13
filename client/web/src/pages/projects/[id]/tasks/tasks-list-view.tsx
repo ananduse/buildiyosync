@@ -392,7 +392,7 @@ export default function TasksListView() {
   return (
     <div className="h-full flex flex-col bg-white">
       {/* Header Controls */}
-      <div className="border-b px-4 py-2">
+      <div className="border-b px-4 py-0">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
             <span className="text-[13px] text-gray-600">Group: Activity Category</span>

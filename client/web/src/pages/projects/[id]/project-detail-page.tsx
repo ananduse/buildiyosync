@@ -138,44 +138,44 @@ export default function ProjectDetailPage() {
       {/* Tabs */}
       <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 flex flex-col">
         <div className="bg-white border-b px-6">
-          <TabsList className="h-12 bg-transparent p-0 gap-6">
-            <TabsTrigger value="overview" className="data-[state=active]:border-b-2 data-[state=active]:border-primary rounded-none h-12">
+          <TabsList className="h-10 bg-transparent p-0 gap-4">
+            <TabsTrigger value="overview" className="data-[state=active]:border-b-2 data-[state=active]:border-primary rounded-none h-10 pb-2">
               <Home className="h-4 w-4 mr-2" />
               Overview
             </TabsTrigger>
-            <TabsTrigger value="activity" className="data-[state=active]:border-b-2 data-[state=active]:border-primary rounded-none h-12">
+            <TabsTrigger value="activity" className="data-[state=active]:border-b-2 data-[state=active]:border-primary rounded-none h-10 pb-2">
               <Activity className="h-4 w-4 mr-2" />
               Activity
             </TabsTrigger>
-            <TabsTrigger value="timeline" className="data-[state=active]:border-b-2 data-[state=active]:border-primary rounded-none h-12">
+            <TabsTrigger value="timeline" className="data-[state=active]:border-b-2 data-[state=active]:border-primary rounded-none h-10 pb-2">
               <GitBranch className="h-4 w-4 mr-2" />
               Timeline
             </TabsTrigger>
-            <TabsTrigger value="team" className="data-[state=active]:border-b-2 data-[state=active]:border-primary rounded-none h-12">
+            <TabsTrigger value="team" className="data-[state=active]:border-b-2 data-[state=active]:border-primary rounded-none h-10 pb-2">
               <Users className="h-4 w-4 mr-2" />
               Team
             </TabsTrigger>
-            <TabsTrigger value="tasks" className="data-[state=active]:border-b-2 data-[state=active]:border-primary rounded-none h-12">
+            <TabsTrigger value="tasks" className="data-[state=active]:border-b-2 data-[state=active]:border-primary rounded-none h-10 pb-2">
               <ClipboardList className="h-4 w-4 mr-2" />
               Tasks
             </TabsTrigger>
-            <TabsTrigger value="budget" className="data-[state=active]:border-b-2 data-[state=active]:border-primary rounded-none h-12">
+            <TabsTrigger value="budget" className="data-[state=active]:border-b-2 data-[state=active]:border-primary rounded-none h-10 pb-2">
               <DollarSign className="h-4 w-4 mr-2" />
               Budget
             </TabsTrigger>
-            <TabsTrigger value="documents" className="data-[state=active]:border-b-2 data-[state=active]:border-primary rounded-none h-12">
+            <TabsTrigger value="documents" className="data-[state=active]:border-b-2 data-[state=active]:border-primary rounded-none h-10 pb-2">
               <FileText className="h-4 w-4 mr-2" />
               Documents
             </TabsTrigger>
-            <TabsTrigger value="calendar" className="data-[state=active]:border-b-2 data-[state=active]:border-primary rounded-none h-12">
+            <TabsTrigger value="calendar" className="data-[state=active]:border-b-2 data-[state=active]:border-primary rounded-none h-10 pb-2">
               <Calendar className="h-4 w-4 mr-2" />
               Calendar
             </TabsTrigger>
-            <TabsTrigger value="reports" className="data-[state=active]:border-b-2 data-[state=active]:border-primary rounded-none h-12">
+            <TabsTrigger value="reports" className="data-[state=active]:border-b-2 data-[state=active]:border-primary rounded-none h-10 pb-2">
               <BarChart3 className="h-4 w-4 mr-2" />
               Reports
             </TabsTrigger>
-            <TabsTrigger value="details" className="data-[state=active]:border-b-2 data-[state=active]:border-primary rounded-none h-12">
+            <TabsTrigger value="details" className="data-[state=active]:border-b-2 data-[state=active]:border-primary rounded-none h-10 pb-2">
               <Info className="h-4 w-4 mr-2" />
               Details
             </TabsTrigger>
@@ -183,8 +183,8 @@ export default function ProjectDetailPage() {
         </div>
 
         {/* Tab Contents */}
-        <TabsContent value="overview" className="flex-1 overflow-auto mt-0">
-          <div className="p-6">
+        <TabsContent value="overview" className="flex-1 overflow-auto mt-0 p-0">
+          <div className="p-4">
             <div className="grid gap-6">
               {/* Project Stats */}
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -303,10 +303,10 @@ export default function ProjectDetailPage() {
           </div>
         </TabsContent>
 
-        <TabsContent value="activity" className="flex-1 overflow-auto mt-0">
-          <div className="p-6">
+        <TabsContent value="activity" className="flex-1 overflow-auto mt-0 p-0">
+          <div className="p-4">
             <Card>
-              <CardContent className="p-12 text-center">
+              <CardContent className="p-6 text-center">
                 <Activity className="h-12 w-12 text-gray-400 mx-auto mb-4" />
                 <h3 className="text-lg font-medium mb-2">Activity Feed</h3>
                 <p className="text-muted-foreground">All project activities and updates will appear here</p>
@@ -315,10 +315,10 @@ export default function ProjectDetailPage() {
           </div>
         </TabsContent>
 
-        <TabsContent value="timeline" className="flex-1 overflow-auto mt-0">
-          <div className="p-6">
+        <TabsContent value="timeline" className="flex-1 overflow-auto mt-0 p-0">
+          <div className="p-4">
             <Card>
-              <CardContent className="p-12 text-center">
+              <CardContent className="p-6 text-center">
                 <GitBranch className="h-12 w-12 text-gray-400 mx-auto mb-4" />
                 <h3 className="text-lg font-medium mb-2">Project Timeline</h3>
                 <p className="text-muted-foreground">Gantt chart and milestones visualization</p>
@@ -327,8 +327,8 @@ export default function ProjectDetailPage() {
           </div>
         </TabsContent>
 
-        <TabsContent value="team" className="flex-1 overflow-auto mt-0">
-          <div className="p-6">
+        <TabsContent value="team" className="flex-1 overflow-auto mt-0 p-0">
+          <div className="p-4">
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {[
                 { name: 'Vikram Singh', role: 'Project Manager', avatar: 'VS', status: 'online' },
@@ -358,14 +358,14 @@ export default function ProjectDetailPage() {
         </TabsContent>
 
         {/* TASKS TAB - Using our complete task manager */}
-        <TabsContent value="tasks" className="flex-1 mt-0">
+        <TabsContent value="tasks" className="flex-1 -mt-[10px] p-0">
           <ProjectTaskManager />
         </TabsContent>
 
-        <TabsContent value="budget" className="flex-1 overflow-auto mt-0">
-          <div className="p-6">
+        <TabsContent value="budget" className="flex-1 overflow-auto mt-0 p-0">
+          <div className="p-4">
             <Card>
-              <CardContent className="p-12 text-center">
+              <CardContent className="p-6 text-center">
                 <DollarSign className="h-12 w-12 text-gray-400 mx-auto mb-4" />
                 <h3 className="text-lg font-medium mb-2">Budget Management</h3>
                 <p className="text-muted-foreground">Financial tracking and budget allocation</p>
@@ -374,10 +374,10 @@ export default function ProjectDetailPage() {
           </div>
         </TabsContent>
 
-        <TabsContent value="documents" className="flex-1 overflow-auto mt-0">
-          <div className="p-6">
+        <TabsContent value="documents" className="flex-1 overflow-auto mt-0 p-0">
+          <div className="p-4">
             <Card>
-              <CardContent className="p-12 text-center">
+              <CardContent className="p-6 text-center">
                 <FileText className="h-12 w-12 text-gray-400 mx-auto mb-4" />
                 <h3 className="text-lg font-medium mb-2">Documents</h3>
                 <p className="text-muted-foreground">Project files and documentation</p>
@@ -386,10 +386,10 @@ export default function ProjectDetailPage() {
           </div>
         </TabsContent>
 
-        <TabsContent value="calendar" className="flex-1 overflow-auto mt-0">
-          <div className="p-6">
+        <TabsContent value="calendar" className="flex-1 overflow-auto mt-0 p-0">
+          <div className="p-4">
             <Card>
-              <CardContent className="p-12 text-center">
+              <CardContent className="p-6 text-center">
                 <Calendar className="h-12 w-12 text-gray-400 mx-auto mb-4" />
                 <h3 className="text-lg font-medium mb-2">Project Calendar</h3>
                 <p className="text-muted-foreground">Events, deadlines and milestones</p>
@@ -398,10 +398,10 @@ export default function ProjectDetailPage() {
           </div>
         </TabsContent>
 
-        <TabsContent value="reports" className="flex-1 overflow-auto mt-0">
-          <div className="p-6">
+        <TabsContent value="reports" className="flex-1 overflow-auto mt-0 p-0">
+          <div className="p-4">
             <Card>
-              <CardContent className="p-12 text-center">
+              <CardContent className="p-6 text-center">
                 <BarChart3 className="h-12 w-12 text-gray-400 mx-auto mb-4" />
                 <h3 className="text-lg font-medium mb-2">Reports & Analytics</h3>
                 <p className="text-muted-foreground">Project performance and analytics</p>
@@ -410,10 +410,10 @@ export default function ProjectDetailPage() {
           </div>
         </TabsContent>
 
-        <TabsContent value="details" className="flex-1 overflow-auto mt-0">
-          <div className="p-6">
+        <TabsContent value="details" className="flex-1 overflow-auto mt-0 p-0">
+          <div className="p-4">
             <Card>
-              <CardContent className="p-12 text-center">
+              <CardContent className="p-6 text-center">
                 <Info className="h-12 w-12 text-gray-400 mx-auto mb-4" />
                 <h3 className="text-lg font-medium mb-2">Project Details</h3>
                 <p className="text-muted-foreground">Comprehensive project information</p>

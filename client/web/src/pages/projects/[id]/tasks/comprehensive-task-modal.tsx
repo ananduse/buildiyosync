@@ -1154,7 +1154,7 @@ const ComprehensiveTaskModal: React.FC<TaskModalProps> = ({ isOpen, onClose, tas
               key={tab}
               onClick={() => setActiveTab(tab)}
               style={{
-                padding: '12px 0',
+                padding: '12px 0 10px 0',
                 backgroundColor: 'transparent',
                 border: 'none',
                 borderBottom: activeTab === tab ? '2px solid #7c3aed' : '2px solid transparent',
@@ -1162,7 +1162,8 @@ const ComprehensiveTaskModal: React.FC<TaskModalProps> = ({ isOpen, onClose, tas
                 fontWeight: '500',
                 color: activeTab === tab ? '#7c3aed' : '#6b7280',
                 cursor: 'pointer',
-                textTransform: 'capitalize'
+                textTransform: 'capitalize',
+                marginBottom: '-2px'
               }}
             >
               {tab}

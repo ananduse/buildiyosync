@@ -1567,12 +1567,25 @@ const ExactTasksTable: React.FC = () => {
   const [expandedTasks, setExpandedTasks] = useState<string[]>([]);
   const [selectedTasks, setSelectedTasks] = useState<string[]>([]);
   const [hoveredRow, setHoveredRow] = useState<string | null>(null);
+  const [searchQuery, setSearchQuery] = useState<string>('');
   const hoveredTimeout = useRef<NodeJS.Timeout | null>(null);
   const [draggedTask, setDraggedTask] = useState<any>(null);
   const [openPicker, setOpenPicker] = useState<{ type: string; taskId: string } | null>(null);
   const [selectedTaskForEdit, setSelectedTaskForEdit] = useState<any>(null);
   const [deleteConfirmation, setDeleteConfirmation] = useState<{ isOpen: boolean; taskId: string | null; taskName: string; taskGroup: string }>({ isOpen: false, taskId: null, taskName: '', taskGroup: '' });
   const { showNotification, NotificationContainer } = useNotification();
+  
+  // Bottom bar action states
+  const [showBulkStatusPicker, setShowBulkStatusPicker] = useState(false);
+  const [showBulkAssigneePicker, setShowBulkAssigneePicker] = useState(false);
+  const [showBulkDatePicker, setShowBulkDatePicker] = useState(false);
+  const [showBulkPriorityPicker, setShowBulkPriorityPicker] = useState(false);
+  const [bulkDeleteConfirm, setBulkDeleteConfirm] = useState(false);
+  const [showBulkTagsPicker, setShowBulkTagsPicker] = useState(false);
+  const [showBulkMovePicker, setShowBulkMovePicker] = useState(false);
+  const [showBulkCustomFieldsPicker, setShowBulkCustomFieldsPicker] = useState(false);
+  const [showConvertToSubtaskPicker, setShowConvertToSubtaskPicker] = useState(false);
+  const [bulkDateType, setBulkDateType] = useState<'start' | 'due' | null>(null);
   
   // Column configuration state
   const [showColumnConfig, setShowColumnConfig] = useState(false);
@@ -1719,7 +1732,22 @@ const ExactTasksTable: React.FC = () => {
   
   // Apply sorting to tasks
   const processTaskList = (tasks: any[]) => {
-    return sortTasks(tasks);
+    // Filter tasks based on search query
+    const filteredTasks = tasks.filter(task => {
+      if (!searchQuery) return true;
+      
+      const searchLower = searchQuery.toLowerCase();
+      return (
+        task.name.toLowerCase().includes(searchLower) ||
+        task.assignee?.fullName?.toLowerCase().includes(searchLower) ||
+        task.status?.label?.toLowerCase().includes(searchLower) ||
+        task.priority?.toLowerCase().includes(searchLower) ||
+        task.category?.label?.toLowerCase().includes(searchLower)
+      );
+    });
+    
+    // Apply sorting
+    return sortTasks(filteredTasks);
   };
   
   // Close any open picker when clicking to open a new one
@@ -1742,6 +1770,347 @@ const ExactTasksTable: React.FC = () => {
       });
       showNotification(`Task "${deleteConfirmation.taskName}" deleted successfully`, 'success');
     }
+  };
+
+  // Bulk action functions
+  const updateSelectedTasksStatus = (newStatus: any) => {
+    setTasks((prev: any) => {
+      const newTasks = { ...prev };
+      Object.keys(newTasks).forEach(group => {
+        newTasks[group] = newTasks[group].map((task: any) => {
+          if (selectedTasks.includes(task.id)) {
+            return { ...task, status: newStatus };
+          }
+          if (task.subtasks) {
+            task.subtasks = task.subtasks.map((subtask: any) => 
+              selectedTasks.includes(subtask.id) ? { ...subtask, status: newStatus } : subtask
+            );
+          }
+          return task;
+        });
+      });
+      return newTasks;
+    });
+    showNotification(`Updated status for ${selectedTasks.length} task(s)`, 'success');
+    setShowBulkStatusPicker(false);
+  };
+
+  const updateSelectedTasksAssignee = (newAssignee: any) => {
+    setTasks((prev: any) => {
+      const newTasks = { ...prev };
+      Object.keys(newTasks).forEach(group => {
+        newTasks[group] = newTasks[group].map((task: any) => {
+          if (selectedTasks.includes(task.id)) {
+            return { ...task, assignee: newAssignee };
+          }
+          if (task.subtasks) {
+            task.subtasks = task.subtasks.map((subtask: any) => 
+              selectedTasks.includes(subtask.id) ? { ...subtask, assignee: newAssignee } : subtask
+            );
+          }
+          return task;
+        });
+      });
+      return newTasks;
+    });
+    showNotification(`Updated assignee for ${selectedTasks.length} task(s)`, 'success');
+    setShowBulkAssigneePicker(false);
+  };
+
+  const updateSelectedTasksPriority = (newPriority: string) => {
+    const priorityConfig = {
+      'Critical': { color: '#dc2626', level: 1, icon: AlertCircle },
+      'Urgent': { color: '#ef4444', level: 2, icon: AlertTriangleIcon },
+      'High': { color: '#fb923c', level: 3, icon: ChevronUpIcon },
+      'Medium': { color: '#fbbf24', level: 4, icon: TrendingUp },
+      'Normal': { color: '#10b981', level: 5, icon: Minus },
+      'Low': { color: '#3b82f6', level: 6, icon: ChevronDownIcon }
+    };
+
+    const config = priorityConfig[newPriority as keyof typeof priorityConfig];
+    
+    setTasks((prev: any) => {
+      const newTasks = { ...prev };
+      Object.keys(newTasks).forEach(group => {
+        newTasks[group] = newTasks[group].map((task: any) => {
+          if (selectedTasks.includes(task.id)) {
+            return { 
+              ...task, 
+              priority: newPriority,
+              priorityColor: config.color,
+              priorityLevel: config.level,
+              priorityIcon: config.icon
+            };
+          }
+          if (task.subtasks) {
+            task.subtasks = task.subtasks.map((subtask: any) => 
+              selectedTasks.includes(subtask.id) ? { 
+                ...subtask, 
+                priority: newPriority,
+                priorityColor: config.color,
+                priorityLevel: config.level,
+                priorityIcon: config.icon
+              } : subtask
+            );
+          }
+          return task;
+        });
+      });
+      return newTasks;
+    });
+    showNotification(`Updated priority for ${selectedTasks.length} task(s)`, 'success');
+    setShowBulkPriorityPicker(false);
+  };
+
+  const deleteSelectedTasks = () => {
+    setTasks((prev: any) => {
+      const newTasks = { ...prev };
+      Object.keys(newTasks).forEach(group => {
+        newTasks[group] = newTasks[group].filter((task: any) => {
+          // Remove selected tasks
+          if (selectedTasks.includes(task.id)) return false;
+          // Remove selected subtasks
+          if (task.subtasks) {
+            task.subtasks = task.subtasks.filter((subtask: any) => 
+              !selectedTasks.includes(subtask.id)
+            );
+          }
+          return true;
+        });
+      });
+      return newTasks;
+    });
+    showNotification(`Deleted ${selectedTasks.length} task(s)`, 'success');
+    setSelectedTasks([]);
+    setBulkDeleteConfirm(false);
+  };
+
+  const duplicateSelectedTasks = () => {
+    if (selectedTasks.length === 0) return;
+    
+    const duplicatedCount = selectedTasks.length;
+    let actualDuplicatedCount = 0;
+    
+    setTasks((prev: any) => {
+      const newTasks = { ...prev };
+      Object.keys(newTasks).forEach(group => {
+        const tasksToAdd: any[] = [];
+        newTasks[group].forEach((task: any) => {
+          if (selectedTasks.includes(task.id)) {
+            tasksToAdd.push({
+              ...task,
+              id: `${task.id}-copy-${Date.now()}-${Math.random()}`,
+              name: `${task.name} (Copy)`,
+              subtasks: task.subtasks ? task.subtasks.map((subtask: any) => ({
+                ...subtask,
+                id: `${subtask.id}-copy-${Date.now()}-${Math.random()}`
+              })) : undefined
+            });
+            actualDuplicatedCount++;
+          }
+        });
+        newTasks[group] = [...newTasks[group], ...tasksToAdd];
+      });
+      return newTasks;
+    });
+    
+    if (actualDuplicatedCount > 0) {
+      showNotification(`Successfully duplicated ${actualDuplicatedCount} task${actualDuplicatedCount > 1 ? 's' : ''}`, 'success');
+      setSelectedTasks([]);
+    }
+  };
+
+  // Additional bulk action functions
+  const updateSelectedTasksDates = (dateType: 'start' | 'due', newDate: string) => {
+    setTasks((prev: any) => {
+      const newTasks = { ...prev };
+      Object.keys(newTasks).forEach(group => {
+        newTasks[group] = newTasks[group].map((task: any) => {
+          if (selectedTasks.includes(task.id)) {
+            return dateType === 'start' 
+              ? { ...task, startDate: newDate }
+              : { ...task, dueDate: newDate };
+          }
+          if (task.subtasks) {
+            task.subtasks = task.subtasks.map((subtask: any) => 
+              selectedTasks.includes(subtask.id) 
+                ? (dateType === 'start' 
+                    ? { ...subtask, startDate: newDate }
+                    : { ...subtask, dueDate: newDate })
+                : subtask
+            );
+          }
+          return task;
+        });
+      });
+      return newTasks;
+    });
+    showNotification(`Updated ${dateType} date for ${selectedTasks.length} task(s)`, 'success');
+    setShowBulkDatePicker(false);
+    setBulkDateType(null);
+  };
+
+  const moveSelectedTasks = (targetGroup: string) => {
+    const movedTasks: any[] = [];
+    
+    setTasks((prev: any) => {
+      const newTasks = { ...prev };
+      
+      // Collect tasks to move and remove from current groups
+      Object.keys(newTasks).forEach(group => {
+        const tasksToKeep: any[] = [];
+        newTasks[group].forEach((task: any) => {
+          if (selectedTasks.includes(task.id)) {
+            movedTasks.push({
+              ...task,
+              category: { 
+                id: targetGroup, 
+                label: targetGroup.charAt(0).toUpperCase() + targetGroup.slice(1),
+                color: getCategoryColor(targetGroup)
+              }
+            });
+          } else {
+            tasksToKeep.push(task);
+          }
+        });
+        newTasks[group] = tasksToKeep;
+      });
+      
+      // Add moved tasks to target group
+      if (newTasks[targetGroup]) {
+        newTasks[targetGroup] = [...newTasks[targetGroup], ...movedTasks];
+      }
+      
+      return newTasks;
+    });
+    
+    showNotification(`Moved ${movedTasks.length} task(s) to ${targetGroup}`, 'success');
+    setSelectedTasks([]);
+    setShowBulkMovePicker(false);
+  };
+
+  const getCategoryColor = (category: string) => {
+    const colors: { [key: string]: string } = {
+      planning: '#e91e63',
+      development: '#5b5fc7',
+      finalization: '#fbbf24',
+      foundation: '#f97316',
+      plumbing: '#14b8a6',
+      electrical: '#c084fc'
+    };
+    return colors[category] || '#6b7280';
+  };
+
+  const addTagsToSelectedTasks = (tag: string) => {
+    setTasks((prev: any) => {
+      const newTasks = { ...prev };
+      Object.keys(newTasks).forEach(group => {
+        newTasks[group] = newTasks[group].map((task: any) => {
+          if (selectedTasks.includes(task.id)) {
+            const currentTags = task.tags || [];
+            if (!currentTags.includes(tag)) {
+              return { ...task, tags: [...currentTags, tag] };
+            }
+          }
+          return task;
+        });
+      });
+      return newTasks;
+    });
+    showNotification(`Added tag "${tag}" to ${selectedTasks.length} task(s)`, 'success');
+    setShowBulkTagsPicker(false);
+  };
+
+  const convertToSubtasks = (parentTaskId: string) => {
+    const convertedTasks: any[] = [];
+    
+    setTasks((prev: any) => {
+      const newTasks = { ...prev };
+      
+      // Find parent task
+      let parentTask: any = null;
+      let parentGroup: string = '';
+      
+      Object.keys(newTasks).forEach(group => {
+        const found = newTasks[group].find((t: any) => t.id === parentTaskId);
+        if (found) {
+          parentTask = found;
+          parentGroup = group;
+        }
+      });
+      
+      if (!parentTask) return prev;
+      
+      // Collect tasks to convert and remove from their groups
+      Object.keys(newTasks).forEach(group => {
+        const tasksToKeep: any[] = [];
+        newTasks[group].forEach((task: any) => {
+          if (selectedTasks.includes(task.id) && task.id !== parentTaskId) {
+            convertedTasks.push({
+              ...task,
+              id: `subtask-${task.id}-${Date.now()}`,
+              category: parentTask.category
+            });
+          } else {
+            tasksToKeep.push(task);
+          }
+        });
+        newTasks[group] = tasksToKeep;
+      });
+      
+      // Add as subtasks to parent
+      newTasks[parentGroup] = newTasks[parentGroup].map((task: any) => {
+        if (task.id === parentTaskId) {
+          const existingSubtasks = task.subtasks || [];
+          return {
+            ...task,
+            hasSubtasks: true,
+            subtasks: [...existingSubtasks, ...convertedTasks]
+          };
+        }
+        return task;
+      });
+      
+      return newTasks;
+    });
+    
+    showNotification(`Converted ${convertedTasks.length} task(s) to subtasks`, 'success');
+    setSelectedTasks([]);
+    setShowConvertToSubtaskPicker(false);
+  };
+
+  // Function to get all visible tasks (filtered by search)
+  const getAllVisibleTasks = () => {
+    const allTasks: any[] = [];
+    
+    Object.keys(tasks).forEach(groupKey => {
+      const groupTasks = tasks[groupKey] || [];
+      groupTasks.forEach((task: any) => {
+        // Filter by search query
+        if (!searchQuery || 
+            task.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+            task.assignee?.fullName?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+            task.status?.label?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+            task.priority?.toLowerCase().includes(searchQuery.toLowerCase())) {
+          allTasks.push(task);
+          
+          // Include subtasks if parent matches or if subtask matches
+          if (task.subtasks) {
+            task.subtasks.forEach((subtask: any) => {
+              if (!searchQuery ||
+                  subtask.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                  subtask.assignee?.fullName?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                  subtask.status?.label?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                  subtask.priority?.toLowerCase().includes(searchQuery.toLowerCase())) {
+                allTasks.push(subtask);
+              }
+            });
+          }
+        }
+      });
+    });
+    
+    return allTasks;
   };
   const [tasks, setTasks] = useState<any>({
     planning: [],
@@ -2197,7 +2566,13 @@ const ExactTasksTable: React.FC = () => {
               <input type="checkbox" 
                      checked={selectedTasks.includes(task.id)}
                      onChange={() => toggleTaskSelection(task.id)}
-                     style={{ width: '14px', height: '14px', cursor: 'pointer' }} />
+                     style={{ 
+                       width: '16px', 
+                       height: '16px', 
+                       cursor: 'pointer',
+                       accentColor: '#5b5fc7',
+                       borderRadius: '4px'
+                     }} />
             </div>
           </td>
         );
@@ -2926,7 +3301,7 @@ const ExactTasksTable: React.FC = () => {
         onDrop={(e) => !isSubtask && handleDrop(e, group, index)}
         style={{ 
           borderBottom: '1px solid #f0f0f0',
-          backgroundColor: hoveredRow === uniqueRowId ? '#f9fafb' : 'transparent',
+          backgroundColor: selectedTasks.includes(task.id) ? '#f3f4f6' : hoveredRow === uniqueRowId ? '#fafafa' : 'transparent',
           transition: 'background-color 0.15s ease',
           cursor: !isSubtask ? 'move' : 'default',
           position: 'relative'
@@ -3099,6 +3474,8 @@ const ExactTasksTable: React.FC = () => {
             <input 
               type="text" 
               placeholder="Search..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
               style={{
                 padding: '6px 10px 6px 32px',
                 fontSize: '13px',
@@ -3137,7 +3514,24 @@ const ExactTasksTable: React.FC = () => {
                   opacity: draggedColumn === columns.indexOf(column) ? 0.5 : 1
                 }}>
                 {column.id === 'checkbox' ? (
-                  <input type="checkbox" style={{ width: '14px', height: '14px' }} />
+                  <input 
+                    type="checkbox" 
+                    checked={getAllVisibleTasks().length > 0 && selectedTasks.length === getAllVisibleTasks().length}
+                    onChange={(e) => {
+                      if (e.target.checked) {
+                        setSelectedTasks(getAllVisibleTasks().map(t => t.id));
+                      } else {
+                        setSelectedTasks([]);
+                      }
+                    }}
+                    style={{ 
+                      width: '16px', 
+                      height: '16px', 
+                      cursor: 'pointer',
+                      accentColor: '#5b5fc7',
+                      borderRadius: '4px'
+                    }} 
+                  />
                 ) : (
                   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '4px', position: 'relative' }}>
                     <button
@@ -3242,9 +3636,21 @@ const ExactTasksTable: React.FC = () => {
                 {expandedGroups.includes(groupKey) && processedTasks.map((task: any, index: number) => (
                 <React.Fragment key={`${groupKey}-task-${task.id}`}>
                   {renderTask(task, groupKey, index)}
-                  {task.hasSubtasks && expandedTasks.includes(task.id) && task.subtasks?.map((subtask: any, subIndex: number) => 
-                    renderTask(subtask, groupKey, subIndex, true)
-                  )}
+                  {task.hasSubtasks && expandedTasks.includes(task.id) && task.subtasks
+                    ?.filter((subtask: any) => {
+                      if (!searchQuery) return true;
+                      const searchLower = searchQuery.toLowerCase();
+                      return (
+                        subtask.name.toLowerCase().includes(searchLower) ||
+                        subtask.assignee?.fullName?.toLowerCase().includes(searchLower) ||
+                        subtask.status?.label?.toLowerCase().includes(searchLower) ||
+                        subtask.priority?.toLowerCase().includes(searchLower) ||
+                        subtask.category?.label?.toLowerCase().includes(searchLower)
+                      );
+                    })
+                    .map((subtask: any, subIndex: number) => 
+                      renderTask(subtask, groupKey, subIndex, true)
+                    )}
                 </React.Fragment>
               ))}
             </React.Fragment>
@@ -3287,8 +3693,980 @@ const ExactTasksTable: React.FC = () => {
         cancelText="Keep Task"
       />
       
+      {/* Bulk Delete Confirmation Dialog */}
+      <ConfirmationDialog
+        isOpen={bulkDeleteConfirm}
+        onClose={() => setBulkDeleteConfirm(false)}
+        onConfirm={deleteSelectedTasks}
+        title="Delete Selected Tasks"
+        message={`Are you sure you want to delete ${selectedTasks.length} selected task${selectedTasks.length > 1 ? 's' : ''}? This action cannot be undone.`}
+        type="danger"
+        confirmText={`Delete ${selectedTasks.length} Task${selectedTasks.length > 1 ? 's' : ''}`}
+        cancelText="Cancel"
+      />
+      
       {/* Notifications */}
       <NotificationContainer />
+      
+      {/* Selection Bottom Bar */}
+      {selectedTasks.length > 0 && (
+        <div style={{
+          position: 'fixed',
+          bottom: '0',
+          left: '0',
+          right: '0',
+          height: '48px',
+          backgroundColor: '#2c3e50',
+          display: 'flex',
+          alignItems: 'center',
+          padding: '0 16px',
+          zIndex: 1000,
+          gap: '12px',
+          boxShadow: '0 -2px 10px rgba(0, 0, 0, 0.1)'
+        }}>
+          {/* Selection count and clear */}
+          <div style={{ 
+            display: 'flex', 
+            alignItems: 'center', 
+            gap: '8px',
+            marginRight: '8px'
+          }}>
+            <span style={{ 
+              fontSize: '13px', 
+              fontWeight: '500',
+              color: 'white'
+            }}>
+              {selectedTasks.length} Task{selectedTasks.length > 1 ? 's' : ''} selected
+            </span>
+            <button
+              onClick={() => setSelectedTasks([])}
+              style={{
+                padding: '2px 6px',
+                fontSize: '16px',
+                color: '#94a3b8',
+                border: 'none',
+                background: 'none',
+                cursor: 'pointer',
+                borderRadius: '3px',
+                lineHeight: '1',
+                transition: 'all 0.2s',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center'
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.1)';
+                e.currentTarget.style.color = 'white';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.backgroundColor = 'transparent';
+                e.currentTarget.style.color = '#94a3b8';
+              }}
+            >
+              <X style={{ width: '14px', height: '14px' }} />
+            </button>
+          </div>
+          
+          {/* Action buttons */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flex: 1 }}>
+            {/* Status Button */}
+            <div style={{ position: 'relative' }}>
+              <button className="selection-action-btn" 
+              onClick={() => setShowBulkStatusPicker(!showBulkStatusPicker)}
+              style={{
+                padding: '5px 10px',
+                fontSize: '12px',
+                border: 'none',
+                backgroundColor: showBulkStatusPicker ? 'rgba(255,255,255,0.2)' : 'transparent',
+                borderRadius: '4px',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '5px',
+                color: 'white',
+                transition: 'all 0.15s',
+                fontWeight: '400'
+              }}
+              onMouseEnter={(e) => {
+                if (!showBulkStatusPicker) {
+                  e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.1)';
+                }
+              }}
+              onMouseLeave={(e) => {
+                if (!showBulkStatusPicker) {
+                  e.currentTarget.style.backgroundColor = 'transparent';
+                }
+              }}>
+                <Circle style={{ width: '12px', height: '12px' }} />
+                Status
+              </button>
+              
+              {/* Status Dropdown */}
+              {showBulkStatusPicker && (
+                <div style={{
+                  position: 'absolute',
+                  bottom: '100%',
+                  left: '0',
+                  marginBottom: '8px',
+                  backgroundColor: 'white',
+                  border: '1px solid #e5e7eb',
+                  borderRadius: '8px',
+                  boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1)',
+                  padding: '8px',
+                  minWidth: '180px',
+                  zIndex: 1001
+                }}>
+                  <div style={{ fontSize: '12px', fontWeight: '600', marginBottom: '8px', color: '#6b7280' }}>Change Status</div>
+                  {[
+                    { id: 'todo', label: 'TO DO', color: '#6b7280' },
+                    { id: 'in-progress', label: 'IN PROGRESS', color: '#5b5fc7' },
+                    { id: 'complete', label: 'COMPLETE', color: '#22c55e' },
+                    { id: 'review', label: 'IN REVIEW', color: '#f59e0b' },
+                    { id: 'blocked', label: 'BLOCKED', color: '#ef4444' }
+                  ].map(status => (
+                    <button
+                      key={status.id}
+                      onClick={() => updateSelectedTasksStatus(status)}
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '8px',
+                        width: '100%',
+                        padding: '6px 8px',
+                        border: 'none',
+                        backgroundColor: 'transparent',
+                        borderRadius: '4px',
+                        cursor: 'pointer',
+                        fontSize: '13px',
+                        transition: 'background-color 0.2s'
+                      }}
+                      onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#f9fafb'}
+                      onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
+                    >
+                      <div style={{
+                        width: '8px',
+                        height: '8px',
+                        borderRadius: '50%',
+                        backgroundColor: status.color
+                      }} />
+                      <span>{status.label}</span>
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+            
+            {/* Assignee Button */}
+            <div style={{ position: 'relative' }}>
+              <button className="selection-action-btn"
+              onClick={() => setShowBulkAssigneePicker(!showBulkAssigneePicker)}
+              style={{
+                padding: '5px 10px',
+                fontSize: '12px',
+                border: 'none',
+                backgroundColor: showBulkAssigneePicker ? 'rgba(255,255,255,0.2)' : 'transparent',
+                borderRadius: '4px',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '5px',
+                color: 'white',
+                transition: 'all 0.15s',
+                fontWeight: '400'
+              }}
+              onMouseEnter={(e) => {
+                if (!showBulkAssigneePicker) {
+                  e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.1)';
+                }
+              }}
+              onMouseLeave={(e) => {
+                if (!showBulkAssigneePicker) {
+                  e.currentTarget.style.backgroundColor = 'transparent';
+                }
+              }}>
+                <Users style={{ width: '12px', height: '12px' }} />
+                Assignees
+              </button>
+              
+              {/* Assignee Dropdown */}
+              {showBulkAssigneePicker && (
+                <div style={{
+                  position: 'absolute',
+                  bottom: '100%',
+                  left: '0',
+                  marginBottom: '8px',
+                  backgroundColor: 'white',
+                  border: '1px solid #e5e7eb',
+                  borderRadius: '8px',
+                  boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1)',
+                  padding: '8px',
+                  minWidth: '200px',
+                  zIndex: 1001
+                }}>
+                  <div style={{ fontSize: '12px', fontWeight: '600', marginBottom: '8px', color: '#6b7280' }}>Assign To</div>
+                  <button
+                    onClick={() => updateSelectedTasksAssignee(null)}
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '8px',
+                      width: '100%',
+                      padding: '6px 8px',
+                      border: 'none',
+                      backgroundColor: 'transparent',
+                      borderRadius: '4px',
+                      cursor: 'pointer',
+                      fontSize: '13px',
+                      transition: 'background-color 0.2s'
+                    }}
+                    onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#f9fafb'}
+                    onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
+                  >
+                    <div style={{
+                      width: '24px',
+                      height: '24px',
+                      borderRadius: '50%',
+                      backgroundColor: '#e5e7eb',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      fontSize: '10px',
+                      color: '#6b7280'
+                    }}>-</div>
+                    <span>Unassigned</span>
+                  </button>
+                  {[
+                    { id: 'as', name: 'AS', fullName: 'Alex Smith', color: '#5b5fc7' },
+                    { id: 'jb', name: 'JB', fullName: 'John Brown', color: '#ef4444' },
+                    { id: 'mt', name: 'MT', fullName: 'Mike Turner', color: '#8b5cf6' },
+                    { id: 'sk', name: 'SK', fullName: 'Sarah King', color: '#f59e0b' },
+                    { id: 'av', name: 'AV', fullName: 'Anna Violet', color: '#22c55e' }
+                  ].map(assignee => (
+                    <button
+                      key={assignee.id}
+                      onClick={() => updateSelectedTasksAssignee(assignee)}
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '8px',
+                        width: '100%',
+                        padding: '6px 8px',
+                        border: 'none',
+                        backgroundColor: 'transparent',
+                        borderRadius: '4px',
+                        cursor: 'pointer',
+                        fontSize: '13px',
+                        transition: 'background-color 0.2s'
+                      }}
+                      onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#f9fafb'}
+                      onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
+                    >
+                      <div style={{
+                        width: '24px',
+                        height: '24px',
+                        borderRadius: '50%',
+                        backgroundColor: assignee.color,
+                        color: 'white',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        fontSize: '10px',
+                        fontWeight: '600'
+                      }}>{assignee.name}</div>
+                      <span>{assignee.fullName}</span>
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+            
+            {/* Priority Button */}
+            <div style={{ position: 'relative' }}>
+              <button className="selection-action-btn"
+              onClick={() => setShowBulkPriorityPicker(!showBulkPriorityPicker)}
+              style={{
+                padding: '5px 10px',
+                fontSize: '12px',
+                border: 'none',
+                backgroundColor: showBulkPriorityPicker ? 'rgba(255,255,255,0.2)' : 'transparent',
+                borderRadius: '4px',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '5px',
+                color: 'white',
+                transition: 'all 0.15s',
+                fontWeight: '400'
+              }}
+              onMouseEnter={(e) => {
+                if (!showBulkPriorityPicker) {
+                  e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.1)';
+                }
+              }}
+              onMouseLeave={(e) => {
+                if (!showBulkPriorityPicker) {
+                  e.currentTarget.style.backgroundColor = 'transparent';
+                }
+              }}>
+                <Flag style={{ width: '12px', height: '12px' }} />
+                Priority
+              </button>
+              
+              {/* Priority Dropdown */}
+              {showBulkPriorityPicker && (
+                <div style={{
+                  position: 'absolute',
+                  bottom: '100%',
+                  left: '0',
+                  marginBottom: '8px',
+                  backgroundColor: 'white',
+                  border: '1px solid #e5e7eb',
+                  borderRadius: '8px',
+                  boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1)',
+                  padding: '8px',
+                  minWidth: '180px',
+                  zIndex: 1001
+                }}>
+                  <div style={{ fontSize: '12px', fontWeight: '600', marginBottom: '8px', color: '#6b7280' }}>Set Priority</div>
+                  {[
+                    { name: 'Critical', color: '#dc2626', icon: AlertCircle },
+                    { name: 'Urgent', color: '#ef4444', icon: AlertTriangleIcon },
+                    { name: 'High', color: '#fb923c', icon: ChevronUpIcon },
+                    { name: 'Medium', color: '#fbbf24', icon: TrendingUp },
+                    { name: 'Normal', color: '#10b981', icon: Minus },
+                    { name: 'Low', color: '#3b82f6', icon: ChevronDownIcon }
+                  ].map(priority => {
+                    const Icon = priority.icon;
+                    return (
+                      <button
+                        key={priority.name}
+                        onClick={() => updateSelectedTasksPriority(priority.name)}
+                        style={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '8px',
+                          width: '100%',
+                          padding: '6px 8px',
+                          border: 'none',
+                          backgroundColor: 'transparent',
+                          borderRadius: '4px',
+                          cursor: 'pointer',
+                          fontSize: '13px',
+                          transition: 'background-color 0.2s'
+                        }}
+                        onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#f9fafb'}
+                        onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
+                      >
+                        <Icon style={{ width: '14px', height: '14px', color: priority.color }} />
+                        <span style={{ color: priority.color }}>{priority.name}</span>
+                      </button>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+            
+            {/* Dates Button */}
+            <div style={{ position: 'relative' }}>
+              <button className="selection-action-btn"
+              onClick={() => setShowBulkDatePicker(!showBulkDatePicker)}
+              style={{
+                padding: '5px 10px',
+                fontSize: '12px',
+                border: 'none',
+                backgroundColor: showBulkDatePicker ? 'rgba(255,255,255,0.2)' : 'transparent',
+                borderRadius: '4px',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '5px',
+                color: 'white',
+                transition: 'all 0.15s',
+                fontWeight: '400'
+              }}
+              onMouseEnter={(e) => {
+                if (!showBulkDatePicker) {
+                  e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.1)';
+                }
+              }}
+              onMouseLeave={(e) => {
+                if (!showBulkDatePicker) {
+                  e.currentTarget.style.backgroundColor = 'transparent';
+                }
+              }}>
+                <Calendar style={{ width: '12px', height: '12px' }} />
+                Dates
+              </button>
+              
+              {/* Dates Dropdown */}
+              {showBulkDatePicker && (
+                <div style={{
+                  position: 'absolute',
+                  bottom: '100%',
+                  left: '0',
+                  marginBottom: '8px',
+                  backgroundColor: 'white',
+                  border: '1px solid #e5e7eb',
+                  borderRadius: '8px',
+                  boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1)',
+                  padding: '8px',
+                  minWidth: '200px',
+                  zIndex: 1001
+                }}>
+                  <div style={{ fontSize: '12px', fontWeight: '600', marginBottom: '8px', color: '#6b7280' }}>Update Dates</div>
+                  <div style={{ marginBottom: '8px' }}>
+                    <button
+                      onClick={() => setBulkDateType('start')}
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '8px',
+                        width: '100%',
+                        padding: '6px 8px',
+                        border: 'none',
+                        backgroundColor: bulkDateType === 'start' ? '#f3f4f6' : 'transparent',
+                        borderRadius: '4px',
+                        cursor: 'pointer',
+                        fontSize: '13px',
+                        transition: 'background-color 0.2s'
+                      }}
+                      onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#f9fafb'}
+                      onMouseLeave={(e) => e.currentTarget.style.backgroundColor = bulkDateType === 'start' ? '#f3f4f6' : 'transparent'}
+                    >
+                      <Calendar style={{ width: '12px', height: '12px', color: '#6b7280' }} />
+                      <span>Start Date</span>
+                    </button>
+                    <button
+                      onClick={() => setBulkDateType('due')}
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '8px',
+                        width: '100%',
+                        padding: '6px 8px',
+                        border: 'none',
+                        backgroundColor: bulkDateType === 'due' ? '#f3f4f6' : 'transparent',
+                        borderRadius: '4px',
+                        cursor: 'pointer',
+                        fontSize: '13px',
+                        transition: 'background-color 0.2s'
+                      }}
+                      onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#f9fafb'}
+                      onMouseLeave={(e) => e.currentTarget.style.backgroundColor = bulkDateType === 'due' ? '#f3f4f6' : 'transparent'}
+                    >
+                      <Calendar style={{ width: '12px', height: '12px', color: '#6b7280' }} />
+                      <span>Due Date</span>
+                    </button>
+                  </div>
+                  {bulkDateType && (
+                    <div style={{ marginTop: '8px', padding: '8px', backgroundColor: '#f9fafb', borderRadius: '4px' }}>
+                      <input
+                        type="date"
+                        onChange={(e) => {
+                          updateSelectedTasksDates(bulkDateType, e.target.value);
+                        }}
+                        style={{
+                          width: '100%',
+                          padding: '4px 8px',
+                          border: '1px solid #e5e7eb',
+                          borderRadius: '4px',
+                          fontSize: '12px'
+                        }}
+                      />
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+            
+            {/* Custom Fields Button */}
+            <div style={{ position: 'relative' }}>
+              <button className="selection-action-btn"
+              onClick={() => setShowBulkCustomFieldsPicker(!showBulkCustomFieldsPicker)}
+              style={{
+                padding: '5px 10px',
+                fontSize: '12px',
+                border: 'none',
+                backgroundColor: showBulkCustomFieldsPicker ? 'rgba(255,255,255,0.2)' : 'transparent',
+                borderRadius: '4px',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '5px',
+                color: 'white',
+                transition: 'all 0.15s',
+                fontWeight: '400'
+              }}
+              onMouseEnter={(e) => {
+                if (!showBulkCustomFieldsPicker) {
+                  e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.1)';
+                }
+              }}
+              onMouseLeave={(e) => {
+                if (!showBulkCustomFieldsPicker) {
+                  e.currentTarget.style.backgroundColor = 'transparent';
+                }
+              }}>
+                <Settings style={{ width: '12px', height: '12px' }} />
+                Custom Fields
+              </button>
+              
+              {/* Custom Fields Dropdown */}
+              {showBulkCustomFieldsPicker && (
+                <div style={{
+                  position: 'absolute',
+                  bottom: '100%',
+                  left: '0',
+                  marginBottom: '8px',
+                  backgroundColor: 'white',
+                  border: '1px solid #e5e7eb',
+                  borderRadius: '8px',
+                  boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1)',
+                  padding: '8px',
+                  minWidth: '220px',
+                  zIndex: 1001
+                }}>
+                  <div style={{ fontSize: '12px', fontWeight: '600', marginBottom: '8px', color: '#6b7280' }}>Update Custom Fields</div>
+                  <div style={{ marginBottom: '12px' }}>
+                    <label style={{ fontSize: '11px', color: '#6b7280', display: 'block', marginBottom: '4px' }}>Budget</label>
+                    <input
+                      type="number"
+                      placeholder="Enter budget..."
+                      onKeyPress={(e) => {
+                        if (e.key === 'Enter') {
+                          const value = (e.target as HTMLInputElement).value;
+                          if (value) {
+                            setTasks((prev: any) => {
+                              const newTasks = { ...prev };
+                              Object.keys(newTasks).forEach(group => {
+                                newTasks[group] = newTasks[group].map((task: any) => {
+                                  if (selectedTasks.includes(task.id)) {
+                                    return { ...task, budget: value };
+                                  }
+                                  return task;
+                                });
+                              });
+                              return newTasks;
+                            });
+                            showNotification(`Updated budget for ${selectedTasks.length} task(s)`, 'success');
+                            setShowBulkCustomFieldsPicker(false);
+                          }
+                        }
+                      }}
+                      style={{
+                        width: '100%',
+                        padding: '4px 8px',
+                        border: '1px solid #e5e7eb',
+                        borderRadius: '4px',
+                        fontSize: '12px'
+                      }}
+                    />
+                  </div>
+                  <div style={{ marginBottom: '12px' }}>
+                    <label style={{ fontSize: '11px', color: '#6b7280', display: 'block', marginBottom: '4px' }}>Progress (%)</label>
+                    <input
+                      type="number"
+                      min="0"
+                      max="100"
+                      placeholder="Enter progress..."
+                      onKeyPress={(e) => {
+                        if (e.key === 'Enter') {
+                          const value = parseInt((e.target as HTMLInputElement).value);
+                          if (value >= 0 && value <= 100) {
+                            setTasks((prev: any) => {
+                              const newTasks = { ...prev };
+                              Object.keys(newTasks).forEach(group => {
+                                newTasks[group] = newTasks[group].map((task: any) => {
+                                  if (selectedTasks.includes(task.id)) {
+                                    return { ...task, progress: value };
+                                  }
+                                  return task;
+                                });
+                              });
+                              return newTasks;
+                            });
+                            showNotification(`Updated progress for ${selectedTasks.length} task(s)`, 'success');
+                            setShowBulkCustomFieldsPicker(false);
+                          }
+                        }
+                      }}
+                      style={{
+                        width: '100%',
+                        padding: '4px 8px',
+                        border: '1px solid #e5e7eb',
+                        borderRadius: '4px',
+                        fontSize: '12px'
+                      }}
+                    />
+                  </div>
+                  <div>
+                    <label style={{ fontSize: '11px', color: '#6b7280', display: 'block', marginBottom: '4px' }}>Custom Note</label>
+                    <input
+                      type="text"
+                      placeholder="Enter note..."
+                      onKeyPress={(e) => {
+                        if (e.key === 'Enter') {
+                          const value = (e.target as HTMLInputElement).value;
+                          if (value) {
+                            setTasks((prev: any) => {
+                              const newTasks = { ...prev };
+                              Object.keys(newTasks).forEach(group => {
+                                newTasks[group] = newTasks[group].map((task: any) => {
+                                  if (selectedTasks.includes(task.id)) {
+                                    return { ...task, customNote: value };
+                                  }
+                                  return task;
+                                });
+                              });
+                              return newTasks;
+                            });
+                            showNotification(`Updated custom note for ${selectedTasks.length} task(s)`, 'success');
+                            setShowBulkCustomFieldsPicker(false);
+                          }
+                        }
+                      }}
+                      style={{
+                        width: '100%',
+                        padding: '4px 8px',
+                        border: '1px solid #e5e7eb',
+                        borderRadius: '4px',
+                        fontSize: '12px'
+                      }}
+                    />
+                  </div>
+                </div>
+              )}
+            </div>
+            
+            {/* Tags Button */}
+            <div style={{ position: 'relative' }}>
+              <button className="selection-action-btn"
+              onClick={() => setShowBulkTagsPicker(!showBulkTagsPicker)}
+              style={{
+                padding: '5px 10px',
+                fontSize: '12px',
+                border: 'none',
+                backgroundColor: showBulkTagsPicker ? 'rgba(255,255,255,0.2)' : 'transparent',
+                borderRadius: '4px',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '5px',
+                color: 'white',
+                transition: 'all 0.15s',
+                fontWeight: '400'
+              }}
+              onMouseEnter={(e) => {
+                if (!showBulkTagsPicker) {
+                  e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.1)';
+                }
+              }}
+              onMouseLeave={(e) => {
+                if (!showBulkTagsPicker) {
+                  e.currentTarget.style.backgroundColor = 'transparent';
+                }
+              }}>
+                <Paperclip style={{ width: '12px', height: '12px' }} />
+                Tags
+              </button>
+              
+              {/* Tags Dropdown */}
+              {showBulkTagsPicker && (
+                <div style={{
+                  position: 'absolute',
+                  bottom: '100%',
+                  left: '0',
+                  marginBottom: '8px',
+                  backgroundColor: 'white',
+                  border: '1px solid #e5e7eb',
+                  borderRadius: '8px',
+                  boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1)',
+                  padding: '8px',
+                  minWidth: '180px',
+                  zIndex: 1001
+                }}>
+                  <div style={{ fontSize: '12px', fontWeight: '600', marginBottom: '8px', color: '#6b7280' }}>Add Tags</div>
+                  {['Bug', 'Feature', 'Enhancement', 'Documentation', 'Testing', 'Urgent', 'Review'].map(tag => (
+                    <button
+                      key={tag}
+                      onClick={() => addTagsToSelectedTasks(tag)}
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '8px',
+                        width: '100%',
+                        padding: '6px 8px',
+                        border: 'none',
+                        backgroundColor: 'transparent',
+                        borderRadius: '4px',
+                        cursor: 'pointer',
+                        fontSize: '13px',
+                        transition: 'background-color 0.2s'
+                      }}
+                      onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#f9fafb'}
+                      onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
+                    >
+                      <div style={{
+                        padding: '2px 6px',
+                        backgroundColor: '#e5e7eb',
+                        borderRadius: '3px',
+                        fontSize: '11px',
+                        fontWeight: '500'
+                      }}>{tag}</div>
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+            
+            {/* Move/Add Button */}
+            <div style={{ position: 'relative' }}>
+              <button className="selection-action-btn"
+              onClick={() => setShowBulkMovePicker(!showBulkMovePicker)}
+              style={{
+                padding: '5px 10px',
+                fontSize: '12px',
+                border: 'none',
+                backgroundColor: showBulkMovePicker ? 'rgba(255,255,255,0.2)' : 'transparent',
+                borderRadius: '4px',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '5px',
+                color: 'white',
+                transition: 'all 0.15s',
+                fontWeight: '400'
+              }}
+              onMouseEnter={(e) => {
+                if (!showBulkMovePicker) {
+                  e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.1)';
+                }
+              }}
+              onMouseLeave={(e) => {
+                if (!showBulkMovePicker) {
+                  e.currentTarget.style.backgroundColor = 'transparent';
+                }
+              }}>
+                <ArrowUp style={{ width: '12px', height: '12px' }} />
+                Move/Add
+              </button>
+              
+              {/* Move Dropdown */}
+              {showBulkMovePicker && (
+                <div style={{
+                  position: 'absolute',
+                  bottom: '100%',
+                  left: '0',
+                  marginBottom: '8px',
+                  backgroundColor: 'white',
+                  border: '1px solid #e5e7eb',
+                  borderRadius: '8px',
+                  boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1)',
+                  padding: '8px',
+                  minWidth: '180px',
+                  zIndex: 1001
+                }}>
+                  <div style={{ fontSize: '12px', fontWeight: '600', marginBottom: '8px', color: '#6b7280' }}>Move to Category</div>
+                  {Object.keys(tasks).map(group => (
+                    <button
+                      key={group}
+                      onClick={() => moveSelectedTasks(group)}
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '8px',
+                        width: '100%',
+                        padding: '6px 8px',
+                        border: 'none',
+                        backgroundColor: 'transparent',
+                        borderRadius: '4px',
+                        cursor: 'pointer',
+                        fontSize: '13px',
+                        transition: 'background-color 0.2s'
+                      }}
+                      onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#f9fafb'}
+                      onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
+                    >
+                      <div style={{
+                        width: '8px',
+                        height: '8px',
+                        borderRadius: '50%',
+                        backgroundColor: getCategoryColor(group)
+                      }} />
+                      <span>{group.charAt(0).toUpperCase() + group.slice(1)}</span>
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+            
+            {/* Convert to Subtask Button */}
+            <div style={{ position: 'relative' }}>
+              <button className="selection-action-btn"
+              onClick={() => setShowConvertToSubtaskPicker(!showConvertToSubtaskPicker)}
+              style={{
+                padding: '5px 10px',
+                fontSize: '12px',
+                border: 'none',
+                backgroundColor: showConvertToSubtaskPicker ? 'rgba(255,255,255,0.2)' : 'transparent',
+                borderRadius: '4px',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '5px',
+                color: 'white',
+                transition: 'all 0.15s',
+                fontWeight: '400'
+              }}
+              onMouseEnter={(e) => {
+                if (!showConvertToSubtaskPicker) {
+                  e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.1)';
+                }
+              }}
+              onMouseLeave={(e) => {
+                if (!showConvertToSubtaskPicker) {
+                  e.currentTarget.style.backgroundColor = 'transparent';
+                }
+              }}>
+                <GitBranch style={{ width: '12px', height: '12px' }} />
+                Convert to Subtask
+              </button>
+              
+              {/* Convert to Subtask Dropdown */}
+              {showConvertToSubtaskPicker && (
+                <div style={{
+                  position: 'absolute',
+                  bottom: '100%',
+                  left: '0',
+                  marginBottom: '8px',
+                  backgroundColor: 'white',
+                  border: '1px solid #e5e7eb',
+                  borderRadius: '8px',
+                  boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1)',
+                  padding: '8px',
+                  minWidth: '220px',
+                  maxHeight: '300px',
+                  overflowY: 'auto',
+                  zIndex: 1001
+                }}>
+                  <div style={{ fontSize: '12px', fontWeight: '600', marginBottom: '8px', color: '#6b7280' }}>Select Parent Task</div>
+                  {getAllVisibleTasks().filter(t => !selectedTasks.includes(t.id)).map(task => (
+                    <button
+                      key={task.id}
+                      onClick={() => convertToSubtasks(task.id)}
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '8px',
+                        width: '100%',
+                        padding: '6px 8px',
+                        border: 'none',
+                        backgroundColor: 'transparent',
+                        borderRadius: '4px',
+                        cursor: 'pointer',
+                        fontSize: '12px',
+                        transition: 'background-color 0.2s',
+                        textAlign: 'left'
+                      }}
+                      onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#f9fafb'}
+                      onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
+                    >
+                      <span style={{ 
+                        overflow: 'hidden', 
+                        textOverflow: 'ellipsis', 
+                        whiteSpace: 'nowrap' 
+                      }}>{task.name}</span>
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+            
+            <button className="selection-action-btn"
+            onClick={duplicateSelectedTasks}
+            style={{
+              padding: '5px 10px',
+              fontSize: '12px',
+              border: 'none',
+              backgroundColor: 'transparent',
+              borderRadius: '4px',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '5px',
+              color: 'white',
+              transition: 'all 0.15s',
+              fontWeight: '400'
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.1)';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.backgroundColor = 'transparent';
+            }}>
+              <Copy style={{ width: '12px', height: '12px' }} />
+              Copy
+            </button>
+            
+            
+            {/* Divider */}
+            <div style={{ width: '1px', height: '20px', backgroundColor: 'rgba(255,255,255,0.2)', margin: '0 4px' }} />
+            
+            <button className="selection-action-btn"
+            onClick={() => setBulkDeleteConfirm(true)}
+            style={{
+              padding: '5px 10px',
+              fontSize: '12px',
+              border: 'none',
+              backgroundColor: 'transparent',
+              borderRadius: '4px',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '5px',
+              color: 'white',
+              transition: 'all 0.15s',
+              fontWeight: '400'
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.backgroundColor = 'rgba(239, 68, 68, 0.2)';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.backgroundColor = 'transparent';
+            }}>
+              <Trash2 style={{ width: '12px', height: '12px' }} />
+              Delete
+            </button>
+            
+            {/* More button on the right */}
+            <button className="selection-action-btn"
+            style={{
+              padding: '5px 10px',
+              fontSize: '12px',
+              border: 'none',
+              backgroundColor: 'transparent',
+              borderRadius: '4px',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '5px',
+              color: 'white',
+              transition: 'all 0.15s',
+              fontWeight: '400',
+              marginLeft: 'auto'
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.1)';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.backgroundColor = 'transparent';
+            }}>
+              <MoreHorizontal style={{ width: '12px', height: '12px' }} />
+              More
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
