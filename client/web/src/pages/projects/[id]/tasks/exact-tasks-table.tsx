@@ -1572,6 +1572,8 @@ const ExactTasksTable: React.FC = () => {
   const [draggedTask, setDraggedTask] = useState<any>(null);
   const [openPicker, setOpenPicker] = useState<{ type: string; taskId: string } | null>(null);
   const [selectedTaskForEdit, setSelectedTaskForEdit] = useState<any>(null);
+  const [showAddTaskModal, setShowAddTaskModal] = useState(false);
+  const [addTaskDefaultGroup, setAddTaskDefaultGroup] = useState<string>('');
   const [deleteConfirmation, setDeleteConfirmation] = useState<{ isOpen: boolean; taskId: string | null; taskName: string; taskGroup: string }>({ isOpen: false, taskId: null, taskName: '', taskGroup: '' });
   const { showNotification, NotificationContainer } = useNotification();
   
@@ -2091,7 +2093,9 @@ const ExactTasksTable: React.FC = () => {
   };
 
   const saveInlineTask = () => {
-    if (!inlineTaskName.trim() || !inlineAddingTask) return;
+    if (!inlineTaskName.trim() || !inlineAddingTask) {
+      return;
+    }
 
     const newTask = {
       id: `task-${Date.now()}`,
@@ -2707,9 +2711,15 @@ const ExactTasksTable: React.FC = () => {
                     type="text"
                     value={inlineTaskName}
                     onChange={(e) => setInlineTaskName(e.target.value)}
-                    onKeyPress={(e) => {
-                      if (e.key === 'Enter') saveInlineEdit();
-                      if (e.key === 'Escape') cancelInlineEdit();
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') {
+                        e.preventDefault();
+                        saveInlineEdit();
+                      }
+                      if (e.key === 'Escape') {
+                        e.preventDefault();
+                        cancelInlineEdit();
+                      }
                     }}
                     onBlur={saveInlineEdit}
                     autoFocus
@@ -2726,7 +2736,10 @@ const ExactTasksTable: React.FC = () => {
                 </div>
               ) : (
                 <span 
-                  onDoubleClick={() => handleInlineEditTask(task.id, task.name)}
+                  onDoubleClick={(e) => {
+                    e.stopPropagation();
+                    handleInlineEditTask(task.id, task.name);
+                  }}
                   onClick={() => {
                     const taskToEdit = isSubtask ? { ...task, parentTaskId: group } : task;
                     setSelectedTaskForEdit(taskToEdit);
@@ -2736,9 +2749,10 @@ const ExactTasksTable: React.FC = () => {
                     color: hoveredRow === uniqueRowId ? '#3b82f6' : isSubtask ? '#6b7280' : '#111827',
                     transition: 'color 0.2s',
                     fontWeight: isSubtask ? '400' : '500',
-                    cursor: 'pointer'
+                    cursor: 'pointer',
+                    textDecoration: hoveredRow === uniqueRowId ? 'underline' : 'none'
                   }}
-                  title="Double-click to edit inline"
+                  title="Double-click to edit inline, Single-click for full edit"
                 >
                   {task.name}
                 </span>
@@ -2855,7 +2869,9 @@ const ExactTasksTable: React.FC = () => {
                     }}
                     onClick={(e) => {
                       e.stopPropagation();
-                      setSelectedTaskForEdit({ ...task, isManagingSubtasks: true });
+                      // Open modal to add a new subtask
+                      setAddTaskDefaultGroup(group);
+                      setShowAddTaskModal(true);
                     }}
                   >
                     <Plus style={{ width: '18px', height: '18px', color: '#6b7280' }} />
@@ -3447,7 +3463,21 @@ const ExactTasksTable: React.FC = () => {
     // Check if current task is selected
     const isSelected = selectedTasks.includes(task.id);
     
-    // Calculate border styles - always show top and bottom borders for selected rows
+    // Check if next task is selected
+    let isNextTaskSelected = false;
+    if (allGroupTasks && index < allGroupTasks.length - 1) {
+      const nextTask = allGroupTasks[index + 1];
+      isNextTaskSelected = selectedTasks.includes(nextTask.id);
+    }
+    
+    // Check if previous task is selected
+    let isPrevTaskSelected = false;
+    if (allGroupTasks && index > 0) {
+      const prevTask = allGroupTasks[index - 1];
+      isPrevTaskSelected = selectedTasks.includes(prevTask.id);
+    }
+    
+    // Calculate border styles
     let borderStyle: React.CSSProperties = {
       borderBottom: '1px solid #f0f0f0',
       backgroundColor: isSelected ? '#f3f4f6' : hoveredRow === uniqueRowId ? '#fafafa' : 'transparent',
@@ -3458,8 +3488,20 @@ const ExactTasksTable: React.FC = () => {
     
     // Add borders for selected tasks
     if (isSelected) {
+      // Always add both borders
       borderStyle.borderTop = '1px solid #5b5fc7';
       borderStyle.borderBottom = '1px solid #5b5fc7';
+      borderStyle.borderLeft = '1px solid #5b5fc7';
+      borderStyle.borderRight = '1px solid #5b5fc7';
+      
+      // If next task is also selected, adjust to avoid double border
+      if (isNextTaskSelected) {
+        // Use negative margin to overlap borders
+        borderStyle.marginBottom = '-1px';
+      }
+      
+      // Ensure selected rows appear above for proper border rendering
+      borderStyle.zIndex = 1;
     }
     
     return (
@@ -3820,8 +3862,12 @@ const ExactTasksTable: React.FC = () => {
                       }}>
                         {processedTasks.length}
                       </span>
-                      <div 
-                        onClick={() => handleInlineAddTask(groupKey)}
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleInlineAddTask(groupKey);
+                        }}
                         style={{ 
                           marginLeft: 'auto', 
                           display: 'flex', 
@@ -3830,14 +3876,16 @@ const ExactTasksTable: React.FC = () => {
                           cursor: 'pointer',
                           padding: '2px 6px',
                           borderRadius: '4px',
-                          transition: 'background-color 0.2s'
+                          transition: 'background-color 0.2s',
+                          border: 'none',
+                          backgroundColor: 'transparent'
                         }}
                         onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#f3f4f6'}
                         onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
                       >
                         <Plus style={{ width: '14px', height: '14px', color: '#6b7280' }} />
                         <span style={{ fontSize: '12px', color: '#6b7280' }}>Add Task</span>
-                      </div>
+                      </button>
                     </div>
                   </td>
                 </tr>
@@ -3853,9 +3901,15 @@ const ExactTasksTable: React.FC = () => {
                               type="text"
                               value={inlineTaskName}
                               onChange={(e) => setInlineTaskName(e.target.value)}
-                              onKeyPress={(e) => {
-                                if (e.key === 'Enter') saveInlineTask();
-                                if (e.key === 'Escape') cancelInlineAdd();
+                              onKeyDown={(e) => {
+                                if (e.key === 'Enter') {
+                                  e.preventDefault();
+                                  saveInlineTask();
+                                }
+                                if (e.key === 'Escape') {
+                                  e.preventDefault();
+                                  cancelInlineAdd();
+                                }
                               }}
                               placeholder="Enter task name..."
                               autoFocus
@@ -3941,13 +3995,64 @@ const ExactTasksTable: React.FC = () => {
             setTasks((prev: any) => {
               const newTasks = { ...prev };
               Object.keys(newTasks).forEach(group => {
-                newTasks[group] = newTasks[group].map((t: any) => 
-                  t.id === selectedTaskForEdit.id ? updatedTask : t
-                );
+                newTasks[group] = newTasks[group].map((t: any) => {
+                  if (t.id === selectedTaskForEdit.id) {
+                    return updatedTask;
+                  }
+                  // Also check subtasks
+                  if (t.subtasks) {
+                    t.subtasks = t.subtasks.map((st: any) => 
+                      st.id === selectedTaskForEdit.id ? updatedTask : st
+                    );
+                  }
+                  return t;
+                });
               });
               return newTasks;
             });
             setSelectedTaskForEdit(null);
+          }}
+        />
+      )}
+      
+      {/* Add New Task Modal */}
+      {showAddTaskModal && (
+        <ComprehensiveTaskModal
+          isOpen={true}
+          onClose={() => {
+            setShowAddTaskModal(false);
+            setAddTaskDefaultGroup('');
+          }}
+          task={{
+            id: '',
+            name: '',
+            status: { id: 'todo', label: 'TO DO', color: '#6b7280' },
+            category: { 
+              id: addTaskDefaultGroup || 'features', 
+              label: addTaskDefaultGroup ? addTaskDefaultGroup.charAt(0).toUpperCase() + addTaskDefaultGroup.slice(1) : 'Features',
+              color: getCategoryColor(addTaskDefaultGroup || 'features')
+            },
+            assignee: null,
+            priority: 'Normal',
+            priorityColor: '#10b981',
+            priorityLevel: 5,
+            priorityIcon: Minus,
+            estimatedDuration: '',
+            startDate: '',
+            dueDate: '',
+            progress: 0,
+            hasSubtasks: false
+          }}
+          onSave={(newTask) => {
+            // Add the new task to the appropriate group
+            const taskGroup = newTask.category?.id || 'features';
+            setTasks((prev: any) => ({
+              ...prev,
+              [taskGroup]: [...(prev[taskGroup] || []), { ...newTask, id: `task-${Date.now()}` }]
+            }));
+            setShowAddTaskModal(false);
+            setAddTaskDefaultGroup('');
+            showNotification(`Task "${newTask.name}" added successfully`, 'success');
           }}
         />
       )}
