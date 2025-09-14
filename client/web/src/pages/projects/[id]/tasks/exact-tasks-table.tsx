@@ -391,6 +391,11 @@ const StatusPicker = ({ value, onChange, onClose, taskId, context = 'list' }: an
     { id: 'on-hold', label: 'ON HOLD', color: '#fb6340', group: 'Done' },
     { id: 'complete', label: 'COMPLETE', color: '#22c55e', group: 'Closed' }
   ]);
+  const [editingStatus, setEditingStatus] = useState<string | null>(null);
+  const [editingName, setEditingName] = useState('');
+  const [addingStatusGroup, setAddingStatusGroup] = useState<string | null>(null);
+  const [newStatusName, setNewStatusName] = useState('');
+  const [newStatusColor, setNewStatusColor] = useState('#7c3aed');
 
   const statusGroups = [
     { name: 'Not started', color: '#6b7280' },
@@ -401,7 +406,7 @@ const StatusPicker = ({ value, onChange, onClose, taskId, context = 'list' }: an
 
   useEffect(() => {
     // Calculate position based on trigger element
-    const triggerElement = document.querySelector(`[data-status-trigger-${context}="${taskId}"]`);
+    const triggerElement = document.querySelector(`[data-status-trigger-list="${taskId}"]`);
     if (triggerElement) {
       const rect = triggerElement.getBoundingClientRect();
       setPosition({
@@ -412,12 +417,13 @@ const StatusPicker = ({ value, onChange, onClose, taskId, context = 'list' }: an
 
     const handleClickOutside = (e: MouseEvent) => {
       const target = e.target as HTMLElement;
-      // Check if click is on the picker itself
-      if (target.closest(`[data-status-picker-${context}="${taskId}"]`)) {
+      // Check if click is on the picker itself or edit modal
+      if (target.closest(`[data-status-picker-list="${taskId}"]`) || 
+          target.closest(`[data-status-picker-edit="${taskId}"]`)) {
         return;
       }
       // Don't close if clicking on the trigger button
-      if (target.closest(`[data-status-trigger-${context}="${taskId}"]`)) {
+      if (target.closest(`[data-status-trigger-list="${taskId}"]`)) {
         return;
       }
       // Close the picker for any outside click
@@ -459,7 +465,14 @@ const StatusPicker = ({ value, onChange, onClose, taskId, context = 'list' }: an
           <div key={group.name} style={{ marginBottom: '20px' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px' }}>
               <span style={{ fontSize: '14px', color: '#6b7280', fontWeight: '500' }}>{group.name}</span>
-              <Plus style={{ width: '16px', height: '16px', cursor: 'pointer', color: '#9ca3af' }} />
+              <Plus 
+                style={{ width: '16px', height: '16px', cursor: 'pointer', color: '#9ca3af' }} 
+                onClick={() => {
+                  setAddingStatusGroup(group.name);
+                  setNewStatusName('');
+                  setNewStatusColor(group.color);
+                }}
+              />
             </div>
             {customStatuses.filter(s => s.group === group.name).map(status => (
               <div key={status.id} style={{
@@ -473,17 +486,152 @@ const StatusPicker = ({ value, onChange, onClose, taskId, context = 'list' }: an
                 marginBottom: '8px'
               }}>
                 <GripVertical style={{ width: '16px', height: '16px', color: '#d1d5db', cursor: 'grab' }} />
-                <div style={{
-                  width: '12px',
-                  height: '12px',
-                  borderRadius: '50%',
-                  backgroundColor: status.color,
-                  flexShrink: 0
-                }} />
-                <span style={{ flex: 1, fontSize: '14px', color: '#374151', fontWeight: '600' }}>{status.label}</span>
-                <MoreHorizontal style={{ width: '16px', height: '16px', color: '#9ca3af', cursor: 'pointer' }} />
+                <input
+                  type="color"
+                  value={status.color}
+                  onChange={(e) => {
+                    setCustomStatuses(customStatuses.map(s => 
+                      s.id === status.id ? { ...s, color: e.target.value } : s
+                    ));
+                  }}
+                  style={{
+                    width: '24px',
+                    height: '24px',
+                    borderRadius: '50%',
+                    border: 'none',
+                    cursor: 'pointer',
+                    flexShrink: 0
+                  }}
+                />
+                {editingStatus === status.id ? (
+                  <input
+                    type="text"
+                    value={editingName}
+                    onChange={(e) => setEditingName(e.target.value)}
+                    onBlur={() => {
+                      setCustomStatuses(customStatuses.map(s => 
+                        s.id === status.id ? { ...s, label: editingName } : s
+                      ));
+                      setEditingStatus(null);
+                    }}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') {
+                        setCustomStatuses(customStatuses.map(s => 
+                          s.id === status.id ? { ...s, label: editingName } : s
+                        ));
+                        setEditingStatus(null);
+                      }
+                      if (e.key === 'Escape') {
+                        setEditingStatus(null);
+                      }
+                    }}
+                    autoFocus
+                    style={{
+                      flex: 1,
+                      fontSize: '14px',
+                      color: '#374151',
+                      fontWeight: '600',
+                      border: '1px solid #5b5fc7',
+                      borderRadius: '4px',
+                      padding: '2px 6px',
+                      outline: 'none'
+                    }}
+                  />
+                ) : (
+                  <span 
+                    style={{ flex: 1, fontSize: '14px', color: '#374151', fontWeight: '600', cursor: 'pointer' }}
+                    onDoubleClick={() => {
+                      setEditingStatus(status.id);
+                      setEditingName(status.label);
+                    }}
+                  >
+                    {status.label}
+                  </span>
+                )}
+                <X 
+                  style={{ width: '16px', height: '16px', color: '#ef4444', cursor: 'pointer' }} 
+                  onClick={() => {
+                    setCustomStatuses(customStatuses.filter(s => s.id !== status.id));
+                  }}
+                />
               </div>
             ))}
+            {addingStatusGroup === group.name && (
+              <div style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px',
+                padding: '10px 12px',
+                backgroundColor: '#f0f9ff',
+                border: '1px solid #3b82f6',
+                borderRadius: '8px',
+                marginBottom: '8px'
+              }}>
+                <input
+                  type="color"
+                  value={newStatusColor}
+                  onChange={(e) => setNewStatusColor(e.target.value)}
+                  style={{
+                    width: '24px',
+                    height: '24px',
+                    borderRadius: '50%',
+                    border: 'none',
+                    cursor: 'pointer',
+                    flexShrink: 0
+                  }}
+                />
+                <input
+                  type="text"
+                  value={newStatusName}
+                  onChange={(e) => setNewStatusName(e.target.value)}
+                  placeholder="Status name..."
+                  autoFocus
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' && newStatusName.trim()) {
+                      setCustomStatuses([...customStatuses, {
+                        id: newStatusName.toLowerCase().replace(/\s+/g, '-'),
+                        label: newStatusName.toUpperCase(),
+                        color: newStatusColor,
+                        group: group.name
+                      }]);
+                      setAddingStatusGroup(null);
+                      setNewStatusName('');
+                    }
+                    if (e.key === 'Escape') {
+                      setAddingStatusGroup(null);
+                    }
+                  }}
+                  style={{
+                    flex: 1,
+                    fontSize: '14px',
+                    color: '#374151',
+                    fontWeight: '600',
+                    border: 'none',
+                    outline: 'none',
+                    backgroundColor: 'transparent'
+                  }}
+                />
+                <Check 
+                  style={{ width: '16px', height: '16px', color: '#10b981', cursor: 'pointer' }}
+                  onClick={() => {
+                    if (newStatusName.trim()) {
+                      setCustomStatuses([...customStatuses, {
+                        id: newStatusName.toLowerCase().replace(/\s+/g, '-'),
+                        label: newStatusName.toUpperCase(),
+                        color: newStatusColor,
+                        group: group.name
+                      }]);
+                      setAddingStatusGroup(null);
+                      setNewStatusName('');
+                    }
+                  }}
+                />
+                <X 
+                  style={{ width: '16px', height: '16px', color: '#ef4444', cursor: 'pointer' }}
+                  onClick={() => setAddingStatusGroup(null)}
+                />
+              </div>
+            )}
             <button style={{
               width: '100%',
               padding: '10px',
@@ -506,6 +654,11 @@ const StatusPicker = ({ value, onChange, onClose, taskId, context = 'list' }: an
             onMouseLeave={(e) => {
               e.currentTarget.style.backgroundColor = 'transparent';
               e.currentTarget.style.borderColor = '#d1d5db';
+            }}
+            onClick={() => {
+              setAddingStatusGroup(group.name);
+              setNewStatusName('');
+              setNewStatusColor(group.color);
             }}>
               <Plus style={{ width: '14px', height: '14px' }} />
               Add status
@@ -616,7 +769,10 @@ const StatusPicker = ({ value, onChange, onClose, taskId, context = 'list' }: an
       ))}
       <div style={{ borderTop: '1px solid #e5e7eb', marginTop: '6px', paddingTop: '6px' }}>
         <div
-          onClick={() => setShowEdit(true)}
+          onClick={(e) => {
+            e.stopPropagation();
+            setShowEdit(true);
+          }}
           style={{
             padding: '8px 12px',
             display: 'flex',
@@ -666,7 +822,7 @@ const CategoryPicker = ({ value, onChange, onClose, taskId, context = 'list' }: 
 
   useEffect(() => {
     // Calculate position based on trigger element
-    const triggerElement = document.querySelector(`[data-category-trigger-${context}="${taskId}"]`);
+    const triggerElement = document.querySelector(`[data-category-trigger-list="${taskId}"]`);
     if (triggerElement) {
       const rect = triggerElement.getBoundingClientRect();
       setPosition({
@@ -677,12 +833,13 @@ const CategoryPicker = ({ value, onChange, onClose, taskId, context = 'list' }: 
 
     const handleClickOutside = (e: MouseEvent) => {
       const target = e.target as HTMLElement;
-      // Check if click is on the picker itself
-      if (target.closest(`[data-category-picker-${context}="${taskId}"]`)) {
+      // Check if click is on the picker itself or edit modal
+      if (target.closest(`[data-category-picker-list="${taskId}"]`) || 
+          target.closest(`[data-category-picker-edit="${taskId}"]`)) {
         return;
       }
       // Don't close if clicking on the trigger button
-      if (target.closest(`[data-category-trigger-${context}="${taskId}"]`)) {
+      if (target.closest(`[data-category-trigger-list="${taskId}"]`)) {
         return;
       }
       // Close the picker for any outside click
@@ -988,7 +1145,10 @@ const CategoryPicker = ({ value, onChange, onClose, taskId, context = 'list' }: 
       </div>
       <div style={pickerStyles.footer}>
         <div
-          onClick={() => setShowEdit(true)}
+          onClick={(e) => {
+            e.stopPropagation();
+            setShowEdit(true);
+          }}
           style={pickerStyles.footerAction}
           onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#f3f4f6'}
           onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
@@ -1403,7 +1563,10 @@ const PriorityPickerOLD = ({ value, onChange, onClose, taskId, context = 'list' 
       </div>
       <div style={pickerStyles.footer}>
         <div
-          onClick={() => setShowEdit(true)}
+          onClick={(e) => {
+            e.stopPropagation();
+            setShowEdit(true);
+          }}
           style={pickerStyles.footerAction}
           onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#f3f4f6'}
           onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
@@ -1436,7 +1599,7 @@ const AssigneePicker = ({ value, onChange, onClose, taskId, context = 'list' }: 
 
   useEffect(() => {
     // Calculate position based on trigger element
-    const triggerElement = document.querySelector(`[data-assignee-trigger-${context}="${taskId}"]`);
+    const triggerElement = document.querySelector(`[data-assignee-trigger-list="${taskId}"]`);
     if (triggerElement) {
       const rect = triggerElement.getBoundingClientRect();
       const pickerWidth = 240; // minWidth of picker
@@ -1466,12 +1629,13 @@ const AssigneePicker = ({ value, onChange, onClose, taskId, context = 'list' }: 
 
     const handleClickOutside = (e: MouseEvent) => {
       const target = e.target as HTMLElement;
-      // Check if click is on the picker itself
-      if (target.closest(`[data-assignee-picker-${context}="${taskId}"]`)) {
+      // Check if click is on the picker itself or edit modal
+      if (target.closest(`[data-assignee-picker-list="${taskId}"]`) || 
+          target.closest(`[data-assignee-picker-edit="${taskId}"]`)) {
         return;
       }
       // Don't close if clicking on the trigger button
-      if (target.closest(`[data-assignee-trigger-${context}="${taskId}"]`)) {
+      if (target.closest(`[data-assignee-trigger-list="${taskId}"]`)) {
         return;
       }
       // Close the picker for any outside click

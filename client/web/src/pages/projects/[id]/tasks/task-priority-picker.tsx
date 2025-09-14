@@ -39,7 +39,7 @@ export const TaskPriorityPicker = ({ value, onChange, onClose, taskId, context =
 
   useEffect(() => {
     // Calculate position based on trigger element
-    const triggerElement = document.querySelector(`[data-priority-trigger-${context}="${taskId}"]`);
+    const triggerElement = document.querySelector(`[data-priority-trigger-list="${taskId}"]`);
     if (triggerElement) {
       const rect = triggerElement.getBoundingClientRect();
       const pickerWidth = 260;
@@ -67,11 +67,11 @@ export const TaskPriorityPicker = ({ value, onChange, onClose, taskId, context =
     const handleClickOutside = (e: MouseEvent) => {
       const target = e.target as HTMLElement;
       // Check if click is on the picker itself
-      if (target.closest(`[data-priority-picker-${context}="${taskId}"]`)) {
+      if (target.closest(`[data-priority-picker-list="${taskId}"]`)) {
         return;
       }
       // Don't close if clicking on the trigger button
-      if (target.closest(`[data-priority-trigger-${context}="${taskId}"]`)) {
+      if (target.closest(`[data-priority-trigger-list="${taskId}"]`)) {
         return;
       }
       // Close the picker for any outside click
