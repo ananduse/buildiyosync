@@ -79,6 +79,7 @@ import {
 import { cn } from '@/lib/utils';
 import { ProjectCalendar } from './project-calendar';
 import ProjectTaskManager from '@/pages/projects/[id]/tasks/project-task-manager';
+import ProjectBudgetDetails from '@/pages/projects/[id]/budget/project-budget-details';
 
 // Lazy load the ProjectDocuments component
 const ProjectDocuments = lazy(() => import('@/pages/projects/documents/project-documents'));
@@ -456,6 +457,12 @@ export function TeamTab({ project }: { project: any }) {
 }
 
 export function BudgetTab({ project }: { project: any }) {
+  // Use comprehensive budget component with all details
+  return <ProjectBudgetDetails />;
+}
+
+// Original BudgetTab implementation - kept for reference
+function BudgetTabOld({ project }: { project: any }) {
   const budgetBreakdown = [
     { category: 'Labor', allocated: 45000000, spent: 18000000, percentage: 40 },
     { category: 'Materials', allocated: 35000000, spent: 12500000, percentage: 35.7 },

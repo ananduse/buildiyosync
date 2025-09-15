@@ -29,6 +29,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Progress } from '@/components/ui/progress';
 import ProjectTaskManager from './tasks/project-task-manager';
+import ProjectBudgetDetails from './budget/project-budget-details';
 
 // Project Info Type
 interface ProjectInfo {
@@ -363,15 +364,7 @@ export default function ProjectDetailPage() {
         </TabsContent>
 
         <TabsContent value="budget" className="flex-1 overflow-auto mt-0 p-0">
-          <div className="p-4">
-            <Card>
-              <CardContent className="p-6 text-center">
-                <DollarSign className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                <h3 className="text-lg font-medium mb-2">Budget Management</h3>
-                <p className="text-muted-foreground">Financial tracking and budget allocation</p>
-              </CardContent>
-            </Card>
-          </div>
+          <ProjectBudgetDetails />
         </TabsContent>
 
         <TabsContent value="documents" className="flex-1 overflow-auto mt-0 p-0">
