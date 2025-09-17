@@ -79,7 +79,7 @@ import {
 import { cn } from '@/lib/utils';
 import { ProjectCalendar } from './project-calendar';
 import ProjectTaskManager from '@/pages/projects/[id]/tasks/project-task-manager';
-import ProjectBudgetDetails from '@/pages/projects/[id]/budget/project-budget-details';
+import EnterpriseBudgetDashboard from '@/pages/projects/[id]/budget/enterprise-budget-dashboard';
 
 // Lazy load the ProjectDocuments component
 const ProjectDocuments = lazy(() => import('@/pages/projects/documents/project-documents'));
@@ -457,8 +457,8 @@ export function TeamTab({ project }: { project: any }) {
 }
 
 export function BudgetTab({ project }: { project: any }) {
-  // Use comprehensive budget component with all details
-  return <ProjectBudgetDetails />;
+  // Use enterprise budget dashboard with comprehensive features
+  return <EnterpriseBudgetDashboard />;
 }
 
 // Original BudgetTab implementation - kept for reference
