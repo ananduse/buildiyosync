@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, lazy, Suspense } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -29,6 +29,21 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
+import { Calendar as CalendarComponent } from '@/components/ui/calendar';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { format } from 'date-fns';
+import { cn } from '@/lib/utils';
 import {
   DollarSign,
   TrendingUp,
@@ -85,8 +100,18 @@ import {
   Receipt,
   MoreVertical,
   CreditCard,
-  Upload
+  Upload,
+  Phone,
+  Mail,
+  XCircle,
+  Eye,
+  Hash,
+  Landmark,
+  Smartphone
 } from 'lucide-react';
+
+// Lazy load the Payment Scheduler
+const AdvancedPaymentScheduler = lazy(() => import('./advanced-payment-scheduler'));
 
 // Types
 interface ProjectStage {
@@ -139,6 +164,26 @@ interface PaymentDetail {
   dueDate: string;
   paymentMethod?: string;
   transactionId?: string;
+  vendorDetails?: {
+    contactPerson: string;
+    phone: string;
+    email: string;
+    gstNo?: string;
+    accountNo?: string;
+  };
+  approvals?: Array<{
+    role: string;
+    name: string;
+    status: string;
+    date: string;
+  }>;
+  urgency?: 'low' | 'medium' | 'high' | 'urgent';
+  attachments?: Array<{
+    name: string;
+    url: string;
+    type: string;
+  }>;
+  notes?: string;
 }
 
 interface BudgetCategory {
@@ -166,6 +211,44 @@ export default function EnterpriseBudgetDashboard() {
   const [selectedStage, setSelectedStage] = useState<string>('all');
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [dateRange, setDateRange] = useState<string>('this-month');
+  const [showPaymentDialog, setShowPaymentDialog] = useState(false);
+  const [showScheduleDialog, setShowScheduleDialog] = useState(false);
+  const [selectedPayment, setSelectedPayment] = useState<PaymentDetail | null>(null);
+  const [showAddPaymentDialog, setShowAddPaymentDialog] = useState(false);
+  const [showCalendarDialog, setShowCalendarDialog] = useState(false);
+  const [selectedDatePayments, setSelectedDatePayments] = useState<PaymentDetail[]>([]);
+  const [selectedDate, setSelectedDate] = useState<string>('');
+
+  // Form states for new payment
+  const [newPayment, setNewPayment] = useState({
+    vendor: '',
+    amount: '',
+    category: '',
+    subCategory: '',
+    description: '',
+    invoiceNo: '',
+    dueDate: new Date(),
+    urgency: 'medium',
+    paymentMethod: 'bank-transfer',
+    contactPerson: '',
+    phone: '',
+    email: '',
+    gstNo: '',
+    notes: '',
+    status: 'pending' as const
+  });
+
+  // Category-specific subcategories
+  const subcategoryOptions: { [key: string]: string[] } = {
+    materials: ['Cement', 'Steel', 'Bricks', 'Sand', 'Aggregates', 'Tiles', 'Paint', 'Plumbing', 'Electrical', 'Glass', 'Wood', 'Other'],
+    labor: ['Skilled Workers', 'Unskilled Workers', 'Masons', 'Carpenters', 'Electricians', 'Plumbers', 'Painters', 'Supervisors', 'Other'],
+    equipment: ['Heavy Machinery', 'Cranes', 'Excavators', 'Concrete Mixers', 'Generators', 'Compressors', 'Welding Equipment', 'Other'],
+    tools: ['Hand Tools', 'Power Tools', 'Safety Equipment', 'Measuring Tools', 'Cutting Tools', 'Other'],
+    rent: ['Site Office', 'Storage', 'Machinery Rental', 'Vehicle Rental', 'Accommodation', 'Other'],
+    service: ['Transportation', 'Testing', 'Survey', 'Waterproofing', 'Pest Control', 'Security', 'Cleaning', 'Other'],
+    consultation: ['Architect', 'Structural Engineer', 'MEP Consultant', 'Interior Designer', 'Legal', 'Financial', 'Other'],
+    other: ['Permits', 'Insurance', 'Utilities', 'Miscellaneous']
+  };
 
   // Project Budget Overview
   const totalProjectBudget = 250000000; // ₹25 Crores
@@ -626,7 +709,7 @@ export default function EnterpriseBudgetDashboard() {
     }
   ];
 
-  // Upcoming Payments
+  // Upcoming Payments with Full Details
   const upcomingPayments: PaymentDetail[] = [
     {
       id: 'up1',
@@ -634,12 +717,24 @@ export default function EnterpriseBudgetDashboard() {
       category: 'Materials',
       subCategory: 'Cement',
       vendor: 'UltraTech Cement Ltd',
-      description: 'Cement supply for roof casting - 500 bags',
+      description: 'Cement supply for roof casting - 500 bags Grade 53 OPC',
       amount: 250000,
       status: 'scheduled',
       invoiceNo: 'UTC/2024/0145',
       dueDate: '2024-01-20',
-      paymentMethod: 'Bank Transfer'
+      paymentMethod: 'Bank Transfer',
+      vendorDetails: {
+        contactPerson: 'Mr. Suresh Kumar',
+        phone: '+91 98765 43210',
+        email: 'suresh@ultratech.com',
+        gstNo: '27AAACU9603R1ZM',
+        accountNo: 'HDFC0001234567890'
+      },
+      approvals: [
+        { role: 'Site Engineer', name: 'Amit Sharma', status: 'approved', date: '2024-01-18' },
+        { role: 'Project Manager', name: 'Rajesh Kumar', status: 'approved', date: '2024-01-19' }
+      ],
+      urgency: 'high'
     },
     {
       id: 'up2',
@@ -819,7 +914,7 @@ export default function EnterpriseBudgetDashboard() {
               <Download className="h-4 w-4 mr-2" />
               Export Report
             </Button>
-            <Button>
+            <Button onClick={() => setShowAddPaymentDialog(true)}>
               <Plus className="h-4 w-4 mr-2" />
               Add Payment
             </Button>
@@ -970,7 +1065,7 @@ export default function EnterpriseBudgetDashboard() {
 
       {/* Main Tabs */}
       <Tabs defaultValue="stages" className="space-y-6">
-        <TabsList className="grid grid-cols-5 w-full">
+        <TabsList className="grid grid-cols-6 w-full">
           <TabsTrigger value="stages">
             <Layers className="h-4 w-4 mr-2" />
             Stages & Milestones
@@ -978,6 +1073,10 @@ export default function EnterpriseBudgetDashboard() {
           <TabsTrigger value="categories">
             <PieChart className="h-4 w-4 mr-2" />
             Categories
+          </TabsTrigger>
+          <TabsTrigger value="scheduler">
+            <Calendar className="h-4 w-4 mr-2" />
+            Scheduler
           </TabsTrigger>
           <TabsTrigger value="upcoming">
             <CalendarClock className="h-4 w-4 mr-2" />
@@ -1282,14 +1381,32 @@ export default function EnterpriseBudgetDashboard() {
           </div>
         </TabsContent>
 
-        {/* Upcoming Payments Tab */}
+        {/* Scheduler Tab - Full Calendar View */}
+        <TabsContent value="scheduler" className="space-y-6">
+          <Suspense fallback={
+            <Card>
+              <CardContent className="p-20">
+                <div className="flex items-center justify-center">
+                  <div className="text-center">
+                    <Calendar className="h-12 w-12 text-gray-400 mx-auto mb-4 animate-pulse" />
+                    <p className="text-gray-500">Loading Payment Scheduler...</p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          }>
+            <AdvancedPaymentScheduler />
+          </Suspense>
+        </TabsContent>
+
+        {/* Upcoming Payments Tab - Enhanced with Full Details */}
         <TabsContent value="upcoming" className="space-y-6">
           <Card>
             <CardHeader>
               <div className="flex items-center justify-between">
                 <div>
                   <CardTitle>Upcoming Payments</CardTitle>
-                  <CardDescription>Scheduled payments for the next 30 days</CardDescription>
+                  <CardDescription>Scheduled payments for the next 30 days with complete details</CardDescription>
                 </div>
                 <div className="flex gap-4">
                   <div className="text-right">
@@ -1298,7 +1415,7 @@ export default function EnterpriseBudgetDashboard() {
                       {formatCurrency(upcomingPayments.reduce((sum, p) => sum + p.amount, 0))}
                     </p>
                   </div>
-                  <Button variant="outline">
+                  <Button variant="outline" onClick={() => alert('Scheduling all payments...')}>
                     <CalendarCheck className="h-4 w-4 mr-2" />
                     Schedule All
                   </Button>
@@ -1308,60 +1425,202 @@ export default function EnterpriseBudgetDashboard() {
             <CardContent>
               <div className="space-y-4">
                 {upcomingPayments.map((payment) => (
-                  <Card key={payment.id} className="hover:shadow-md transition-shadow">
-                    <CardContent className="p-4">
-                      <div className="flex items-start justify-between">
-                        <div className="flex gap-4">
-                          <div className="p-2 bg-orange-100 rounded-lg">
-                            <CalendarClock className="h-5 w-5 text-orange-600" />
+                  <Card key={payment.id} className="hover:shadow-lg transition-shadow border-2">
+                    <CardContent className="p-6">
+                      {/* Header with urgency indicator */}
+                      {payment.urgency && (
+                        <div className={`-m-6 mb-4 p-2 ${
+                          payment.urgency === 'urgent' ? 'bg-red-50 border-b-2 border-red-200' :
+                          payment.urgency === 'high' ? 'bg-orange-50 border-b-2 border-orange-200' :
+                          payment.urgency === 'medium' ? 'bg-yellow-50 border-b-2 border-yellow-200' :
+                          'bg-green-50 border-b-2 border-green-200'
+                        }`}>
+                          <div className="flex items-center justify-between px-4">
+                            <div className="flex items-center gap-2">
+                              <AlertTriangle className={`h-4 w-4 ${
+                                payment.urgency === 'urgent' ? 'text-red-600' :
+                                payment.urgency === 'high' ? 'text-orange-600' :
+                                payment.urgency === 'medium' ? 'text-yellow-600' :
+                                'text-green-600'
+                              }`} />
+                              <span className={`text-sm font-medium capitalize ${
+                                payment.urgency === 'urgent' ? 'text-red-600' :
+                                payment.urgency === 'high' ? 'text-orange-600' :
+                                payment.urgency === 'medium' ? 'text-yellow-600' :
+                                'text-green-600'
+                              }`}>
+                                {payment.urgency} Priority
+                              </span>
+                            </div>
+                            <Badge className={getStatusColor(payment.status)}>
+                              {payment.status}
+                            </Badge>
                           </div>
-                          <div className="space-y-1">
-                            <div className="flex items-center gap-3">
-                              <h4 className="font-semibold">{payment.description}</h4>
-                              <Badge className={getStatusColor(payment.status)}>
-                                {payment.status}
-                              </Badge>
-                              <Badge variant="outline">{payment.category}</Badge>
+                        </div>
+                      )}
+
+                      <div className="space-y-4">
+                        {/* Main Payment Info */}
+                        <div className="flex items-start justify-between">
+                          <div className="flex-1 space-y-3">
+                            <div>
+                              <h4 className="text-lg font-semibold">{payment.description}</h4>
+                              <div className="flex items-center gap-3 mt-1">
+                                <Badge variant="outline">{payment.category}</Badge>
+                                {payment.subCategory && (
+                                  <Badge variant="outline">{payment.subCategory}</Badge>
+                                )}
+                              </div>
                             </div>
-                            <div className="flex items-center gap-4 text-sm text-gray-600">
-                              <span className="flex items-center gap-1">
-                                <Building2 className="h-3 w-3" />
-                                {payment.vendor}
-                              </span>
-                              <span className="flex items-center gap-1">
-                                <Calendar className="h-3 w-3" />
-                                Due: {payment.dueDate}
-                              </span>
-                              <span className="flex items-center gap-1">
-                                <FileText className="h-3 w-3" />
-                                {payment.invoiceNo}
-                              </span>
-                              {payment.paymentMethod && (
-                                <span className="flex items-center gap-1">
-                                  <CreditCard className="h-3 w-3" />
-                                  {payment.paymentMethod}
-                                </span>
-                              )}
+
+                            {/* Vendor Details */}
+                            <div className="bg-gray-50 rounded-lg p-3">
+                              <div className="flex items-start justify-between">
+                                <div>
+                                  <p className="font-medium flex items-center gap-2">
+                                    <Building2 className="h-4 w-4" />
+                                    {payment.vendor}
+                                  </p>
+                                  {payment.vendorDetails && (
+                                    <div className="grid grid-cols-2 gap-3 mt-2 text-sm text-gray-600">
+                                      <div className="flex items-center gap-1">
+                                        <UserCheck className="h-3 w-3" />
+                                        {payment.vendorDetails.contactPerson}
+                                      </div>
+                                      <div className="flex items-center gap-1">
+                                        <Phone className="h-3 w-3" />
+                                        {payment.vendorDetails.phone}
+                                      </div>
+                                      <div className="flex items-center gap-1">
+                                        <Mail className="h-3 w-3" />
+                                        {payment.vendorDetails.email}
+                                      </div>
+                                      {payment.vendorDetails.gstNo && (
+                                        <div className="flex items-center gap-1">
+                                          <Hash className="h-3 w-3" />
+                                          GST: {payment.vendorDetails.gstNo}
+                                        </div>
+                                      )}
+                                    </div>
+                                  )}
+                                </div>
+                              </div>
                             </div>
-                            {payment.approvedBy && (
-                              <div className="flex items-center gap-1 text-xs text-green-600">
-                                <UserCheck className="h-3 w-3" />
-                                Approved by {payment.approvedBy}
+
+                            {/* Payment Details Grid */}
+                            <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 text-sm">
+                              <div>
+                                <p className="text-gray-500">Invoice No</p>
+                                <p className="font-medium">{payment.invoiceNo}</p>
+                              </div>
+                              <div>
+                                <p className="text-gray-500">Due Date</p>
+                                <p className="font-medium text-orange-600">{payment.dueDate}</p>
+                              </div>
+                              <div>
+                                <p className="text-gray-500">Payment Method</p>
+                                <p className="font-medium">{payment.paymentMethod || 'Not specified'}</p>
+                              </div>
+                              <div>
+                                <p className="text-gray-500">Days Left</p>
+                                <p className="font-medium">
+                                  {Math.ceil((new Date(payment.dueDate).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24))} days
+                                </p>
+                              </div>
+                            </div>
+
+                            {/* Approvals */}
+                            {payment.approvals && payment.approvals.length > 0 && (
+                              <div className="border rounded-lg p-3">
+                                <p className="text-sm font-medium mb-2">Approval Status</p>
+                                <div className="space-y-2">
+                                  {payment.approvals.map((approval, index) => (
+                                    <div key={index} className="flex items-center justify-between text-sm">
+                                      <div className="flex items-center gap-2">
+                                        <CheckCircle2 className="h-4 w-4 text-green-600" />
+                                        <span>{approval.role}</span>
+                                        <span className="text-gray-500">• {approval.name}</span>
+                                      </div>
+                                      <span className="text-gray-500">{approval.date}</span>
+                                    </div>
+                                  ))}
+                                </div>
+                              </div>
+                            )}
+
+                            {/* Notes */}
+                            {payment.notes && (
+                              <div className="bg-blue-50 rounded-lg p-3">
+                                <p className="text-sm text-blue-900">
+                                  <Info className="h-3 w-3 inline mr-1" />
+                                  {payment.notes}
+                                </p>
                               </div>
                             )}
                           </div>
-                        </div>
-                        <div className="text-right space-y-2">
-                          <p className="text-xl font-bold">{formatCurrency(payment.amount)}</p>
-                          <div className="flex gap-2">
-                            <Button size="sm" variant="outline">
-                              <Clock className="h-3 w-3 mr-1" />
-                              Schedule
-                            </Button>
-                            <Button size="sm">
-                              <Banknote className="h-3 w-3 mr-1" />
-                              Pay Now
-                            </Button>
+
+                          {/* Amount and Actions */}
+                          <div className="ml-6 text-right space-y-3">
+                            <div>
+                              <p className="text-sm text-gray-500">Amount Due</p>
+                              <p className="text-3xl font-bold">{formatCurrency(payment.amount)}</p>
+                            </div>
+
+                            <div className="space-y-2">
+                              <Button
+                                size="sm"
+                                className="w-full"
+                                onClick={() => {
+                                  setSelectedPayment(payment);
+                                  setShowPaymentDialog(true);
+                                }}
+                              >
+                                <Banknote className="h-4 w-4 mr-2" />
+                                Pay Now
+                              </Button>
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                className="w-full"
+                                onClick={() => {
+                                  setSelectedPayment(payment);
+                                  setShowScheduleDialog(true);
+                                }}
+                              >
+                                <Clock className="h-4 w-4 mr-2" />
+                                Schedule Payment
+                              </Button>
+                              <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                  <Button size="sm" variant="ghost" className="w-full">
+                                    <MoreVertical className="h-4 w-4" />
+                                  </Button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent align="end">
+                                  <DropdownMenuItem>
+                                    <Eye className="h-4 w-4 mr-2" />
+                                    View Details
+                                  </DropdownMenuItem>
+                                  <DropdownMenuItem>
+                                    <FileText className="h-4 w-4 mr-2" />
+                                    View Invoice
+                                  </DropdownMenuItem>
+                                  <DropdownMenuItem>
+                                    <Mail className="h-4 w-4 mr-2" />
+                                    Email Vendor
+                                  </DropdownMenuItem>
+                                  <DropdownMenuItem>
+                                    <Download className="h-4 w-4 mr-2" />
+                                    Download Documents
+                                  </DropdownMenuItem>
+                                  <DropdownMenuSeparator />
+                                  <DropdownMenuItem className="text-red-600">
+                                    <XCircle className="h-4 w-4 mr-2" />
+                                    Cancel Payment
+                                  </DropdownMenuItem>
+                                </DropdownMenuContent>
+                              </DropdownMenu>
+                            </div>
                           </div>
                         </div>
                       </div>
@@ -1372,35 +1631,183 @@ export default function EnterpriseBudgetDashboard() {
             </CardContent>
           </Card>
 
-          {/* Payment Calendar */}
+          {/* Payment Calendar - Enhanced */}
           <Card>
             <CardHeader>
-              <CardTitle>Payment Calendar</CardTitle>
-              <CardDescription>Visual timeline of upcoming payments</CardDescription>
+              <div className="flex items-center justify-between">
+                <div>
+                  <CardTitle>Payment Calendar</CardTitle>
+                  <CardDescription>Visual timeline of upcoming payments for the next 30 days</CardDescription>
+                </div>
+                <div className="flex items-center gap-3">
+                  <div className="flex items-center gap-2">
+                    <div className="w-3 h-3 bg-red-500 rounded"></div>
+                    <span className="text-xs">Overdue</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <div className="w-3 h-3 bg-orange-500 rounded"></div>
+                    <span className="text-xs">Due</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <div className="w-3 h-3 bg-green-500 rounded"></div>
+                    <span className="text-xs">Scheduled</span>
+                  </div>
+                </div>
+              </div>
             </CardHeader>
             <CardContent>
-              <div className="grid grid-cols-7 gap-2 text-center">
-                {Array.from({ length: 30 }, (_, i) => {
-                  const date = new Date();
-                  date.setDate(date.getDate() + i);
-                  const dayPayments = upcomingPayments.filter(p => {
-                    const pDate = new Date(p.dueDate);
-                    return pDate.toDateString() === date.toDateString();
-                  });
-                  const totalAmount = dayPayments.reduce((sum, p) => sum + p.amount, 0);
-                  
-                  return (
-                    <div key={i} className={`p-3 rounded-lg border ${totalAmount > 0 ? 'bg-orange-50 border-orange-200' : 'bg-gray-50'}`}>
-                      <p className="text-xs text-gray-600">{date.getDate()}</p>
-                      {totalAmount > 0 && (
-                        <>
-                          <p className="text-xs font-semibold mt-1">{formatCurrency(totalAmount)}</p>
-                          <p className="text-xs text-gray-500">{dayPayments.length} payment{dayPayments.length > 1 ? 's' : ''}</p>
-                        </>
+              {/* Month Header */}
+              <div className="mb-4">
+                <h3 className="text-lg font-semibold">
+                  {new Date().toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}
+                </h3>
+              </div>
+
+              {/* Weekday Headers */}
+              <div className="grid grid-cols-7 gap-2 mb-2">
+                {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(day => (
+                  <div key={day} className="text-center text-xs font-medium text-gray-500 py-2">
+                    {day}
+                  </div>
+                ))}
+              </div>
+
+              {/* Calendar Grid */}
+              <div className="grid grid-cols-7 gap-2">
+                {(() => {
+                  const today = new Date();
+                  const firstDay = new Date(today.getFullYear(), today.getMonth(), 1);
+                  const lastDay = new Date(today.getFullYear(), today.getMonth() + 1, 0);
+                  const startPadding = firstDay.getDay();
+                  const daysInMonth = lastDay.getDate();
+                  const calendar = [];
+
+                  // Add padding for start of month
+                  for (let i = 0; i < startPadding; i++) {
+                    calendar.push(
+                      <div key={`pad-start-${i}`} className="h-24"></div>
+                    );
+                  }
+
+                  // Add days of month
+                  for (let day = 1; day <= daysInMonth; day++) {
+                    const currentDate = new Date(today.getFullYear(), today.getMonth(), day);
+                    const dateString = currentDate.toISOString().split('T')[0];
+                    const isToday = day === today.getDate();
+                    const isPast = currentDate < today && !isToday;
+
+                    // Find payments for this date
+                    const dayPayments = upcomingPayments.filter(p => {
+                      const paymentDate = new Date(p.dueDate);
+                      return paymentDate.toDateString() === currentDate.toDateString();
+                    });
+
+                    const totalAmount = dayPayments.reduce((sum, p) => sum + p.amount, 0);
+                    const hasOverdue = dayPayments.some(p => p.status === 'pending' && new Date(p.dueDate) < today);
+                    const hasScheduled = dayPayments.some(p => p.status === 'scheduled');
+
+                    calendar.push(
+                      <div
+                        key={`day-${day}`}
+                        className={`
+                          h-24 p-2 rounded-lg border transition-all cursor-pointer hover:shadow-md
+                          ${isToday ? 'border-blue-500 border-2 bg-blue-50' :
+                            isPast ? 'bg-gray-100 border-gray-200' :
+                            totalAmount > 0 ? 'bg-white border-orange-200' :
+                            'bg-white border-gray-200'}
+                        `}
+                        onClick={() => {
+                          if (dayPayments.length > 0) {
+                            setSelectedDate(currentDate.toDateString());
+                            setSelectedDatePayments(dayPayments);
+                            setShowCalendarDialog(true);
+                          }
+                        }}
+                      >
+                        <div className="flex items-start justify-between">
+                          <span className={`text-sm font-medium ${isToday ? 'text-blue-600' : isPast ? 'text-gray-400' : ''}`}>
+                            {day}
+                          </span>
+                          {isToday && (
+                            <Badge variant="outline" className="text-xs px-1 py-0">
+                              Today
+                            </Badge>
+                          )}
+                        </div>
+
+                        {totalAmount > 0 && (
+                          <div className="mt-1 space-y-1">
+                            <p className="text-xs font-semibold text-gray-900">
+                              {formatCurrency(totalAmount)}
+                            </p>
+                            <div className="flex items-center gap-1">
+                              <div className={`w-2 h-2 rounded-full ${
+                                hasOverdue ? 'bg-red-500' :
+                                hasScheduled ? 'bg-green-500' :
+                                'bg-orange-500'
+                              }`}></div>
+                              <p className="text-xs text-gray-600">
+                                {dayPayments.length} {dayPayments.length === 1 ? 'payment' : 'payments'}
+                              </p>
+                            </div>
+                            {dayPayments.length > 0 && (
+                              <p className="text-xs text-gray-500 truncate" title={dayPayments[0].vendor}>
+                                {dayPayments[0].vendor}
+                                {dayPayments.length > 1 && ` +${dayPayments.length - 1}`}
+                              </p>
+                            )}
+                          </div>
+                        )}
+                      </div>
+                    );
+                  }
+
+                  // Add padding for end of month
+                  const endPadding = 7 - ((startPadding + daysInMonth) % 7);
+                  if (endPadding < 7) {
+                    for (let i = 0; i < endPadding; i++) {
+                      calendar.push(
+                        <div key={`pad-end-${i}`} className="h-24"></div>
+                      );
+                    }
+                  }
+
+                  return calendar;
+                })()}
+              </div>
+
+              {/* Summary Section */}
+              <div className="mt-4 pt-4 border-t">
+                <div className="grid grid-cols-3 gap-4">
+                  <div className="text-center p-3 bg-orange-50 rounded-lg">
+                    <p className="text-sm text-gray-600">This Week</p>
+                    <p className="text-lg font-bold text-orange-600">
+                      {formatCurrency(
+                        upcomingPayments.filter(p => {
+                          const paymentDate = new Date(p.dueDate);
+                          const weekFromNow = new Date();
+                          weekFromNow.setDate(weekFromNow.getDate() + 7);
+                          return paymentDate <= weekFromNow;
+                        }).reduce((sum, p) => sum + p.amount, 0)
                       )}
-                    </div>
-                  );
-                })}
+                    </p>
+                  </div>
+                  <div className="text-center p-3 bg-blue-50 rounded-lg">
+                    <p className="text-sm text-gray-600">This Month</p>
+                    <p className="text-lg font-bold text-blue-600">
+                      {formatCurrency(upcomingPayments.reduce((sum, p) => sum + p.amount, 0))}
+                    </p>
+                  </div>
+                  <div className="text-center p-3 bg-green-50 rounded-lg">
+                    <p className="text-sm text-gray-600">Scheduled</p>
+                    <p className="text-lg font-bold text-green-600">
+                      {formatCurrency(
+                        upcomingPayments.filter(p => p.status === 'scheduled')
+                          .reduce((sum, p) => sum + p.amount, 0)
+                      )}
+                    </p>
+                  </div>
+                </div>
               </div>
             </CardContent>
           </Card>
@@ -1603,6 +2010,643 @@ export default function EnterpriseBudgetDashboard() {
           </Card>
         </TabsContent>
       </Tabs>
+
+      {/* Payment Dialog */}
+      <Dialog open={showPaymentDialog} onOpenChange={setShowPaymentDialog}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>Process Payment</DialogTitle>
+            <DialogDescription>
+              Complete the payment for {selectedPayment?.vendor}
+            </DialogDescription>
+          </DialogHeader>
+
+          {selectedPayment && (
+            <div className="space-y-4">
+              <div className="bg-gray-50 rounded-lg p-4">
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <p className="text-sm text-gray-500">Vendor</p>
+                    <p className="font-medium">{selectedPayment.vendor}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-gray-500">Amount</p>
+                    <p className="font-bold text-lg">{formatCurrency(selectedPayment.amount)}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-gray-500">Invoice No</p>
+                    <p className="font-medium">{selectedPayment.invoiceNo}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-gray-500">Due Date</p>
+                    <p className="font-medium">{selectedPayment.dueDate}</p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="space-y-3">
+                <div>
+                  <Label htmlFor="payment-method">Payment Method</Label>
+                  <Select defaultValue={selectedPayment.paymentMethod || 'bank-transfer'}>
+                    <SelectTrigger id="payment-method">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="bank-transfer">Bank Transfer</SelectItem>
+                      <SelectItem value="cheque">Cheque</SelectItem>
+                      <SelectItem value="cash">Cash</SelectItem>
+                      <SelectItem value="upi">UPI</SelectItem>
+                      <SelectItem value="credit-card">Credit Card</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div>
+                  <Label htmlFor="transaction-id">Transaction ID / Reference</Label>
+                  <Input id="transaction-id" placeholder="Enter transaction reference number" />
+                </div>
+
+                <div>
+                  <Label htmlFor="payment-date">Payment Date</Label>
+                  <Input id="payment-date" type="date" defaultValue={new Date().toISOString().split('T')[0]} />
+                </div>
+
+                <div>
+                  <Label htmlFor="payment-notes">Notes (Optional)</Label>
+                  <Textarea id="payment-notes" placeholder="Add any payment notes or remarks" rows={3} />
+                </div>
+
+                <div className="flex items-center gap-2 p-3 bg-yellow-50 rounded-lg">
+                  <AlertTriangle className="h-4 w-4 text-yellow-600" />
+                  <p className="text-sm text-yellow-800">
+                    Please verify all details before confirming the payment. This action cannot be undone.
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
+
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowPaymentDialog(false)}>
+              Cancel
+            </Button>
+            <Button onClick={() => {
+              alert(`Payment of ${formatCurrency(selectedPayment?.amount || 0)} processed successfully!`);
+              setShowPaymentDialog(false);
+            }}>
+              <CheckCircle2 className="h-4 w-4 mr-2" />
+              Confirm Payment
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Schedule Dialog */}
+      <Dialog open={showScheduleDialog} onOpenChange={setShowScheduleDialog}>
+        <DialogContent className="max-w-xl">
+          <DialogHeader>
+            <DialogTitle>Schedule Payment</DialogTitle>
+            <DialogDescription>
+              Set up automatic payment for {selectedPayment?.vendor}
+            </DialogDescription>
+          </DialogHeader>
+
+          {selectedPayment && (
+            <div className="space-y-4">
+              <div className="bg-gray-50 rounded-lg p-4">
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <p className="text-sm text-gray-500">Vendor</p>
+                    <p className="font-medium">{selectedPayment.vendor}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-gray-500">Amount</p>
+                    <p className="font-bold">{formatCurrency(selectedPayment.amount)}</p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="space-y-3">
+                <div>
+                  <Label htmlFor="schedule-date">Schedule Date</Label>
+                  <Input
+                    id="schedule-date"
+                    type="date"
+                    defaultValue={selectedPayment.dueDate}
+                    min={new Date().toISOString().split('T')[0]}
+                  />
+                </div>
+
+                <div>
+                  <Label htmlFor="schedule-time">Schedule Time</Label>
+                  <Input id="schedule-time" type="time" defaultValue="10:00" />
+                </div>
+
+                <div>
+                  <Label htmlFor="reminder">Set Reminder</Label>
+                  <Select defaultValue="1-day">
+                    <SelectTrigger id="reminder">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="none">No Reminder</SelectItem>
+                      <SelectItem value="1-hour">1 Hour Before</SelectItem>
+                      <SelectItem value="1-day">1 Day Before</SelectItem>
+                      <SelectItem value="2-days">2 Days Before</SelectItem>
+                      <SelectItem value="1-week">1 Week Before</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div>
+                  <Label htmlFor="auto-approve">Auto-Approval</Label>
+                  <Select defaultValue="manual">
+                    <SelectTrigger id="auto-approve">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="manual">Manual Approval Required</SelectItem>
+                      <SelectItem value="auto">Auto-Approve on Schedule Date</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div>
+                  <Label htmlFor="schedule-notes">Notes (Optional)</Label>
+                  <Textarea id="schedule-notes" placeholder="Add scheduling notes" rows={2} />
+                </div>
+              </div>
+            </div>
+          )}
+
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowScheduleDialog(false)}>
+              Cancel
+            </Button>
+            <Button onClick={() => {
+              alert(`Payment scheduled for ${selectedPayment?.dueDate}!`);
+              setShowScheduleDialog(false);
+            }}>
+              <CalendarCheck className="h-4 w-4 mr-2" />
+              Schedule Payment
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Add Payment Dialog - Enhanced with proper controls */}
+      <Dialog open={showAddPaymentDialog} onOpenChange={setShowAddPaymentDialog}>
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="text-xl">Add New Payment</DialogTitle>
+            <DialogDescription>
+              Enter complete payment details with all required information
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-6">
+            {/* Main Payment Information */}
+            <div className="space-y-4">
+              <h3 className="text-sm font-semibold text-gray-700 uppercase tracking-wider">Payment Information</h3>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="new-vendor">Vendor Name *</Label>
+                  <div className="relative">
+                    <Building2 className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+                    <Input
+                      id="new-vendor"
+                      className="pl-10"
+                      placeholder="Enter vendor name"
+                      value={newPayment.vendor}
+                      onChange={(e) => setNewPayment({...newPayment, vendor: e.target.value})}
+                    />
+                  </div>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="new-amount">Amount (₹) *</Label>
+                  <div className="relative">
+                    <IndianRupee className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+                    <Input
+                      id="new-amount"
+                      type="number"
+                      className="pl-10"
+                      placeholder="0.00"
+                      value={newPayment.amount}
+                      onChange={(e) => setNewPayment({...newPayment, amount: e.target.value})}
+                    />
+                    {newPayment.amount && (
+                      <span className="absolute right-3 top-3 text-xs text-gray-500">
+                        {formatCurrency(parseFloat(newPayment.amount))}
+                      </span>
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="new-category">Category *</Label>
+                  <Select
+                    value={newPayment.category}
+                    onValueChange={(value) => setNewPayment({...newPayment, category: value, subCategory: ''})}
+                  >
+                    <SelectTrigger id="new-category" className="w-full">
+                      <div className="flex items-center gap-2">
+                        {newPayment.category === 'materials' && <Package className="h-4 w-4" />}
+                        {newPayment.category === 'labor' && <Users className="h-4 w-4" />}
+                        {newPayment.category === 'equipment' && <Wrench className="h-4 w-4" />}
+                        {newPayment.category === 'tools' && <Hammer className="h-4 w-4" />}
+                        {newPayment.category === 'rent' && <Home className="h-4 w-4" />}
+                        {newPayment.category === 'service' && <Briefcase className="h-4 w-4" />}
+                        {newPayment.category === 'consultation' && <UserCheck className="h-4 w-4" />}
+                        <SelectValue placeholder="Select category" />
+                      </div>
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="materials">
+                        <div className="flex items-center gap-2">
+                          <Package className="h-4 w-4" />
+                          Materials
+                        </div>
+                      </SelectItem>
+                      <SelectItem value="labor">
+                        <div className="flex items-center gap-2">
+                          <Users className="h-4 w-4" />
+                          Labor
+                        </div>
+                      </SelectItem>
+                      <SelectItem value="equipment">
+                        <div className="flex items-center gap-2">
+                          <Wrench className="h-4 w-4" />
+                          Equipment
+                        </div>
+                      </SelectItem>
+                      <SelectItem value="tools">
+                        <div className="flex items-center gap-2">
+                          <Hammer className="h-4 w-4" />
+                          Tools
+                        </div>
+                      </SelectItem>
+                      <SelectItem value="rent">
+                        <div className="flex items-center gap-2">
+                          <Home className="h-4 w-4" />
+                          Rent
+                        </div>
+                      </SelectItem>
+                      <SelectItem value="service">
+                        <div className="flex items-center gap-2">
+                          <Briefcase className="h-4 w-4" />
+                          Service
+                        </div>
+                      </SelectItem>
+                      <SelectItem value="consultation">
+                        <div className="flex items-center gap-2">
+                          <UserCheck className="h-4 w-4" />
+                          Consultation
+                        </div>
+                      </SelectItem>
+                      <SelectItem value="other">
+                        <div className="flex items-center gap-2">
+                          <DollarSign className="h-4 w-4" />
+                          Other
+                        </div>
+                      </SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="new-subcategory">Sub-Category</Label>
+                  <Select
+                    value={newPayment.subCategory}
+                    onValueChange={(value) => setNewPayment({...newPayment, subCategory: value})}
+                    disabled={!newPayment.category}
+                  >
+                    <SelectTrigger id="new-subcategory" className="w-full">
+                      <SelectValue placeholder={newPayment.category ? "Select sub-category" : "Select category first"} />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {newPayment.category && subcategoryOptions[newPayment.category]?.map((sub) => (
+                        <SelectItem key={sub} value={sub.toLowerCase().replace(/\s+/g, '-')}>
+                          {sub}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="new-description">Description *</Label>
+                <Textarea
+                  id="new-description"
+                  placeholder="Enter detailed payment description"
+                  className="min-h-[80px]"
+                  value={newPayment.description}
+                  onChange={(e) => setNewPayment({...newPayment, description: e.target.value})}
+                />
+              </div>
+
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="new-invoice">Invoice Number *</Label>
+                  <div className="relative">
+                    <FileText className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+                    <Input
+                      id="new-invoice"
+                      className="pl-10"
+                      placeholder="INV-XXXX"
+                      value={newPayment.invoiceNo}
+                      onChange={(e) => setNewPayment({...newPayment, invoiceNo: e.target.value})}
+                    />
+                  </div>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="new-due-date">Due Date *</Label>
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <Button
+                        variant="outline"
+                        className={cn(
+                          "w-full justify-start text-left font-normal",
+                          !newPayment.dueDate && "text-muted-foreground"
+                        )}
+                      >
+                        <Calendar className="mr-2 h-4 w-4" />
+                        {newPayment.dueDate ? format(newPayment.dueDate, "PPP") : <span>Pick a date</span>}
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-auto p-0">
+                      <CalendarComponent
+                        mode="single"
+                        selected={newPayment.dueDate}
+                        onSelect={(date) => date && setNewPayment({...newPayment, dueDate: date})}
+                        initialFocus
+                      />
+                    </PopoverContent>
+                  </Popover>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="new-urgency">Priority</Label>
+                  <Select
+                    value={newPayment.urgency}
+                    onValueChange={(value) => setNewPayment({...newPayment, urgency: value})}
+                  >
+                    <SelectTrigger id="new-urgency">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="low">
+                        <div className="flex items-center gap-2">
+                          <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                          Low Priority
+                        </div>
+                      </SelectItem>
+                      <SelectItem value="medium">
+                        <div className="flex items-center gap-2">
+                          <div className="w-2 h-2 bg-yellow-500 rounded-full"></div>
+                          Medium Priority
+                        </div>
+                      </SelectItem>
+                      <SelectItem value="high">
+                        <div className="flex items-center gap-2">
+                          <div className="w-2 h-2 bg-orange-500 rounded-full"></div>
+                          High Priority
+                        </div>
+                      </SelectItem>
+                      <SelectItem value="urgent">
+                        <div className="flex items-center gap-2">
+                          <div className="w-2 h-2 bg-red-500 rounded-full"></div>
+                          Urgent
+                        </div>
+                      </SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="new-payment-method">Payment Method</Label>
+                  <Select
+                    value={newPayment.paymentMethod}
+                    onValueChange={(value) => setNewPayment({...newPayment, paymentMethod: value})}
+                  >
+                    <SelectTrigger id="new-payment-method">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="bank-transfer">
+                        <div className="flex items-center gap-2">
+                          <Landmark className="h-4 w-4" />
+                          Bank Transfer
+                        </div>
+                      </SelectItem>
+                      <SelectItem value="cheque">
+                        <div className="flex items-center gap-2">
+                          <FileText className="h-4 w-4" />
+                          Cheque
+                        </div>
+                      </SelectItem>
+                      <SelectItem value="cash">
+                        <div className="flex items-center gap-2">
+                          <Banknote className="h-4 w-4" />
+                          Cash
+                        </div>
+                      </SelectItem>
+                      <SelectItem value="upi">
+                        <div className="flex items-center gap-2">
+                          <Smartphone className="h-4 w-4" />
+                          UPI
+                        </div>
+                      </SelectItem>
+                      <SelectItem value="credit-card">
+                        <div className="flex items-center gap-2">
+                          <CreditCard className="h-4 w-4" />
+                          Credit Card
+                        </div>
+                      </SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+            </div>
+
+            <Separator />
+
+            <h4 className="font-semibold">Vendor Details</h4>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <Label htmlFor="new-contact">Contact Person</Label>
+                <Input id="new-contact" placeholder="Contact person name" />
+              </div>
+              <div>
+                <Label htmlFor="new-phone">Phone Number</Label>
+                <Input id="new-phone" placeholder="+91 XXXXX XXXXX" />
+              </div>
+              <div>
+                <Label htmlFor="new-email">Email</Label>
+                <Input id="new-email" type="email" placeholder="vendor@example.com" />
+              </div>
+              <div>
+                <Label htmlFor="new-gst">GST Number</Label>
+                <Input id="new-gst" placeholder="GST number" />
+              </div>
+            </div>
+
+            <div>
+              <Label htmlFor="new-notes">Additional Notes</Label>
+              <Textarea id="new-notes" placeholder="Any additional notes or remarks" rows={3} />
+            </div>
+          </div>
+
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowAddPaymentDialog(false)}>
+              Cancel
+            </Button>
+            <Button onClick={() => {
+              // Here you would typically save the payment
+              alert('Payment added successfully!');
+              setShowAddPaymentDialog(false);
+            }}>
+              <Plus className="h-4 w-4 mr-2" />
+              Add Payment
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Calendar Payments Dialog */}
+      <Dialog open={showCalendarDialog} onOpenChange={setShowCalendarDialog}>
+        <DialogContent className="max-w-3xl max-h-[80vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Payments on {selectedDate}</DialogTitle>
+            <DialogDescription>
+              {selectedDatePayments.length} payment{selectedDatePayments.length !== 1 ? 's' : ''} scheduled
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-4">
+            {selectedDatePayments.map((payment, index) => (
+              <Card key={payment.id} className="hover:shadow-md transition-shadow">
+                <CardContent className="p-4">
+                  <div className="flex items-start justify-between">
+                    <div className="flex-1 space-y-2">
+                      <div className="flex items-center gap-3">
+                        <h4 className="font-semibold">{payment.description}</h4>
+                        <Badge className={getStatusColor(payment.status)}>
+                          {payment.status}
+                        </Badge>
+                        {payment.urgency && (
+                          <Badge variant="outline" className={
+                            payment.urgency === 'urgent' ? 'text-red-600 border-red-600' :
+                            payment.urgency === 'high' ? 'text-orange-600 border-orange-600' :
+                            payment.urgency === 'medium' ? 'text-yellow-600 border-yellow-600' :
+                            'text-green-600 border-green-600'
+                          }>
+                            {payment.urgency} priority
+                          </Badge>
+                        )}
+                      </div>
+
+                      <div className="grid grid-cols-2 gap-4 text-sm">
+                        <div>
+                          <span className="text-gray-500">Vendor:</span>
+                          <span className="ml-2 font-medium">{payment.vendor}</span>
+                        </div>
+                        <div>
+                          <span className="text-gray-500">Category:</span>
+                          <span className="ml-2 font-medium">{payment.category}</span>
+                        </div>
+                        <div>
+                          <span className="text-gray-500">Invoice:</span>
+                          <span className="ml-2 font-medium">{payment.invoiceNo}</span>
+                        </div>
+                        <div>
+                          <span className="text-gray-500">Payment Method:</span>
+                          <span className="ml-2 font-medium">{payment.paymentMethod || 'Not specified'}</span>
+                        </div>
+                      </div>
+
+                      {payment.vendorDetails && (
+                        <div className="flex items-center gap-4 text-sm text-gray-600 pt-2 border-t">
+                          {payment.vendorDetails.contactPerson && (
+                            <span className="flex items-center gap-1">
+                              <UserCheck className="h-3 w-3" />
+                              {payment.vendorDetails.contactPerson}
+                            </span>
+                          )}
+                          {payment.vendorDetails.phone && (
+                            <span className="flex items-center gap-1">
+                              <Phone className="h-3 w-3" />
+                              {payment.vendorDetails.phone}
+                            </span>
+                          )}
+                          {payment.vendorDetails.email && (
+                            <span className="flex items-center gap-1">
+                              <Mail className="h-3 w-3" />
+                              {payment.vendorDetails.email}
+                            </span>
+                          )}
+                        </div>
+                      )}
+                    </div>
+
+                    <div className="ml-4 text-right space-y-2">
+                      <p className="text-2xl font-bold">{formatCurrency(payment.amount)}</p>
+                      <div className="flex gap-2">
+                        <Button
+                          size="sm"
+                          onClick={() => {
+                            setSelectedPayment(payment);
+                            setShowCalendarDialog(false);
+                            setShowPaymentDialog(true);
+                          }}
+                        >
+                          <Banknote className="h-3 w-3 mr-1" />
+                          Pay
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => {
+                            setSelectedPayment(payment);
+                            setShowCalendarDialog(false);
+                            setShowScheduleDialog(true);
+                          }}
+                        >
+                          <Clock className="h-3 w-3 mr-1" />
+                          Schedule
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+
+            <div className="mt-4 p-4 bg-gray-50 rounded-lg">
+              <div className="flex items-center justify-between">
+                <span className="text-sm text-gray-600">Total for {selectedDate}:</span>
+                <span className="text-xl font-bold">
+                  {formatCurrency(selectedDatePayments.reduce((sum, p) => sum + p.amount, 0))}
+                </span>
+              </div>
+            </div>
+          </div>
+
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowCalendarDialog(false)}>
+              Close
+            </Button>
+            <Button onClick={() => {
+              // Process all payments for this date
+              alert(`Processing ${selectedDatePayments.length} payments for ${selectedDate}`);
+              setShowCalendarDialog(false);
+            }}>
+              <CheckCircle2 className="h-4 w-4 mr-2" />
+              Process All Payments
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
