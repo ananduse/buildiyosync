@@ -85,11 +85,7 @@ import {
   Receipt,
   MoreVertical,
   CreditCard,
-  Upload,
-  Package,
-  Users,
-  Wrench,
-  Hammer
+  Upload
 } from 'lucide-react';
 
 // Types
